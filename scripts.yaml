@@ -1,0 +1,152 @@
+new_script:
+  alias: Trigger URC Event
+  sequence:
+  - event: urc_event_trigger
+    event_data:
+      event_id: '{{ event_id }}'
+  fields:
+    event_id:
+      name: URC Event ID
+      selector:
+        text:
+      description: A unique event id that will be triggered on the URC Controller
+      required: true
+  mode: parallel
+  max: 100
+  icon: mdi:home-sound-out-outline
+downstairs_pause_downstairs_motion_detected:
+  sequence:
+  - action: automation.turn_off
+    target:
+      entity_id: automation.downstairs_motion_detected
+    data:
+      stop_actions: true
+  - delay:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
+  - action: automation.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: automation.downstairs_motion_detected
+  alias: 'Downstairs: Pause Downstairs Motion Detected'
+  description: ''
+  icon: mdi:robot-off-outline
+bedroom_primary_light_control_script:
+  alias: Bedroom Primary Light Control Script
+  description: ''
+  sequence:
+  - choose:
+    - conditions:
+      - condition: time
+        after: 06:00:00
+        before: '11:00:00'
+        weekday:
+        - sun
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+        - sat
+      sequence:
+      - metadata: {}
+        data:
+          kelvin: 3504
+          brightness_pct: 50
+          transition: 1
+        target:
+          entity_id: light.bedroom_primary_hue_group_switch
+        action: light.turn_on
+    - conditions:
+      - condition: time
+        after: '11:00:00'
+        before: '23:00:00'
+        weekday:
+        - sun
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+        - sat
+      sequence:
+      - metadata: {}
+        data:
+          kelvin: 3210
+          brightness_pct: 100
+          transition: 1
+        target:
+          entity_id: light.bedroom_primary_hue_group_switch
+        action: light.turn_on
+    - conditions:
+      - condition: time
+        after: '23:00:00'
+        weekday:
+        - sun
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+        - sat
+      sequence:
+      - metadata: {}
+        data:
+          kelvin: 2800
+          brightness_pct: 20
+          transition: 1
+        target:
+          entity_id: light.bedroom_primary_hue_group_switch
+        action: light.turn_on
+bedroom_primary_manual_on_via_dashboard:
+  alias: 'Bedroom Primary: Manual On via Dashboard'
+  description: ''
+  mode: single
+  sequence:
+  - target:
+      entity_id: light.bedroom_primary_hue_group_switch
+    data:
+      transition: 1
+    action: light.turn_on
+  - target:
+      entity_id: input_boolean.bedroom_primary_manual_override_boolean
+    action: input_boolean.turn_on
+bedroom_primary_manual_off_via_dashboard:
+  alias: 'Bedroom Primary: Manual Off via Dashboard'
+  description: ''
+  mode: single
+  sequence:
+  - target:
+      entity_id: light.bedroom_primary_hue_group_switch
+    data:
+      transition: 0.5
+    action: light.turn_off
+  - target:
+      entity_id: input_boolean.bedroom_primary_manual_override_boolean
+    action: input_boolean.turn_off
+    data: {}
+  - action: input_boolean.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.bedroom_primary_motion_enabled_boolean
+bedroom_primary_dashboard_tap_logic:
+  alias: 'Bedroom Primary: Dashboard Tap Logic'
+  mode: single
+  sequence:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: light.bedroom_primary_hue_group_switch
+        state: 'off'
+      sequence:
+      - action: script.bedroom_primary_manual_on_via_dashboard
+    - conditions:
+      - condition: state
+        entity_id: light.bedroom_primary_hue_group_switch
+        state: 'on'
+      sequence:
+      - action: script.bedroom_primary_manual_off_via_dashboard

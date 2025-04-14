@@ -1,0 +1,20 @@
+# Ignore runtime files and logs
+home-assistant.log*
+home-assistant_v2.db*
+*.db-shm
+*.db-wal
+__pycache__/
+deps/
+*.pyc
+
+# Storage and cloud cache
+.storage/
+.cloud/
+keys/
+lutron_caseta-*.pem
+
+# Temporary & generated files
+*.yaml.save
+*.bak
+.shopping_list.json
+.HA_VERSION

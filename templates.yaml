@@ -1,0 +1,10 @@
+# Binary sensor that disables all motion automations if party or cleaning mode is on
+binary_sensor:
+  - name: "Motion Lighting Globally Allowed"
+    unique_id: motion_lighting_globally_allowed
+    state: >
+      {{ 
+        is_state('input_boolean.party_boolean', 'off') and
+        is_state('input_boolean.cleaning', 'off')
+      }}
+    icon: mdi:check-circle-outline

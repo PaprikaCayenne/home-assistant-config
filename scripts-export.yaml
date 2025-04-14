@@ -1,0 +1,57 @@
+export_entity_attributes:
+  alias: Export Entity Attributes
+  description: >
+    Exports specified entity attributes to a CSV file in /config/www/exports/export_entities.csv.
+    Includes only the selected domains and skips irrelevant data.
+  icon: mdi:file-export
+  mode: single
+  sequence:
+    - service: persistent_notification.create
+      data:
+        title: "Entity Export"
+        message: "Starting entity export."
+    - service: notify.send_message
+      target:
+        entity_id: notify.print_export_entities
+      data:
+        message: >
+          {{ 'Device,Domain,Entity ID,Friendly Name,State,Manufacturer,Model,Area,Integration,ID' }}
+          {% for state in states if state.entity_id is not none and state.domain in ['light', 'switch', 'sensor', 'binary_sensor'] %}
+          {{ [
+            state.name | string,
+            state.domain | string,
+            state.entity_id | string,
+            (state.attributes.friendly_name or '-') | string,
+            state.state | string,
+            (device_attr(state.entity_id, 'manufacturer') | replace("Signify Netherlands B.V.", "Philips Hue") | replace("LEDWORKS", "Twinkly") or '-') | string,
+            (device_attr(state.entity_id, 'model') or '-') | string,
+            (area_name(device_attr(state.entity_id, 'area_id')) or '-') | string,
+            ((device_attr(state.entity_id, 'identifiers') | first | first) or '-') | string,
+            ((device_attr(state.entity_id, 'identifiers') | first | last) or '-') | string
+          ] | join(',') }}
+          {% endfor %}
+    - service: persistent_notification.create
+      data:
+        title: "Entity Export"
+        message: "Entity export completed successfully!"
+
+debug_entity_headers:
+  alias: Debug Entity Headers
+  description: >
+    Gathers and logs all attribute headers from Home Assistant entities into a notification.
+  icon: mdi:debug
+  mode: single
+  sequence:
+    - service: persistent_notification.create
+      data:
+        title: "Debug Entity Headers"
+        message: "Starting debug for entity headers."
+    - service: notify.send_message
+      target:
+        entity_id: notify.print_debug_entities
+      data:
+        message: "Happy"
+    - service: persistent_notification.create
+      data:
+        title: "Debug Entity Headers"
+        message: "Debug entity headers completed."
