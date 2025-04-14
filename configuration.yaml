@@ -1,21 +1,29 @@
-# Enable default integrations like the dashboard, history, and logs
+# ================================
+# Core Settings & Integrations
+# ================================
+
+# Enable default UI and dashboards
 my:
 
-# Include template sensors like binary_sensor.motion_lighting_globally_allowed
+# Template sensors, binary sensors, etc.
 template: !include templates.yaml
 
-# Load custom themes for the frontend
+# Custom themes and frontend tweaks
 frontend:
   themes: !include_dir_merge_named themes
-  extra_module_url: #Custom brand icons from HACS
+  extra_module_url:  # HACS custom icons
     - /local/community/custom-brand-icons/custom-brand-icons.js
 
-# Split configurations for automations, scripts, and scenes
+# Automation, script, and scene includes
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
-# Alexa integration for smart home devices
+# ================================
+# Voice Assistant Integration
+# ================================
+
+# Alexa integration
 alexa:
   smart_home:
     locale: en-US
@@ -38,27 +46,43 @@ alexa:
 #      switch.stairs:
 #        display_categories: LIGHT
 
-# Authentication configuration for trusted networks
+# ================================
+# Authentication & File Access
+# ================================
+
 homeassistant:
   auth_providers:
     - type: trusted_networks
       trusted_networks:
-        - 192.168.50.0/24 # Allow bypass for local network
+        - 192.168.50.0/24  # Allow bypass for local network
     - type: homeassistant
   allowlist_external_dirs:
-    - "/config"
+    - "/config"  # Allow shell_command access to config files
 
-# HTTP proxy and trusted proxies for secure remote access
+# ================================
+# HTTP & Proxy Settings
+# ================================
+
 http:
   use_x_forwarded_for: true
   trusted_proxies:
-    - 192.168.50.0/24 # Local network subnet
-    - 127.0.0.1 # Localhost (if applicable)
-    - 192.168.50.190 #local ip
-    - 192.168.50.34 # Niginx Proxy Manager
+    - 192.168.50.0/24     # Local network subnet
+    - 127.0.0.1           # Localhost
+    - 192.168.50.190      # MotionEye or similar
+    - 192.168.50.34       # Nginx Proxy Manager
 
-# Enable detailed debugging for LocalTuya
+# ================================
+# Logging Levels
+# ================================
+
 logger:
   default: warning
   logs:
     custom_components.localtuya: debug
+
+# ================================
+# Shell Commands
+# ================================
+
+shell_command:
+  nightly_git_backup: bash /config/git-nightly.sh

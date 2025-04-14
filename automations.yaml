@@ -1562,3 +1562,12 @@
       - input_boolean.livingroom_motion_enabled
       - input_boolean.kitchen_motion_enabled
   mode: single
+- id: '1744601049270'
+  alias: 'Git: Nightly Backup Push'
+  description: Commits and pushes current config every night at 2:00 AM
+  triggers:
+  - at: 02:00:00
+    trigger: time
+  actions:
+  - action: shell_command.nightly_git_backup
+  mode: single
