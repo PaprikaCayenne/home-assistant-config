@@ -995,7 +995,7 @@
       - data:
           transition: 0.5
           color_temp_kelvin: 3000
-          brightness_pct: 50
+          brightness_pct: 90
         target:
           entity_id: light.kitchen_hue_group_switch
         action: light.turn_on
@@ -1054,7 +1054,7 @@
         before: 00:30:00
       sequence:
       - data:
-          brightness_pct: 50
+          brightness_pct: 90
           color_temp_kelvin: 3000
           transition: 0.5
         target:
