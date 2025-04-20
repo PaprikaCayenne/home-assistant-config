@@ -278,12 +278,12 @@
     target:
       area_id: hallway
     enabled: false
-  - action: light.turn_on
+  - action: light.turn_off
     metadata: {}
-    data:
-      brightness_pct: 1
     target:
       area_id: hallway
+    data:
+      transition: 0.5
   mode: single
 - id: '1741453716673'
   alias: 'Misc: Primary bathroom fan humidity control'
