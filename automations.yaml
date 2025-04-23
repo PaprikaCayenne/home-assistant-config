@@ -540,12 +540,12 @@
     entity_id: input_boolean.cleaning
     state: 'off'
   actions:
-  - action: light.turn_on
+  - action: light.turn_off
     metadata: {}
-    data:
-      brightness_pct: 10
     target:
       area_id: bathroom_guest
+    data:
+      transition: 0.5
   mode: single
 - id: '1742405097534'
   alias: 'Office: Lights Manually On'
