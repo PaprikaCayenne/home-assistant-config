@@ -379,6 +379,9 @@
   - condition: state
     entity_id: input_boolean.office_lights_boolean
     state: 'off'
+  - condition: state
+    entity_id: input_boolean.office_lights_hold_boolean
+    state: 'off'
   actions:
   - action: light.turn_on
     metadata: {}
@@ -409,6 +412,9 @@
   conditions:
   - condition: state
     entity_id: input_boolean.office_lights_boolean
+    state: 'off'
+  - condition: state
+    entity_id: input_boolean.office_lights_hold_boolean
     state: 'off'
   actions:
   - action: light.turn_off
@@ -1570,4 +1576,100 @@
     trigger: time
   actions:
   - action: shell_command.nightly_git_backup
+  mode: single
+- id: '1745955843300'
+  alias: 'Global: 3:00 AM Reset & Lights Off'
+  description: Reset override booleans and shut down all room lighting
+  triggers:
+  - at: 03:00:00
+    trigger: time
+  conditions: []
+  actions:
+  - target:
+      entity_id:
+      - input_boolean.kitchen_lights_manual_override
+      - input_boolean.livingroom_lights_manual_override
+      - input_boolean.office_lights_boolean
+      - input_boolean.bedroom_primary_manual_override_boolean
+      - input_boolean.cleaning
+      - input_boolean.private_time_boolean
+      - input_boolean.party_boolean
+    action: input_boolean.turn_off
+    data: {}
+  - target:
+      area_id:
+      - bedroom_primary
+      - bathroom_primary
+      - bedroom_guest
+      - bathroom_guest
+      - hallway
+      - kitchen
+      - living_room
+      - office
+    data:
+      transition: 0.5
+    action: light.turn_off
+  mode: single
+- id: '1745956186858'
+  alias: 'Office: Motion Hold Lights On (8 AM to 5 PM)'
+  description: ''
+  triggers:
+  - entity_id: binary_sensor.office_motion_sensor
+    to: 'on'
+    trigger: state
+  conditions:
+  - condition: time
+    after: 08:00:00
+    before: '17:00:00'
+  actions:
+  - action: input_boolean.turn_on
+    data: {}
+    target:
+      entity_id: input_boolean.office_lights_hold_boolean
+  - target:
+      area_id: office
+    data:
+      brightness_pct: 100
+      transition: 0.5
+    action: light.turn_on
+  mode: single
+- id: '1745956245665'
+  alias: 'Office: End Hold at 5 PM'
+  description: ''
+  triggers:
+  - at: '17:00:00'
+    trigger: time
+  actions:
+  - action: input_boolean.turn_off
+    data: {}
+    target:
+      entity_id: input_boolean.office_lights_hold_boolean
+  - target:
+      area_id: office
+    data:
+      transition: 1
+    action: light.turn_off
+  mode: single
+- id: '1745968774027'
+  alias: 'Office: Manual Fan Light Off → Reset Automation'
+  description: If lights + booleans are on and fan light is manually turned off, shut
+    down all lights and re-enable motion
+  triggers:
+  - type: turned_off
+    device_id: 89e3ce49a9ef408981d0e60f103232fc
+    entity_id: 820f53c15c7657430b5b5b1f19634993
+    domain: light
+    trigger: device
+  conditions: []
+  actions:
+  - target:
+      entity_id:
+      - input_boolean.office_lights_boolean
+      - input_boolean.office_lights_hold_boolean
+    action: input_boolean.turn_off
+    data: {}
+  - target:
+      area_id: office
+    action: light.turn_off
+    data: {}
   mode: single
