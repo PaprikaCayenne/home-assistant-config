@@ -379,9 +379,6 @@
   - condition: state
     entity_id: input_boolean.office_lights_boolean
     state: 'off'
-  - condition: state
-    entity_id: input_boolean.office_lights_hold_boolean
-    state: 'off'
   actions:
   - action: light.turn_on
     metadata: {}
@@ -412,9 +409,6 @@
   conditions:
   - condition: state
     entity_id: input_boolean.office_lights_boolean
-    state: 'off'
-  - condition: state
-    entity_id: input_boolean.office_lights_hold_boolean
     state: 'off'
   actions:
   - action: light.turn_off
@@ -554,7 +548,7 @@
       transition: 0.5
   mode: single
 - id: '1742405097534'
-  alias: 'Office: Lights Manually On'
+  alias: 'Office: Lights Manually Stay On'
   description: Office Lights Boolean to On
   triggers:
   - trigger: state
@@ -1625,7 +1619,7 @@
   - action: input_boolean.turn_on
     data: {}
     target:
-      entity_id: input_boolean.office_lights_hold_boolean
+      entity_id: input_boolean.office_lights_boolean
   - target:
       area_id: office
     data:
@@ -1643,12 +1637,24 @@
   - action: input_boolean.turn_off
     data: {}
     target:
-      entity_id: input_boolean.office_lights_hold_boolean
-  - target:
-      area_id: office
-    data:
-      transition: 1
-    action: light.turn_off
+      entity_id: input_boolean.office_lights_boolean
+  - if:
+    - type: is_off
+      condition: device
+      device_id: 070678fd4c81abfab4b665d811c821ef
+      entity_id: 5e9ca6fdfe7d99393b1945bbcdaa831d
+      domain: binary_sensor
+    - type: is_not_occupied
+      condition: device
+      device_id: 8e65b7c2b32be2115e4e11f153e3d21a
+      entity_id: 4c10a2c0670f659b32df3abed8ac7d3f
+      domain: binary_sensor
+    then:
+    - target:
+        area_id: office
+      data:
+        transition: 1
+      action: light.turn_off
   mode: single
 - id: '1745968774027'
   alias: 'Office: Manual Fan Light Off → Reset Automation'
@@ -1672,4 +1678,22 @@
       area_id: office
     action: light.turn_off
     data: {}
+  mode: single
+- id: '1746206656134'
+  alias: 'Bathroom Guest: Manually Stay On'
+  description: Guest Bathroom Boolean to On and turn on lights to keep them on
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.bathroom_guest_boolean
+    from: 'off'
+    to: 'on'
+  conditions: []
+  actions:
+  - action: light.turn_on
+    metadata: {}
+    data:
+      brightness_pct: 100
+    target:
+      area_id: bathroom_guest
   mode: single
