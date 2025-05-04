@@ -1129,8 +1129,10 @@
   mode: restart
 - id: '1744569877439'
   alias: 'Kitchen Hue: Button 1 Short Press – Keep Lights On (Override Both)'
-  description: Applies manual override for kitchen + livingroom motion and keeps lights
-    as-is.
+  description: 'If all kitchen lights are off, turn them on at 100% brightness. Otherwise,
+    keep them as-is. In both cases, set manual override booleans.
+
+    '
   triggers:
   - device_id: 19af60f1d1753b29548b35675b6c6005
     domain: hue
@@ -1139,13 +1141,26 @@
     unique_id: 82ab89d3-7ee9-4ab0-b585-faa7d0e737aa
     trigger: device
   actions:
-  - action: input_boolean.turn_on
-    metadata: {}
-    data: {}
-    target:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: "{{ expand(area_entities('kitchen'))\n   | select('search',
+          'light.')\n   | selectattr('state', 'eq', 'off')\n   | list | count ==\n
+          \  (expand(area_entities('kitchen')) | select('search', 'light.') | list
+          | count) }}\n"
+      sequence:
+      - data:
+          brightness_pct: 100
+          transition: 0.5
+        target:
+          area_id: kitchen
+        action: light.turn_on
+    default: []
+  - target:
       entity_id:
       - input_boolean.kitchen_lights_manual_override
       - input_boolean.livingroom_lights_manual_override
+    action: input_boolean.turn_on
   mode: single
 - id: '1744569902947'
   alias: 'Kitchen Hue: Button 1 Long Press – Turn On Both Rooms & Override'
@@ -1163,7 +1178,8 @@
       - light.kitchen_hue_group_switch
       - light.livingroom_switch
     action: light.turn_on
-    data: {}
+    data:
+      brightness_pct: 100
   - action: input_boolean.turn_on
     metadata: {}
     data: {}
@@ -1344,8 +1360,10 @@
   mode: single
 - id: '1744572277100'
   alias: 'Livingroom Hue: Button 1 Short Press – Keep Lights On (Override Both)'
-  description: Applies manual override for kitchen + livingroom motion and keeps lights
-    as-is.
+  description: 'If all livingroom lights are off, turn them on at 100% brightness.
+    Otherwise, keep them as-is. In both cases, set manual override booleans.
+
+    '
   triggers:
   - device_id: 85063f771b186e94a4d128fdfcf24352
     domain: hue
@@ -1354,19 +1372,26 @@
     unique_id: c90f43ea-db3c-417a-a3d1-2e3464e1a7d6
     trigger: device
   actions:
-  - action: light.turn_on
-    metadata: {}
-    data:
-      transition: 0.5
-    target:
-      entity_id: light.livingroom_switch
-  - action: input_boolean.turn_on
-    metadata: {}
-    data: {}
-    target:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: "{{ expand(area_entities('livingroom'))\n   | select('search',
+          'light.')\n   | selectattr('state', 'eq', 'off')\n   | list | count ==\n
+          \  (expand(area_entities('livingroom')) | select('search', 'light.') | list
+          | count) }}\n"
+      sequence:
+      - data:
+          brightness_pct: 100
+          transition: 0.5
+        target:
+          area_id: livingroom
+        action: light.turn_on
+    default: []
+  - target:
       entity_id:
       - input_boolean.kitchen_lights_manual_override
       - input_boolean.livingroom_lights_manual_override
+    action: input_boolean.turn_on
   mode: single
 - id: '1744572322132'
   alias: 'Livingroom Hue: Button 1 Long Press – Turn On Both Rooms & Override'
