@@ -1144,10 +1144,12 @@
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ expand(area_entities('kitchen'))\n   | select('search',
-          'light.')\n   | selectattr('state', 'eq', 'off')\n   | list | count ==\n
-          \  (expand(area_entities('kitchen')) | select('search', 'light.') | list
-          | count) }}\n"
+        value_template: '{% set lights = expand(area_entities(''kitchen'')) | select(''search'',
+          ''light.'') | list %} {% set off_lights = lights | selectattr(''state'',
+          ''eq'', ''off'') | list %} {{ lights | count > 0 and off_lights | count
+          == lights | count }}
+
+          '
       sequence:
       - data:
           brightness_pct: 100
@@ -1375,16 +1377,18 @@
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ expand(area_entities('livingroom'))\n   | select('search',
-          'light.')\n   | selectattr('state', 'eq', 'off')\n   | list | count ==\n
-          \  (expand(area_entities('livingroom')) | select('search', 'light.') | list
-          | count) }}\n"
+        value_template: '{% set lights = expand(area_entities(''living_room'')) |
+          select(''search'', ''light.'') | list %} {% set off_lights = lights | selectattr(''state'',
+          ''eq'', ''off'') | list %} {{ lights | count > 0 and off_lights | count
+          == lights | count }}
+
+          '
       sequence:
       - data:
           brightness_pct: 100
           transition: 0.5
         target:
-          area_id: livingroom
+          area_id: living_room
         action: light.turn_on
     default: []
   - target:
@@ -1392,6 +1396,7 @@
       - input_boolean.kitchen_lights_manual_override
       - input_boolean.livingroom_lights_manual_override
     action: input_boolean.turn_on
+    data: {}
   mode: single
 - id: '1744572322132'
   alias: 'Livingroom Hue: Button 1 Long Press – Turn On Both Rooms & Override'
