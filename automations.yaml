@@ -729,8 +729,8 @@
     conditions allow it.
   triggers:
   - type: motion
-    device_id: 7cb9c34a9edc2327f6b3e06b5c9094d9
-    entity_id: 2a5f5ee5a0e598170eec110942e092e4
+    device_id: 9b7f22c8106a3788950b60dc6741d8fe
+    entity_id: 356bf24afc0bb94963bfc02a249bad65
     domain: binary_sensor
     trigger: device
   - type: motion
@@ -764,8 +764,8 @@
     it.
   triggers:
   - type: no_motion
-    device_id: 7cb9c34a9edc2327f6b3e06b5c9094d9
-    entity_id: 2a5f5ee5a0e598170eec110942e092e4
+    device_id: 9b7f22c8106a3788950b60dc6741d8fe
+    entity_id: 356bf24afc0bb94963bfc02a249bad65
     domain: binary_sensor
     trigger: device
     for:
