@@ -2,6 +2,10 @@
 # Core Settings & Integrations
 # ================================
 
+
+default_config:
+
+
 # Enable default UI and dashboards
 my:
 
