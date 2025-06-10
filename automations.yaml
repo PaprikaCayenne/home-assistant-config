@@ -1645,9 +1645,14 @@
   alias: 'Office: Motion Hold Lights On (8 AM to 5 PM)'
   description: ''
   triggers:
-  - entity_id: binary_sensor.office_motion_sensor
+  - entity_id:
+    - binary_sensor.camera_office_motion
     to: 'on'
     trigger: state
+  - trigger: state
+    entity_id:
+    - binary_sensor.office_occupancy
+    to: 'on'
   conditions:
   - condition: time
     after: 08:00:00
@@ -1733,4 +1738,28 @@
       brightness_pct: 100
     target:
       area_id: bathroom_guest
+  mode: single
+- id: '1749509387699'
+  alias: 'Livingroom: Movie Mode – Activate Scene + Disable Motion'
+  description: Activates Watch Movie scene and disables motion sensors in Livingroom
+    and Kitchen when Movie Mode is turned on.
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.movie_boolean
+    to: 'on'
+  conditions: []
+  actions:
+  - action: hue.hue_activate_scene
+    metadata: {}
+    data:
+      dynamic: true
+      group_name: light.downstairs_inside
+      scene_name: scene.downstairs_inside_tokyo
+    enabled: false
+  - action: scene.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: scene.downstairs_inside_tokyo
   mode: single
