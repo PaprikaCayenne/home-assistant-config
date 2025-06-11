@@ -1,12 +1,11 @@
 - id: '1733020601130'
-  alias: 'Pantry: Motion Detect'
-  description: Turns on pantry lights
+  alias: 'Pantry: Motion Detected – Turn On Lights'
+  description: Turns on pantry lights when motion is detected
   triggers:
-  - type: motion
-    device_id: 7ec9d0147bba245ce8aad3ee4209aea0
-    entity_id: c3fb8fa4131b1a92301385c945b4cdb3
-    domain: binary_sensor
-    trigger: device
+  - trigger: state
+    entity_id:
+    - binary_sensor.pantry_sensor_motion
+    to: 'on'
   conditions: []
   actions:
   - action: light.turn_on
@@ -18,17 +17,18 @@
       - light.pantry_small_light
   mode: single
 - id: '1735003869392'
-  alias: 'Bathroom Primary: Motion Detected'
-  description: Primary Bathroom lights on 11:00 PM to 5:00 AM
+  alias: 'Bathroom Primary: Motion Detected – Turn On Lights'
+  description: Turns on Primary Bathroom lights when motion is detected and automation
+    is allowed.
   triggers:
-  - type: occupied
-    device_id: 25898c84b016cff177cbab5963036d67
-    entity_id: 6ccf18d64b4f0631b8f8a3b1663ad6ba
-    domain: binary_sensor
-    metadata:
-      secondary: false
-    trigger: device
-  conditions: []
+  - trigger: state
+    entity_id:
+    - binary_sensor.bathroom_primary_motion_sensor
+    to: 'on'
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.motion_bathroom_primary_allowed
+    state: 'on'
   actions:
   - choose:
     - conditions:
@@ -36,40 +36,36 @@
         after: '23:00:00'
         before: 05:00:00
       sequence:
-      - action: light.turn_on
-        metadata: {}
-        data:
+      - data:
           brightness_pct: 10
           transition: 0.5
         target:
-          device_id: 94715ab639717ce9d55b02505fcf19cc
           entity_id: light.shellyplus2pm_10061cc9d5d0_switch_1
+        action: light.turn_on
     - conditions:
       - condition: time
         after: 05:00:00
         before: '23:00:00'
       sequence:
-      - action: light.turn_on
-        metadata: {}
-        data:
+      - data:
           brightness_pct: 100
           transition: 0.5
         target:
           area_id: bathroom_primary
+        action: light.turn_on
   mode: single
 - id: '1735010780789'
-  alias: 'Bathroom Primary: Motion Not Detected'
-  description: Turn off bathroom lights
+  alias: 'Bathroom Primary: Motion Not Detected – Turn Off Lights'
+  description: Turns off bathroom lights when motion clears and automation is allowed
   triggers:
-  - type: not_occupied
-    device_id: 25898c84b016cff177cbab5963036d67
-    entity_id: 6ccf18d64b4f0631b8f8a3b1663ad6ba
-    domain: binary_sensor
-    trigger: device
+  - trigger: state
+    entity_id:
+    - binary_sensor.bathroom_primary_motion_sensor
+    to: 'off'
   conditions:
   - condition: state
-    entity_id: input_boolean.cleaning
-    state: 'off'
+    entity_id: binary_sensor.motion_bathroom_primary_allowed
+    state: 'on'
   actions:
   - action: light.turn_off
     metadata: {}
@@ -122,16 +118,17 @@
           entity_id: switch.shellyplus2pm_10061cc9d5d0_switch_1
   mode: single
 - id: '1737137813584'
-  alias: 'Pantry: Motion Not Detected'
-  description: ''
+  alias: 'Pantry: Motion – Turn Off Lights'
+  description: Turns off pantry lights 1 minute after no motion is detected.
   triggers:
-  - type: no_motion
-    device_id: 7ec9d0147bba245ce8aad3ee4209aea0
-    entity_id: c3fb8fa4131b1a92301385c945b4cdb3
-    domain: binary_sensor
-    trigger: device
+  - trigger: state
+    entity_id:
+    - binary_sensor.pantry_sensor_motion
+    to: 'off'
     for:
+      hours: 0
       minutes: 1
+      seconds: 0
   conditions: []
   actions:
   - action: light.turn_off
@@ -175,29 +172,22 @@
     message: Derrek has arrived
   mode: single
 - id: '1739927990971'
-  alias: 'Hallway: Motion Detected'
-  description: ''
+  alias: 'Hallway: Motion Detected – Turn On Lights'
+  description: Turns on hallway lights with time-based brightness when motion is detected
+    and automation is allowed
   triggers:
-  - type: motion
-    device_id: 28620f7c11f24ee2148d49cc7b544373
-    entity_id: 3167aadc4d5326dfc4a86b17a0f3f766
-    domain: binary_sensor
-    metadata:
-      secondary: false
-    trigger: device
-    enabled: true
-  - type: motion
-    device_id: 2abe303a0a01b63db007ef064787896f
-    entity_id: 94830cf7843008f631421e74a226004d
-    domain: binary_sensor
-    trigger: device
+  - trigger: state
+    entity_id:
+    - binary_sensor.camera_hallway_person
+    to: 'on'
+  - trigger: state
+    entity_id:
+    - binary_sensor.hue_motion_sensor_3_motion
+    to: 'on'
   conditions:
   - condition: state
-    entity_id: input_boolean.hallway_lights_boolean
-    state: 'off'
-  - condition: state
-    entity_id: input_boolean.cleaning
-    state: 'off'
+    entity_id: binary_sensor.motion_hallway_allowed
+    state: 'on'
   actions:
   - choose:
     - conditions:
@@ -205,79 +195,72 @@
         after: 06:00:00
         before: 08:00:00
       sequence:
-      - action: light.turn_on
-        metadata: {}
-        data:
+      - data:
           brightness_pct: 40
+          transition: 0.5
         target:
           area_id: hallway
+        action: light.turn_on
     - conditions:
       - condition: time
         after: '18:00:00'
         before: '23:00:00'
       sequence:
-      - action: light.turn_on
-        metadata: {}
-        data:
+      - data:
           brightness_pct: 100
+          transition: 0.5
         target:
           area_id: hallway
+        action: light.turn_on
     - conditions:
       - condition: time
         after: 08:00:00
         before: '18:00:00'
       sequence:
-      - action: light.turn_on
-        metadata: {}
-        data:
+      - data:
           brightness_pct: 80
+          transition: 0.5
         target:
           area_id: hallway
+        action: light.turn_on
     - conditions:
       - condition: time
         after: '23:00:00'
         before: 06:00:00
       sequence:
-      - action: light.turn_on
-        metadata: {}
-        data:
+      - data:
           brightness_pct: 10
+          transition: 0.5
         target:
           area_id: hallway
+        action: light.turn_on
   mode: single
 - id: '1739928051409'
-  alias: 'Hallway: Motion Not Detected'
-  description: ''
+  alias: 'Hallway: Motion Not Detected – Turn Off Lights'
+  description: Turns off hallway lights after 5–8 minutes of no motion if automation
+    is allowed
   triggers:
-  - type: no_motion
-    device_id: 28620f7c11f24ee2148d49cc7b544373
-    entity_id: 3167aadc4d5326dfc4a86b17a0f3f766
-    domain: binary_sensor
-    trigger: device
+  - trigger: state
+    entity_id:
+    - binary_sensor.camera_hallway_person
+    to: 'off'
     for:
+      hours: 0
       minutes: 5
-    enabled: true
-  - type: turned_off
-    device_id: 2abe303a0a01b63db007ef064787896f
-    entity_id: 94830cf7843008f631421e74a226004d
-    domain: binary_sensor
-    trigger: device
+      seconds: 0
+  - trigger: state
+    entity_id:
+    - binary_sensor.hue_motion_sensor_3_motion
+    to: 'off'
     for:
-      minutes: 5
+      hours: 0
+      minutes: 8
+      seconds: 0
   conditions:
   - condition: state
-    entity_id: input_boolean.hallway_lights_boolean
-    state: 'off'
-  - condition: state
-    entity_id: input_boolean.cleaning
-    state: 'off'
+    entity_id: binary_sensor.motion_hallway_allowed
+    state: 'on'
   actions:
-  - action: light.turn_off
-    metadata: {}
-    data: {}
-    target:
-      area_id: hallway
-    enabled: false
   - action: light.turn_off
     metadata: {}
     target:
@@ -362,23 +345,22 @@
     data: {}
   mode: single
 - id: '1741813740720'
-  alias: 'Office: Motion Detected'
-  description: ''
+  alias: 'Office: Motion Detected – Turn On Lights'
+  description: Turns on office lights when motion or occupancy is detected and automation
+    is allowed
   triggers:
-  - type: turned_on
-    device_id: 070678fd4c81abfab4b665d811c821ef
-    entity_id: 5e9ca6fdfe7d99393b1945bbcdaa831d
-    domain: binary_sensor
-    trigger: device
-  - type: motion
-    device_id: 8e65b7c2b32be2115e4e11f153e3d21a
-    entity_id: 83fa233a72a7305214dfd52620349f1d
-    domain: binary_sensor
-    trigger: device
+  - trigger: state
+    entity_id:
+    - binary_sensor.camera_office_person
+    to: 'on'
+  - trigger: state
+    entity_id:
+    - binary_sensor.office_motion
+    to: 'on'
   conditions:
   - condition: state
-    entity_id: input_boolean.office_lights_boolean
-    state: 'off'
+    entity_id: binary_sensor.motion_office_allowed
+    state: 'on'
   actions:
   - action: light.turn_on
     metadata: {}
@@ -389,27 +371,29 @@
       area_id: office
   mode: single
 - id: '1741813819294'
-  alias: 'Office: Motion Not Detected'
-  description: ''
+  alias: 'Office: Motion Not Detected – Turn Off Lights'
+  description: Turns off office lights after inactivity if automation is allowed
   triggers:
-  - type: turned_off
-    device_id: 070678fd4c81abfab4b665d811c821ef
-    entity_id: 5e9ca6fdfe7d99393b1945bbcdaa831d
-    domain: binary_sensor
-    trigger: device
+  - trigger: state
+    entity_id:
+    - binary_sensor.camera_office_person
+    to: 'off'
     for:
       hours: 0
       minutes: 10
       seconds: 0
-  - type: no_motion
-    device_id: 8e65b7c2b32be2115e4e11f153e3d21a
-    entity_id: 83fa233a72a7305214dfd52620349f1d
-    domain: binary_sensor
-    trigger: device
+  - trigger: state
+    entity_id:
+    - binary_sensor.office_motion
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 10
+      seconds: 0
   conditions:
   - condition: state
-    entity_id: input_boolean.office_lights_boolean
-    state: 'off'
+    entity_id: binary_sensor.motion_office_allowed
+    state: 'on'
   actions:
   - action: light.turn_off
     metadata: {}
@@ -505,40 +489,39 @@
       area_id: hallway
   mode: single
 - id: '1742396296105'
-  alias: 'Bathroom Guest: Motion Detected'
-  description: Lutron Motion Sensor Detected
+  alias: 'Bathroom Guest: Motion Detected – Turn On Lights'
+  description: Turns on guest bathroom lights when motion is detected and automation
+    is allowed.
   triggers:
-  - type: occupied
-    device_id: 0ab7784844ebb57c12363f960ad1a696
-    entity_id: e8b5310e2abc073efb524e2cec281072
-    domain: binary_sensor
-    trigger: device
+  - trigger: state
+    entity_id:
+    - binary_sensor.bathroom_guest_motion_sensor
+    to: 'on'
   conditions:
   - condition: state
-    entity_id: input_boolean.cleaning
-    state: 'off'
+    entity_id: binary_sensor.motion_bathroom_guest_allowed
+    state: 'on'
   actions:
-  - action: light.turn_on
-    metadata: {}
-    data:
+  - data:
       transition: 0.5
       brightness_pct: 75
     target:
       area_id: bathroom_guest
+    action: light.turn_on
   mode: single
 - id: '1742396391798'
-  alias: 'Bathroom Guest: Motion Not Detected'
-  description: Lutron Motion Sensor Not Detected
+  alias: 'Bathroom Guest: Motion Not Detected – Turn Off Lights'
+  description: Turns off Guest Bathroom lights after motion clears and automation
+    is allowed.
   triggers:
-  - type: not_occupied
-    device_id: 0ab7784844ebb57c12363f960ad1a696
-    entity_id: e8b5310e2abc073efb524e2cec281072
-    domain: binary_sensor
-    trigger: device
+  - trigger: state
+    entity_id:
+    - binary_sensor.bathroom_guest_motion_sensor
+    to: 'off'
   conditions:
   - condition: state
-    entity_id: input_boolean.cleaning
-    state: 'off'
+    entity_id: binary_sensor.motion_bathroom_guest_allowed
+    state: 'on'
   actions:
   - action: light.turn_off
     metadata: {}
@@ -724,81 +707,49 @@
         entity_id: input_boolean.office_lights_boolean
   mode: single
 - id: '1744084082903'
-  alias: 'Bedroom Primary: Motion Lighting Trigger'
-  description: Triggers time-based lighting script when motion is detected and all
-    conditions allow it.
+  alias: 'Bedroom Primary: Motion Detected – Turn Lights On [Run Light Control Script]'
+  description: Triggers time-based lighting script when motion is detected and automation
+    is allowed.
   triggers:
-  - type: motion
-    device_id: 9b7f22c8106a3788950b60dc6741d8fe
-    entity_id: 356bf24afc0bb94963bfc02a249bad65
-    domain: binary_sensor
-    trigger: device
-  - type: motion
-    device_id: 8ec852279328c4eacdd8d5d1e114837c
-    entity_id: f0027afea803c4b3bcb59dd630829da7
-    domain: binary_sensor
-    trigger: device
+  - trigger: state
+    entity_id:
+    - binary_sensor.camera_bedroom_primary_person
+    to: 'on'
+  - trigger: state
+    entity_id:
+    - binary_sensor.hue_motion_sensor_4_motion
+    to: 'on'
   conditions:
   - condition: state
-    entity_id: input_boolean.bedroom_primary_motion_enabled_boolean
+    entity_id: binary_sensor.motion_bedroom_primary_allowed
     state: 'on'
-  - condition: state
-    entity_id: input_boolean.bedroom_primary_manual_override_boolean
-    state: 'off'
-  - condition: state
-    entity_id: input_boolean.party_boolean
-    state: 'off'
-  - condition: state
-    entity_id: input_boolean.private_time_boolean
-    state: 'off'
-  - condition: state
-    entity_id: input_boolean.cleaning
-    state: 'off'
   actions:
-  - action: script.bedroom_primary_light_control_script
-    data: {}
+  - data: {}
+    action: script.bedroom_primary_light_control_script
   mode: single
 - id: '1744084946434'
-  alias: 'Bedroom Primary: Motion Lighting Off'
-  description: Turns off bedroom lights after motion clears and all conditions allow
-    it.
+  alias: 'Bedroom Primary: Motion Not Detected – Turn Off Lights'
+  description: Turns off bedroom lights after motion clears if automation is allowed
   triggers:
-  - type: no_motion
-    device_id: 9b7f22c8106a3788950b60dc6741d8fe
-    entity_id: 356bf24afc0bb94963bfc02a249bad65
-    domain: binary_sensor
-    trigger: device
+  - trigger: state
+    entity_id:
+    - binary_sensor.camera_bedroom_primary_person
+    to: 'off'
     for:
       hours: 0
       minutes: 2
       seconds: 0
-  - type: no_motion
-    device_id: 8ec852279328c4eacdd8d5d1e114837c
-    entity_id: f0027afea803c4b3bcb59dd630829da7
-    domain: binary_sensor
-    trigger: device
+  - trigger: state
+    entity_id:
+    - binary_sensor.hue_motion_sensor_4_motion
+    to: 'off'
     for:
       hours: 0
       minutes: 2
       seconds: 0
   conditions:
   - condition: state
-    entity_id: input_boolean.bedroom_primary_motion_enabled_boolean
-    state: 'on'
-  - condition: state
-    entity_id: input_boolean.bedroom_primary_manual_override_boolean
-    state: 'off'
-  - condition: state
-    entity_id: input_boolean.party_boolean
-    state: 'off'
-  - condition: state
-    entity_id: input_boolean.private_time_boolean
-    state: 'off'
-  - condition: state
-    entity_id: input_boolean.cleaning
-    state: 'off'
-  - condition: state
-    entity_id: light.bedroom_primary_hue_group_switch
+    entity_id: binary_sensor.motion_bedroom_primary_allowed
     state: 'on'
   actions:
   - data:
@@ -831,10 +782,10 @@
         target:
           entity_id: light.bedroom_primary_hue_group_switch
         action: light.turn_on
-  - target:
-      entity_id: input_boolean.bedroom_primary_manual_override_boolean
-    action: input_boolean.turn_on
+  - action: input_boolean.turn_on
     data: {}
+    target:
+      entity_id: input_boolean.bedroom_primary_manual_override
   mode: single
 - id: '1744086157197'
   alias: 'Bedroom Primary: Hue Switch Button 1 Long Press'
@@ -857,7 +808,7 @@
       entity_id: light.bedroom_primary_hue_group_switch
     action: light.turn_on
   - target:
-      entity_id: input_boolean.bedroom_primary_manual_override_boolean
+      entity_id: input_boolean.bedroom_primary_manual_override
     action: input_boolean.turn_on
     data: {}
   mode: single
@@ -885,7 +836,7 @@
         entity_id: light.bedroom_primary_hue_group_switch
       action: light.turn_on
   - target:
-      entity_id: input_boolean.bedroom_primary_manual_override_boolean
+      entity_id: input_boolean.bedroom_primary_manual_override
     action: input_boolean.turn_on
     data: {}
   mode: single
@@ -913,7 +864,7 @@
         entity_id: light.bedroom_primary_hue_group_switch
       action: light.turn_on
   - target:
-      entity_id: input_boolean.bedroom_primary_manual_override_boolean
+      entity_id: input_boolean.bedroom_primary_manual_override
     action: input_boolean.turn_on
     data: {}
   mode: single
@@ -936,162 +887,66 @@
     action: light.turn_off
   - delay:
       minutes: 1
-  - target:
-      entity_id: input_boolean.bedroom_primary_manual_override_boolean
-    action: input_boolean.turn_off
+  - action: input_boolean.turn_off
     data: {}
+    target:
+      entity_id: input_boolean.bedroom_primary_manual_override
   - action: input_boolean.turn_on
     metadata: {}
     data: {}
     target:
-      entity_id: input_boolean.bedroom_primary_motion_enabled_boolean
+      entity_id: input_boolean.bedroom_primary_motion_enabled
   mode: single
 - id: '1744568075505'
-  alias: 'Kitchen: Motion Lighting ON'
-  description: Kitchen lights turn on with motion and time-based settings
+  alias: 'Kitchen: Motion Detected – Turn On Lights [Run Light Control Script]'
+  description: Turns on kitchen lights when motion is detected and automation is allowed
   triggers:
-  - type: turned_on
-    device_id: f84f51d68b89131cf30fa57d535986a9
-    entity_id: 084d9659f8eb4e43974de8c1d5c49b34
-    domain: binary_sensor
-    trigger: device
+  - trigger: state
+    entity_id:
+    - binary_sensor.camera_downstairs_person
+    to: 'on'
   conditions:
   - condition: state
-    entity_id: binary_sensor.motion_lighting_globally_allowed
+    entity_id: binary_sensor.motion_kitchen_allowed
     state: 'on'
-  - condition: state
-    entity_id: input_boolean.kitchen_motion_enabled
-    state: 'on'
-  - condition: state
-    entity_id: input_boolean.kitchen_lights_manual_override
-    state: 'off'
-  - condition: state
-    entity_id: input_boolean.movie_boolean
-    state: 'off'
   actions:
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{% set now_ts = now().timestamp() %} {% set sunrise_ts =
-          as_timestamp(state_attr(''sun.sun'', ''next_rising'')) %} {% set wkd = now().weekday()
-          >= 5 %} {% set start_ts = now().replace(hour=(3 if wkd else 2), minute=0,
-          second=0).timestamp() %} {{ now_ts >= start_ts and now_ts < sunrise_ts }}
-
-          '
-        alias: Motion Light ON (Sunrise Logic)
-      sequence:
-      - data:
-          transition: 0.5
-          brightness_pct: 100
-          color_temp_kelvin: 2700
-        target:
-          entity_id: light.kitchen_hue_group_switch
-        action: light.turn_on
-    - conditions:
-      - condition: time
-        after: '23:00:00'
-        before: 00:30:00
-      sequence:
-      - data:
-          transition: 0.5
-          color_temp_kelvin: 3000
-          brightness_pct: 100
-        target:
-          entity_id: light.kitchen_hue_group_switch
-        action: light.turn_on
-    default:
-    - data:
-        brightness_pct: 100
-        color_temp_kelvin: 3500
-        transition: 0.5
-      target:
-        entity_id: light.kitchen_hue_group_switch
-      action: light.turn_on
+  - action: script.kitchen_light_control_script
+    data: {}
   mode: single
 - id: '1744568103594'
-  alias: 'Livingroom: Motion Lighting ON'
-  description: Livingroom lights turn on with motion and time-based settings
+  alias: 'Livingroom: Motion Detected – Turn On Lights [Run Light Control Script]'
+  description: Turns on Livingroom lights when motion is detected and automation is
+    allowed, with time-based brightness settings
   triggers:
-  - type: turned_on
-    device_id: f84f51d68b89131cf30fa57d535986a9
-    entity_id: 084d9659f8eb4e43974de8c1d5c49b34
-    domain: binary_sensor
-    trigger: device
+  - trigger: state
+    entity_id:
+    - binary_sensor.camera_downstairs_person
+    to: 'on'
   conditions:
   - condition: state
-    entity_id: binary_sensor.motion_lighting_globally_allowed
+    entity_id: binary_sensor.motion_livingroom_allowed
     state: 'on'
-  - condition: state
-    entity_id: input_boolean.livingroom_motion_enabled
-    state: 'on'
-  - condition: state
-    entity_id: input_boolean.livingroom_lights_manual_override
-    state: 'off'
-  - condition: state
-    entity_id: input_boolean.movie_boolean
-    state: 'off'
   actions:
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{% set now_ts = now().timestamp() %} {% set sunrise_ts =
-          as_timestamp(state_attr(''sun.sun'', ''next_rising'')) %} {% set wkd = now().weekday()
-          >= 5 %} {% set start_ts = now().replace(hour=(3 if wkd else 2), minute=0,
-          second=0).timestamp() %} {{ now_ts >= start_ts and now_ts < sunrise_ts }}
-
-          '
-      sequence:
-      - data:
-          brightness_pct: 100
-          color_temp_kelvin: 2700
-          transition: 0.5
-        target:
-          entity_id: light.livingroom_switch
-        action: light.turn_on
-    - conditions:
-      - condition: time
-        after: '23:00:00'
-        before: 00:30:00
-      sequence:
-      - data:
-          brightness_pct: 100
-          color_temp_kelvin: 3000
-          transition: 0.5
-        target:
-          entity_id: light.livingroom_switch
-        action: light.turn_on
-    default:
-    - data:
-        brightness_pct: 100
-        transition: 0.5
-        color_temp_kelvin: 3500
-      target:
-        entity_id: light.livingroom_switch
-      action: light.turn_on
+  - data: {}
+    action: script.livingroom_light_control_script
   mode: single
 - id: '1744569217413'
-  alias: 'Kitchen: Motion Lighting OFF'
-  description: Turn off kitchen lights after 2 minutes of no motion
+  alias: 'Kitchen: Motion Not Detected – Turn Off Lights'
+  description: Turns off kitchen lights 2 minutes after no motion if automation is
+    allowed
   triggers:
-  - type: turned_off
-    device_id: f84f51d68b89131cf30fa57d535986a9
-    entity_id: 084d9659f8eb4e43974de8c1d5c49b34
-    domain: binary_sensor
-    trigger: device
+  - trigger: state
+    entity_id:
+    - binary_sensor.camera_downstairs_person
+    to: 'off'
     for:
       hours: 0
       minutes: 2
       seconds: 0
   conditions:
   - condition: state
-    entity_id: binary_sensor.motion_lighting_globally_allowed
+    entity_id: binary_sensor.motion_kitchen_allowed
     state: 'on'
-  - condition: state
-    entity_id: input_boolean.kitchen_motion_enabled
-    state: 'on'
-  - condition: state
-    entity_id: input_boolean.kitchen_lights_manual_override
-    state: 'off'
   actions:
   - target:
       entity_id: light.kitchen_hue_group_switch
@@ -1099,28 +954,22 @@
     data: {}
   mode: restart
 - id: '1744569239859'
-  alias: 'Livingroom: Motion Lighting OFF'
-  description: Turn off livingroom lights after 2 minutes of no motion
+  alias: 'Livingroom: Motion Not Detected – Turn Off Lights'
+  description: Turns off Livingroom lights after 2 minutes of no motion if automation
+    is allowed
   triggers:
-  - type: turned_off
-    device_id: f84f51d68b89131cf30fa57d535986a9
-    entity_id: 084d9659f8eb4e43974de8c1d5c49b34
-    domain: binary_sensor
-    trigger: device
+  - trigger: state
+    entity_id:
+    - binary_sensor.camera_downstairs_person
+    to: 'off'
     for:
       hours: 0
       minutes: 2
       seconds: 0
   conditions:
   - condition: state
-    entity_id: binary_sensor.motion_lighting_globally_allowed
+    entity_id: binary_sensor.motion_livingroom_allowed
     state: 'on'
-  - condition: state
-    entity_id: input_boolean.livingroom_motion_enabled
-    state: 'on'
-  - condition: state
-    entity_id: input_boolean.livingroom_lights_manual_override
-    state: 'off'
   actions:
   - target:
       entity_id: light.livingroom_switch
@@ -1362,7 +1211,7 @@
       - input_boolean.kitchen_motion_enabled
   mode: single
 - id: '1744572277100'
-  alias: 'Livingroom Hue: Button 1 Short Press – Debug Lights On'
+  alias: 'Livingroom Hue: Button 1 Short Press – Lights On'
   triggers:
   - device_id: 85063f771b186e94a4d128fdfcf24352
     domain: hue
@@ -1609,27 +1458,17 @@
   - action: shell_command.nightly_git_backup
   mode: single
 - id: '1745955843300'
-  alias: 'Global: 3:00 AM Reset & Lights Off'
-  description: Reset override booleans and shut down all room lighting
+  alias: 'Global: Reset Overrides & Turn Off Lights at 03:00 AM'
+  description: Run reset scripts and shut down all room lighting
   triggers:
   - at: 03:00:00
     trigger: time
   conditions: []
   actions:
-  - target:
-      entity_id:
-      - input_boolean.kitchen_lights_manual_override
-      - input_boolean.livingroom_lights_manual_override
-      - input_boolean.office_lights_boolean
-      - input_boolean.bedroom_primary_manual_override_boolean
-      - input_boolean.cleaning
-      - input_boolean.private_time_boolean
-      - input_boolean.party_boolean
-    action: input_boolean.turn_off
-    data: {}
+  - action: script.reset_manual_overrides_off
+  - action: script.automation_motion_enable
   - target:
       area_id:
-      - bedroom_primary
       - bathroom_primary
       - bedroom_guest
       - bathroom_guest
@@ -1642,13 +1481,14 @@
     action: light.turn_off
   mode: single
 - id: '1745956186858'
-  alias: 'Office: Motion Hold Lights On (8 AM to 5 PM)'
-  description: ''
+  alias: 'Office: Motion Detected – Hold Lights On (8 AM–5 PM)'
+  description: Keeps office lights on during business hours when motion or occupancy
+    is detected and automation is allowed
   triggers:
-  - entity_id:
-    - binary_sensor.camera_office_motion
+  - trigger: state
+    entity_id:
+    - binary_sensor.camera_office_person
     to: 'on'
-    trigger: state
   - trigger: state
     entity_id:
     - binary_sensor.office_occupancy
@@ -1657,17 +1497,20 @@
   - condition: time
     after: 08:00:00
     before: '17:00:00'
+  - condition: state
+    entity_id: binary_sensor.motion_office_allowed
+    state: 'on'
   actions:
   - action: input_boolean.turn_on
     data: {}
     target:
       entity_id: input_boolean.office_lights_boolean
-  - target:
+  - action: light.turn_on
+    target:
       area_id: office
     data:
       brightness_pct: 100
       transition: 0.5
-    action: light.turn_on
   mode: single
 - id: '1745956245665'
   alias: 'Office: End Hold at 5 PM'

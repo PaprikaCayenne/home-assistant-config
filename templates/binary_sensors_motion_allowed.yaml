@@ -1,0 +1,69 @@
+# File: templates/binary_sensors_motion_allowed.yaml
+# Version: v1.3.3 — 2025-06-11
+# Notes:
+# - Entity IDs now exactly match unique_ids by aligning `name:` fields
+
+- binary_sensor:
+    - name: "motion_kitchen_allowed"
+      unique_id: motion_kitchen_allowed
+      state: >
+        {{ is_state('input_boolean.kitchen_motion_enabled', 'on')
+           and is_state('input_boolean.kitchen_lights_manual_override', 'off')
+           and is_state('input_boolean.cleaning', 'off')
+           and is_state('input_boolean.party_boolean', 'off')
+           and is_state('input_boolean.movie_boolean', 'off') }}
+      icon: mdi:motion-sensor
+
+    - name: "motion_livingroom_allowed"
+      unique_id: motion_livingroom_allowed
+      state: >
+        {{ is_state('input_boolean.livingroom_motion_enabled', 'on')
+           and is_state('input_boolean.livingroom_lights_manual_override', 'off')
+           and is_state('input_boolean.cleaning', 'off')
+           and is_state('input_boolean.party_boolean', 'off')
+           and is_state('input_boolean.movie_boolean', 'off') }}
+      icon: mdi:motion-sensor
+
+    - name: "motion_bedroom_primary_allowed"
+      unique_id: motion_bedroom_primary_allowed
+      state: >
+        {{ is_state('input_boolean.bedroom_primary_motion_enabled', 'on')
+           and is_state('input_boolean.bedroom_primary_manual_override', 'off')
+           and is_state('input_boolean.cleaning', 'off')
+           and is_state('input_boolean.party_boolean', 'off')
+           and is_state('input_boolean.private_time_boolean', 'off')
+           and is_state('input_boolean.bathroom_primary_manual_override', 'off') }}
+      icon: mdi:motion-sensor
+
+    - name: "motion_office_allowed"
+      unique_id: motion_office_allowed
+      state: >
+        {{ is_state('input_boolean.office_motion_enabled', 'on')
+           and is_state('input_boolean.office_lights_manual_override', 'off')
+           and is_state('input_boolean.cleaning', 'off') }}
+      icon: mdi:motion-sensor
+
+    - name: "motion_bathroom_guest_allowed"
+      unique_id: motion_bathroom_guest_allowed
+      state: >
+        {{ is_state('input_boolean.bathroom_guest_motion_enable', 'on')
+           and is_state('input_boolean.bathroom_guest_lights_manual_override', 'off')
+           and is_state('input_boolean.cleaning', 'off') }}
+      icon: mdi:motion-sensor
+
+    - name: "motion_hallway_allowed"
+      unique_id: motion_hallway_allowed
+      state: >
+        {{ is_state('input_boolean.hallway_motion_enabled', 'on')
+           and is_state('input_boolean.hallway_lights_manual_override', 'off')
+           and is_state('input_boolean.cleaning', 'off') }}
+      icon: mdi:motion-sensor
+
+    - name: "motion_bathroom_primary_allowed"
+      unique_id: motion_bathroom_primary_allowed
+      state: >
+        {{ is_state('input_boolean.bathroom_primary_motion_enable', 'on')
+          and is_state('input_boolean.bathroom_primary_manual_override', 'off')
+          and is_state('input_boolean.private_time_boolean', 'off')
+          and is_state('input_boolean.cleaning', 'off') }}
+      icon: mdi:motion-sensor

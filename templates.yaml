@@ -1,39 +1,7 @@
-# Room-Level Motion Control (modular, centralized logic)
-- binary_sensor:
+# File: templates.yaml
+# Version: v1.0.2
+# Last Updated: 2025-06-11
+# Description: Entry point for all template integrations
 
-    - name: "Motion: Kitchen Automation Allowed"
-      unique_id: motion_kitchen_allowed
-      state: >
-        {{ is_state('input_boolean.kitchen_motion_enabled', 'on')
-           and is_state('input_boolean.kitchen_lights_manual_override', 'off')
-           and is_state('input_boolean.cleaning', 'off')
-           and is_state('input_boolean.party_boolean', 'off')
-           and is_state('input_boolean.movie_boolean', 'off') }}
-      icon: mdi:motion-sensor
-
-    - name: "Motion: Livingroom Automation Allowed"
-      unique_id: motion_livingroom_allowed
-      state: >
-        {{ is_state('input_boolean.livingroom_motion_enabled', 'on')
-           and is_state('input_boolean.livingroom_lights_manual_override', 'off')
-           and is_state('input_boolean.cleaning', 'off')
-           and is_state('input_boolean.party_boolean', 'off')
-           and is_state('input_boolean.movie_boolean', 'off') }}
-      icon: mdi:motion-sensor
-
-    - name: "Motion: Bedroom Primary Automation Allowed"
-      unique_id: motion_bedroom_primary_allowed
-      state: >
-        {{ is_state('input_boolean.bedroom_primary_motion_enabled_boolean', 'on')
-           and is_state('input_boolean.bedroom_primary_manual_override_boolean', 'off')
-           and is_state('input_boolean.cleaning', 'off')
-           and is_state('input_boolean.party_boolean', 'off')
-           and is_state('input_boolean.private_time_boolean', 'off') }}
-      icon: mdi:motion-sensor
-
-    - name: "Motion: Office Automation Allowed"
-      unique_id: motion_office_allowed
-      state: >
-        {{ is_state('input_boolean.office_lights_boolean', 'off')
-           and is_state('input_boolean.cleaning', 'off') }}
-      icon: mdi:motion-sensor
+binary_sensor: !include_dir_merge_list templates/binary_sensors/
+sensor: !include_dir_merge_list templates/sensors/

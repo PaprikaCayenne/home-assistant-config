@@ -52,14 +52,14 @@ bedroom_primary_light_control_script:
         - fri
         - sat
       sequence:
-      - metadata: {}
+      - action: light.turn_on
+        metadata: {}
         data:
-          kelvin: 3504
+          color_temp_kelvin: 3500
           brightness_pct: 50
           transition: 1
         target:
           entity_id: light.bedroom_primary_hue_group_switch
-        action: light.turn_on
     - conditions:
       - condition: time
         after: '11:00:00'
@@ -73,14 +73,14 @@ bedroom_primary_light_control_script:
         - fri
         - sat
       sequence:
-      - metadata: {}
+      - action: light.turn_on
+        metadata: {}
         data:
-          kelvin: 3210
-          brightness_pct: 100
           transition: 1
+          color_temp_kelvin: 3500
+          brightness_pct: 100
         target:
           entity_id: light.bedroom_primary_hue_group_switch
-        action: light.turn_on
     - conditions:
       - condition: time
         after: '23:00:00'
@@ -93,46 +93,52 @@ bedroom_primary_light_control_script:
         - fri
         - sat
       sequence:
-      - metadata: {}
+      - action: light.turn_on
+        metadata: {}
         data:
-          kelvin: 2800
           brightness_pct: 20
+          color_temp_kelvin: 2800
           transition: 1
         target:
           entity_id: light.bedroom_primary_hue_group_switch
-        action: light.turn_on
 bedroom_primary_manual_on_via_dashboard:
   alias: 'Bedroom Primary: Manual On via Dashboard'
-  description: ''
+  description: Manually turns on the bedroom light and enables the manual override
+    toggle.
   mode: single
+  icon: mdi:lightbulb-on-outline
   sequence:
-  - target:
+  - action: light.turn_on
+    target:
       entity_id: light.bedroom_primary_hue_group_switch
     data:
       transition: 1
-    action: light.turn_on
-  - target:
-      entity_id: input_boolean.bedroom_primary_manual_override_boolean
-    action: input_boolean.turn_on
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.bedroom_primary_manual_override
+    data: {}
+    metadata: {}
 bedroom_primary_manual_off_via_dashboard:
   alias: 'Bedroom Primary: Manual Off via Dashboard'
-  description: ''
+  description: Disables lights and motion override for Bedroom Primary when turned
+    off via dashboard.
   mode: single
   sequence:
-  - target:
+  - action: light.turn_off
+    target:
       entity_id: light.bedroom_primary_hue_group_switch
     data:
       transition: 0.5
-    action: light.turn_off
-  - target:
-      entity_id: input_boolean.bedroom_primary_manual_override_boolean
-    action: input_boolean.turn_off
-    data: {}
-  - action: input_boolean.turn_on
-    metadata: {}
-    data: {}
+  - action: input_boolean.turn_off
     target:
-      entity_id: input_boolean.bedroom_primary_motion_enabled_boolean
+      entity_id: input_boolean.bedroom_primary_manual_override
+    data: {}
+    metadata: {}
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.bedroom_primary_motion_enabled
+    data: {}
+    metadata: {}
 bedroom_primary_dashboard_tap_logic:
   alias: 'Bedroom Primary: Dashboard Tap Logic'
   mode: single
@@ -150,3 +156,152 @@ bedroom_primary_dashboard_tap_logic:
         state: 'on'
       sequence:
       - action: script.bedroom_primary_manual_off_via_dashboard
+kitchen_light_control_script:
+  alias: 'Kitchen: Light Control - Script'
+  description: Adjusts kitchen lighting based on time of day and motion detection
+  sequence:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{% set now_ts = now().timestamp() %} {% set sunrise_ts =
+          as_timestamp(state_attr(''sun.sun'', ''next_rising'')) %} {% set wkd = now().weekday()
+          >= 5 %} {% set start_ts = now().replace(hour=(3 if wkd else 2), minute=0,
+          second=0).timestamp() %} {{ now_ts >= start_ts and now_ts < sunrise_ts }}
+
+          '
+      sequence:
+      - action: light.turn_on
+        metadata: {}
+        data:
+          color_temp_kelvin: 2700
+          transition: 0.5
+          brightness_pct: 100
+        target:
+          entity_id: light.kitchen_hue_group_switch
+    - conditions:
+      - condition: time
+        after: '23:00:00'
+        before: 00:30:00
+      sequence:
+      - action: light.turn_on
+        metadata: {}
+        data:
+          transition: 0.5
+          color_temp_kelvin: 3000
+          brightness_pct: 50
+        target:
+          entity_id: light.kitchen_hue_group_switch
+    default:
+    - action: light.turn_on
+      metadata: {}
+      data:
+        transition: 0.5
+        brightness_pct: 100
+        color_temp_kelvin: 3500
+      target:
+        entity_id: light.kitchen_hue_group_switch
+livingroom_light_control_script:
+  alias: 'Livingroom: Light Control - Script'
+  description: Adjusts Livingroom lighting based on time of day and motion detection
+  sequence:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{% set now_ts = now().timestamp() %} {% set sunrise_ts =
+          as_timestamp(state_attr(''sun.sun'', ''next_rising'')) %} {% set wkd = now().weekday()
+          >= 5 %} {% set start_ts = now().replace(hour=(3 if wkd else 2), minute=0,
+          second=0).timestamp() %} {{ now_ts >= start_ts and now_ts < sunrise_ts }}
+
+          '
+      sequence:
+      - action: light.turn_on
+        metadata: {}
+        data:
+          brightness_pct: 100
+          color_temp_kelvin: 2700
+          transition: 0.5
+        target:
+          entity_id: light.livingroom_switch
+    - conditions:
+      - condition: time
+        after: '23:00:00'
+        before: 00:30:00
+      sequence:
+      - action: light.turn_on
+        metadata: {}
+        data:
+          brightness_pct: 20
+          color_temp_kelvin: 3000
+          transition: 0.5
+        target:
+          entity_id: light.livingroom_switch
+    default:
+    - action: light.turn_on
+      metadata: {}
+      data:
+        brightness_pct: 100
+        transition: 0.5
+        color_temp_kelvin: 3500
+      target:
+        entity_id: light.livingroom_switch
+global_reset_manual_overrides_off:
+  alias: 'Global: Reset Manual Overrides Off'
+  mode: single
+  icon: mdi:toggle-switch-off
+  sequence:
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - input_boolean.office_lights_manual_override
+      - input_boolean.kitchen_lights_manual_override
+      - input_boolean.hallway_lights_manual_override
+      - input_boolean.office_lights_boolean
+      - input_boolean.bedroom_primary_manual_override
+      - input_boolean.hallway_lights_boolean
+      - input_boolean.livingroom_lights_manual_override
+      - input_boolean.bathroom_guest_boolean
+      - input_boolean.bathroom_guest_lights_manual_override
+      - input_boolean.bathroom_primary_lights_manual_override
+  description: Turns off all manual override toggles (lights, cleaning, private time,
+    etc.) to restore automation.
+global_enable_motion_automation:
+  alias: 'Global: Enable Motion Automation'
+  mode: single
+  icon: mdi:motion-sensor
+  sequence:
+  - action: input_boolean.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - input_boolean.kitchen_motion_enabled
+      - input_boolean.livingroom_motion_enabled
+      - input_boolean.office_motion_enabled
+      - input_boolean.bedroom_primary_motion_enabled
+      - input_boolean.hallway_motion_enabled
+      - input_boolean.bathroom_guest_motion_enable
+      - input_boolean.bathroom_primary_motion_enable
+  description: Turns on all motion automation toggles so rooms respond to motion again.
+    Useful after disabling motion for parties, private time, or overnight.
+global_disable_motion_automation:
+  alias: 'Global: Disable Motion Automation'
+  mode: single
+  icon: mdi:motion-pause
+  sequence:
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - input_boolean.kitchen_motion_enabled
+      - input_boolean.livingroom_motion_enabled
+      - input_boolean.office_motion_enabled
+      - input_boolean.bedroom_primary_motion_enabled
+      - input_boolean.hallway_motion_enabled
+      - input_boolean.bathroom_guest_motion_enable
+      - input_boolean.bathroom_primary_motion_enable
+  description: Turns off all motion automation toggles so rooms no longer respond
+    to motion. Use when you want to manually control lighting or prevent automation
+    triggers.

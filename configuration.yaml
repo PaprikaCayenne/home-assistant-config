@@ -1,3 +1,9 @@
+# File: configuration.yaml
+# Version: v1.0.2
+# Last Updated: 2025-06-11
+# Description: Core Home Assistant configuration file with modular includes
+
+
 # ================================
 # Core Settings & Integrations
 # ================================
@@ -10,7 +16,8 @@ default_config:
 my:
 
 # Template sensors, binary sensors, etc.
-template: !include templates.yaml
+template: !include_dir_merge_list templates/
+
 
 # Custom themes and frontend tweaks
 frontend:
