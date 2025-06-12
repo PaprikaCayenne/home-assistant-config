@@ -1,0 +1,35 @@
+# File: templates/binary_sensor_overrides_summary.yaml
+# Version: v1.0.2 — 2025-06-11
+# Purpose: Show global override status (for dashboards)
+# Notes: Fixed missing root key `binary_sensor:` required by include_dir_merge_list
+
+- binary_sensor:
+  - name: "Overrides Active"
+    unique_id: global_overrides_active
+    icon: mdi:alert
+    state: >
+      {{ 
+        is_state('input_boolean.kitchen_lights_manual_override', 'on') or
+        is_state('input_boolean.livingroom_lights_manual_override', 'on') or
+        is_state('input_boolean.office_lights_manual_override', 'on') or
+        is_state('input_boolean.bedroom_primary_lights_manual_override', 'on') or
+        is_state('input_boolean.bathroom_primary_lights_manual_override', 'on') or
+        is_state('input_boolean.bathroom_guest_lights_manual_override', 'on') or
+        is_state('input_boolean.hallway_lights_manual_override', 'on') or
+        is_state('input_boolean.cleaning', 'on') or
+        is_state('input_boolean.party', 'on') or
+        is_state('input_boolean.movie', 'on')
+      }}
+    availability: >
+      {{
+        states('input_boolean.kitchen_lights_manual_override') not in ['unknown', 'unavailable'] and
+        states('input_boolean.livingroom_lights_manual_override') not in ['unknown', 'unavailable'] and
+        states('input_boolean.office_lights_manual_override') not in ['unknown', 'unavailable'] and
+        states('input_boolean.bedroom_primary_lights_manual_override') not in ['unknown', 'unavailable'] and
+        states('input_boolean.bathroom_primary_lights_manual_override') not in ['unknown', 'unavailable'] and
+        states('input_boolean.bathroom_guest_lights_manual_override') not in ['unknown', 'unavailable'] and
+        states('input_boolean.hallway_lights_manual_override') not in ['unknown', 'unavailable'] and
+        states('input_boolean.cleaning') not in ['unknown', 'unavailable'] and
+        states('input_boolean.party') not in ['unknown', 'unavailable'] and
+        states('input_boolean.movie') not in ['unknown', 'unavailable']
+      }}

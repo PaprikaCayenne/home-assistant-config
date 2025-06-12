@@ -402,56 +402,47 @@
       area_id: office
   mode: single
 - id: '1742262183606'
-  alias: 'Misc: Hallway pico remote on'
-  description: ''
+  alias: 'Hallway: Pico Remote – Manual Override On'
+  description: 'Enables manual override for hallway lights when the Pico "on" button
+    is pressed.
+
+    '
   triggers:
-  - device_id: 7f988274edf48dcc347edafece2c2538
-    domain: lutron_caseta
-    type: press
-    subtype: 'on'
-    metadata: {}
-    trigger: device
+  - entity_id: button.unassigned_unnamed_pico_remote_1_on
+    trigger: state
   conditions: []
   actions:
-  - action: input_boolean.turn_on
-    metadata: {}
+  - target:
+      entity_id: input_boolean.hallway_lights_manual_override
+    action: input_boolean.turn_on
     data: {}
-    target:
-      entity_id: input_boolean.hallway_lights_boolean
   mode: single
 - id: '1742262256554'
-  alias: 'Misc: Hallway pico remote off'
-  description: ''
+  alias: 'Hallway: Pico Remote – Manual Override Off + Suppress Motion'
+  description: 'Turns off manual override for hallway lights and temporarily disables
+    motion automation for 1 minute to prevent immediate re-triggering.
+
+    '
   triggers:
-  - device_id: 7f988274edf48dcc347edafece2c2538
-    domain: lutron_caseta
-    type: press
-    subtype: 'off'
-    trigger: device
+  - entity_id: button.unassigned_unnamed_pico_remote_1_off
+    trigger: state
   conditions: []
   actions:
-  - action: input_boolean.turn_off
-    metadata: {}
+  - target:
+      entity_id: input_boolean.hallway_lights_manual_override
+    action: input_boolean.turn_off
     data: {}
+  - data:
+      stop_actions: true
     target:
-      entity_id: input_boolean.hallway_lights_boolean
-  - sequence:
-    - action: automation.turn_off
-      metadata: {}
-      data:
-        stop_actions: true
-      target:
-        entity_id: automation.hallway_motion_sensed
-    - delay:
-        hours: 0
-        minutes: 1
-        seconds: 0
-        milliseconds: 0
-    - action: automation.turn_on
-      metadata: {}
-      data: {}
-      target:
-        entity_id: automation.hallway_motion_sensed
+      entity_id: automation.hallway_motion_sensed
+    action: automation.turn_off
+  - delay:
+      minutes: 1
+  - target:
+      entity_id: automation.hallway_motion_sensed
+    action: automation.turn_on
+    data: {}
   mode: single
 - id: '1742362888667'
   alias: 'Hallway: Light Turn On'
@@ -459,7 +450,7 @@
   triggers:
   - trigger: state
     entity_id:
-    - input_boolean.hallway_lights_boolean
+    - input_boolean.hallway_lights_manual_override
     from: 'off'
     to: 'on'
   conditions: []
@@ -472,21 +463,21 @@
       area_id: hallway
   mode: single
 - id: '1742362975544'
-  alias: 'Hallway: Turns Lights Off'
-  description: Hallway Boolean Turns off Lights
+  alias: 'Hallway: Manual Override Off – Turn Lights Off'
+  description: 'Turns off hallway lights when manual override is cleared.
+
+    '
   triggers:
-  - trigger: state
-    entity_id:
-    - input_boolean.hallway_lights_boolean
+  - entity_id: input_boolean.hallway_lights_manual_override
     from: 'on'
     to: 'off'
+    trigger: state
   conditions: []
   actions:
-  - action: light.turn_off
-    metadata: {}
-    data: {}
-    target:
+  - target:
       area_id: hallway
+    action: light.turn_off
+    data: {}
   mode: single
 - id: '1742396296105'
   alias: 'Bathroom Guest: Motion Detected – Turn On Lights'
@@ -536,7 +527,7 @@
   triggers:
   - trigger: state
     entity_id:
-    - input_boolean.office_lights_boolean
+    - input_boolean.office_lights_manual_override
     from: 'off'
     to: 'on'
   conditions: []
@@ -554,7 +545,7 @@
   triggers:
   - trigger: state
     entity_id:
-    - input_boolean.office_lights_boolean
+    - input_boolean.office_lights_manual_override
     from: 'on'
     to: 'off'
   conditions: []
@@ -655,7 +646,7 @@
   actions:
   - if:
     - condition: state
-      entity_id: input_boolean.office_lights_boolean
+      entity_id: input_boolean.office_lights_manual_override
       state: 'on'
     then:
     - action: input_boolean.turn_off
@@ -675,12 +666,12 @@
   actions:
   - target:
       entity_id:
-      - input_boolean.bathroom_guest_boolean
+      - input_boolean.bathroom_guest_lights_manual_override
       - input_boolean.bedroom_primary_lights_boolean
-      - input_boolean.hallway_lights_boolean
+      - input_boolean.hallway_lights_manual_override
       - input_boolean.kitchen_light_boolean
       - input_boolean.livingroom_lights_boolean
-      - input_boolean.office_lights_boolean
+      - input_boolean.office_lights_manual_override
     action: input_boolean.turn_off
     data: {}
   mode: single
@@ -697,14 +688,14 @@
   actions:
   - if:
     - condition: state
-      entity_id: input_boolean.office_lights_boolean
+      entity_id: input_boolean.office_lights_manual_override
       state: 'on'
     then:
     - action: input_boolean.turn_off
       metadata: {}
       data: {}
       target:
-        entity_id: input_boolean.office_lights_boolean
+        entity_id: input_boolean.office_lights_manual_override
   mode: single
 - id: '1744084082903'
   alias: 'Bedroom Primary: Motion Detected – Turn Lights On [Run Light Control Script]'
@@ -759,16 +750,18 @@
     action: light.turn_off
   mode: restart
 - id: '1744085925757'
-  alias: 'Bedroom Primary: Hue Switch Button 1 Short Press'
-  description: Short press turns lights on to previous state (if off) and disables
-    motion automation.
+  alias: 'Bedroom Primary: Button 1 Short Press – Resume Lighting'
+  description: 'When the Hue dimmer switch button 1 is short-pressed: - If the bedroom
+    lights are off, run the standard light control script. - Always enable the manual
+    override to disable motion-based automation.
+
+    '
   triggers:
-  - device_id: 04e442050a090ff6dcc8db95a9b7dda1
-    domain: hue
-    type: short_release
-    subtype: 1
-    unique_id: db4dd375-87a7-44e4-ad9c-1bf9a8154382
-    trigger: device
+  - entity_id:
+    - event.bedroom_primary_hue_switch_button_1
+    to: short_release
+    trigger: state
+    attribute: event_type
   conditions: []
   actions:
   - choose:
@@ -777,52 +770,53 @@
         entity_id: light.bedroom_primary_hue_group_switch
         state: 'off'
       sequence:
-      - data:
-          transition: 1
-        target:
-          entity_id: light.bedroom_primary_hue_group_switch
-        action: light.turn_on
-  - action: input_boolean.turn_on
+      - action: script.bedroom_primary_light_control_script
+        data: {}
+  - target:
+      entity_id: input_boolean.bedroom_primary_lights_manual_override
+    action: input_boolean.turn_on
     data: {}
-    target:
-      entity_id: input_boolean.bedroom_primary_manual_override
   mode: single
 - id: '1744086157197'
-  alias: 'Bedroom Primary: Hue Switch Button 1 Long Press'
-  description: Long press forces lights on to full brightness and color (6500K), and
-    disables motion automation.
+  alias: 'Bedroom Primary: Button 1 Long Press – Full Brightness'
+  description: 'When the Hue dimmer switch button 1 is long-pressed and released:
+    - Immediately forces the bedroom lights on at full brightness and cool white (6500K)
+    - Enables manual override to prevent motion-based shutoff.
+
+    '
   triggers:
-  - device_id: 04e442050a090ff6dcc8db95a9b7dda1
-    domain: hue
-    type: long_press
-    subtype: 1
-    unique_id: db4dd375-87a7-44e4-ad9c-1bf9a8154382
-    trigger: device
+  - entity_id:
+    - event.bedroom_primary_hue_switch_button_1
+    to: long_release
+    trigger: state
+    attribute: event_type
   conditions: []
   actions:
-  - data:
+  - target:
+      entity_id: light.bedroom_primary_hue_group_switch
+    data:
       color_temp_kelvin: 6500
       brightness_pct: 100
       transition: 1
-    target:
-      entity_id: light.bedroom_primary_hue_group_switch
     action: light.turn_on
   - target:
-      entity_id: input_boolean.bedroom_primary_manual_override
+      entity_id: input_boolean.bedroom_primary_lights_manual_override
     action: input_boolean.turn_on
     data: {}
   mode: single
 - id: '1744087421323'
-  alias: 'Bedroom Primary: Hue Switch Button 2 Short Press (Dim Up)'
-  description: Increases brightness by 20% when lights are on and disables motion
-    automation.
+  alias: 'Bedroom Primary: Button 2 Short Press – Dim Up'
+  description: 'When the Hue dimmer switch button 2 is short-pressed: - If the bedroom
+    lights are on, increase brightness by 20%. - Enable manual override to prevent
+    motion-based automation.
+
+    '
   triggers:
-  - device_id: 04e442050a090ff6dcc8db95a9b7dda1
-    domain: hue
-    type: short_release
-    subtype: 2
-    unique_id: ab671c99-df2e-4781-b6d3-f8f7f98d5549
-    trigger: device
+  - entity_id:
+    - event.bedroom_primary_hue_switch_button_2
+    to: short_release
+    trigger: state
+    attribute: event_type
   conditions: []
   actions:
   - if:
@@ -830,27 +824,29 @@
       entity_id: light.bedroom_primary_hue_group_switch
       state: 'on'
     then:
-    - data:
-        brightness_step_pct: 20
-      target:
+    - target:
         entity_id: light.bedroom_primary_hue_group_switch
+      data:
+        brightness_step_pct: 20
       action: light.turn_on
   - target:
-      entity_id: input_boolean.bedroom_primary_manual_override
+      entity_id: input_boolean.bedroom_primary_lights_manual_override
     action: input_boolean.turn_on
     data: {}
   mode: single
 - id: '1744087514411'
-  alias: 'Bedroom Primary: Hue Switch Button 3 Short Press (Dim Down)'
-  description: Decreases brightness by 20% when lights are on and disables motion
-    automation.
+  alias: 'Bedroom Primary: Button 3 Short Press – Dim Down'
+  description: 'When the Hue dimmer switch button 3 is short-pressed: - If the bedroom
+    lights are on, decrease brightness by 20%. - Enable manual override to prevent
+    motion-based automation.
+
+    '
   triggers:
-  - device_id: 04e442050a090ff6dcc8db95a9b7dda1
-    domain: hue
-    type: short_release
-    subtype: 3
-    unique_id: aff73c2f-0a46-4ee7-8e27-b7f93c9e9eae
-    trigger: device
+  - entity_id:
+    - event.bedroom_primary_hue_switch_button_3
+    to: short_release
+    trigger: state
+    attribute: event_type
   conditions: []
   actions:
   - if:
@@ -858,44 +854,44 @@
       entity_id: light.bedroom_primary_hue_group_switch
       state: 'on'
     then:
-    - data:
-        brightness_step_pct: -20
-      target:
+    - target:
         entity_id: light.bedroom_primary_hue_group_switch
+      data:
+        brightness_step_pct: -20
       action: light.turn_on
   - target:
-      entity_id: input_boolean.bedroom_primary_manual_override
+      entity_id: input_boolean.bedroom_primary_lights_manual_override
     action: input_boolean.turn_on
     data: {}
   mode: single
 - id: '1744087961479'
-  alias: 'Bedroom Primary: Hue Switch Button 4 Short Press (Power Off)'
-  description: Turns off lights and re-enables motion automation after 1 minute.
+  alias: 'Bedroom Primary: Button 4 Short Press – Power Off'
+  description: 'Turns off bedroom lights and resets motion automation after 1 minute.
+
+    '
   triggers:
-  - device_id: 04e442050a090ff6dcc8db95a9b7dda1
-    domain: hue
-    type: short_release
-    subtype: 4
-    unique_id: 858269d5-ddf8-4ad6-bb00-cf6bb4ec4d89
-    trigger: device
+  - entity_id:
+    - event.bedroom_primary_hue_switch_button_4
+    to: short_release
+    trigger: state
+    attribute: event_type
   conditions: []
   actions:
-  - data:
-      transition: 0.5
-    target:
+  - target:
       entity_id: light.bedroom_primary_hue_group_switch
+    data:
+      transition: 0.5
     action: light.turn_off
   - delay:
       minutes: 1
-  - action: input_boolean.turn_off
+  - target:
+      entity_id: input_boolean.bedroom_primary_lights_manual_override
+    action: input_boolean.turn_off
     data: {}
-    target:
-      entity_id: input_boolean.bedroom_primary_manual_override
-  - action: input_boolean.turn_on
-    metadata: {}
-    data: {}
-    target:
+  - target:
       entity_id: input_boolean.bedroom_primary_motion_enabled
+    action: input_boolean.turn_on
+    data: {}
   mode: single
 - id: '1744568075505'
   alias: 'Kitchen: Motion Detected – Turn On Lights [Run Light Control Script]'
@@ -977,36 +973,58 @@
     data: {}
   mode: restart
 - id: '1744569877439'
-  alias: 'Kitchen Hue: Button 1 Short Press – Keep Lights On (Override Both)'
-  description: 'If all kitchen lights are off, turn them on at 100% brightness. Otherwise,
-    keep them as-is. In both cases, set manual override booleans.
+  alias: 'Kitchen: Button 1 Short Press – Resume or Force On'
+  description: 'If all Kitchen lights are off, turn them on at 100% brightness. In
+    either case, prevent motion from turning them off by calling the reset script.
 
     '
   triggers:
-  - device_id: 19af60f1d1753b29548b35675b6c6005
-    domain: hue
-    type: short_release
-    subtype: 1
-    unique_id: 82ab89d3-7ee9-4ab0-b585-faa7d0e737aa
-    trigger: device
+  - entity_id:
+    - event.kitchen_hue_switch_button_1
+    to: short_release
+    trigger: state
+    attribute: event_type
+  conditions: []
   actions:
   - choose:
     - conditions:
       - condition: template
-        value_template: '{% set lights = expand(area_entities(''kitchen'')) | select(''search'',
-          ''light.'') | list %} {% set off_lights = lights | selectattr(''state'',
-          ''eq'', ''off'') | list %} {{ lights | count > 0 and off_lights | count
-          == lights | count }}
-
-          '
+        value_template: "{% set lights = expand(area_entities('kitchen')) \n     |
+          select('search', 'light.') | list %}\n{% set off_lights = lights \n     |
+          selectattr('state', 'eq', 'off') | list %}\n{{ lights | count > 0 and off_lights
+          | count == lights | count }}\n"
       sequence:
-      - data:
+      - target:
+          area_id: kitchen
+        data:
           brightness_pct: 100
           transition: 0.5
-        target:
-          area_id: kitchen
         action: light.turn_on
-    default: []
+  - action: script.reset_kitchen_livingroom_motion
+    data: {}
+  mode: single
+- id: '1744569902947'
+  alias: 'Kitchen: Button 1 Long Press – All On & Override'
+  description: 'Turns on both Kitchen and Livingroom lights at 100% brightness and
+    enables override to prevent motion-based automation.
+
+    '
+  triggers:
+  - entity_id:
+    - event.kitchen_hue_switch_button_1
+    to: long_press
+    trigger: state
+    attribute: event_type
+  conditions: []
+  actions:
+  - target:
+      entity_id:
+      - light.kitchen_hue_group_switch
+      - light.livingroom_switch
+    data:
+      brightness_pct: 100
+      transition: 0.5
+    action: light.turn_on
   - target:
       entity_id:
       - input_boolean.kitchen_lights_manual_override
@@ -1014,75 +1032,54 @@
     action: input_boolean.turn_on
     data: {}
   mode: single
-- id: '1744569902947'
-  alias: 'Kitchen Hue: Button 1 Long Press – Turn On Both Rooms & Override'
-  description: Turns on both light groups and sets both manual overrides.
-  triggers:
-  - device_id: 19af60f1d1753b29548b35675b6c6005
-    domain: hue
-    type: long_press
-    subtype: 1
-    unique_id: 82ab89d3-7ee9-4ab0-b585-faa7d0e737aa
-    trigger: device
-  actions:
-  - target:
-      entity_id:
-      - light.kitchen_hue_group_switch
-      - light.livingroom_switch
-    action: light.turn_on
-    data:
-      brightness_pct: 100
-  - action: input_boolean.turn_on
-    metadata: {}
-    data: {}
-    target:
-      entity_id:
-      - input_boolean.kitchen_lights_manual_override
-      - input_boolean.livingroom_lights_manual_override
-  mode: single
 - id: '1744569919431'
-  alias: 'Kitchen Hue: Button 2 Short Press – Brighten Kitchen & Override'
-  description: Increases kitchen light brightness by 20% and sets both overrides.
+  alias: 'Kitchen: Button 2 Short Press – Brighten & Override'
+  description: 'Increases Kitchen light brightness by 20% and enables manual override
+    for both rooms.
+
+    '
   triggers:
-  - device_id: 19af60f1d1753b29548b35675b6c6005
-    domain: hue
-    type: short_release
-    subtype: 2
-    unique_id: b28cd081-f12c-430a-9d50-0a2831c0672e
-    trigger: device
+  - entity_id:
+    - event.kitchen_hue_switch_button_2
+    to: short_release
+    trigger: state
+    attribute: event_type
+  conditions: []
   actions:
   - target:
       entity_id: light.kitchen_hue_group_switch
     data:
       brightness_step_pct: 20
     action: light.turn_on
-  - action: input_boolean.turn_on
-    metadata: {}
-    data: {}
-    target:
+  - target:
       entity_id:
       - input_boolean.kitchen_lights_manual_override
       - input_boolean.livingroom_lights_manual_override
+    action: input_boolean.turn_on
+    data: {}
   mode: single
 - id: '1744569937922'
-  alias: 'Kitchen Hue: Button 2 Long Press – Brighten Both & Override'
-  description: Sets both rooms to 100% brightness at 3500K and overrides motion.
+  alias: 'Kitchen: Button 2 Long Press – Brighten Both & Override'
+  description: 'Sets Kitchen and Livingroom lights to 100% brightness at 3500K and
+    enables manual override.
+
+    '
   triggers:
-  - device_id: 19af60f1d1753b29548b35675b6c6005
-    domain: hue
-    type: long_press
-    subtype: 2
-    unique_id: b28cd081-f12c-430a-9d50-0a2831c0672e
-    trigger: device
+  - entity_id:
+    - event.kitchen_hue_switch_button_2
+    to: long_press
+    trigger: state
+    attribute: event_type
+  conditions: []
   actions:
-  - data:
-      brightness_pct: 100
-      transition: 0.5
-      color_temp_kelvin: 3000
-    target:
+  - target:
       entity_id:
       - light.kitchen_hue_group_switch
       - light.livingroom_switch
+    data:
+      brightness_pct: 100
+      color_temp_kelvin: 3500
+      transition: 0.5
     action: light.turn_on
   - target:
       entity_id:
@@ -1095,12 +1092,11 @@
   alias: 'Kitchen Hue: Button 3 Short Press – Dim Kitchen & Override'
   description: Dims kitchen lights by 20% and enables override for both rooms.
   triggers:
-  - device_id: 19af60f1d1753b29548b35675b6c6005
-    domain: hue
-    type: short_release
-    subtype: 3
-    unique_id: 2cd5db3f-0ad8-40d9-a231-a066cbcd2f2b
-    trigger: device
+  - trigger: state
+    entity_id:
+    - event.kitchen_hue_switch_button_3
+    attribute: event_type
+    to: short_release
   actions:
   - target:
       entity_id: light.kitchen_hue_group_switch
@@ -1116,15 +1112,18 @@
       - input_boolean.livingroom_lights_manual_override
   mode: single
 - id: '1744570457351'
-  alias: 'Kitchen Hue: Button 3 Long Press – Dim Both & Override'
-  description: Dims kitchen and livingroom lights by 20% and enables override.
+  alias: 'Kitchen: Button 3 Long Press – Dim Both & Override'
+  description: 'Dims Kitchen and Livingroom lights by 20% and enables manual override
+    for both rooms.
+
+    '
   triggers:
-  - device_id: 19af60f1d1753b29548b35675b6c6005
-    domain: hue
-    type: long_press
-    subtype: 3
-    unique_id: 2cd5db3f-0ad8-40d9-a231-a066cbcd2f2b
-    trigger: device
+  - entity_id:
+    - event.kitchen_hue_switch_button_3
+    to: long_release
+    trigger: state
+    attribute: event_type
+  conditions: []
   actions:
   - target:
       entity_id:
@@ -1133,58 +1132,55 @@
     data:
       brightness_step_pct: -20
     action: light.turn_on
-  - action: input_boolean.turn_on
-    metadata: {}
-    data: {}
-    target:
+  - target:
       entity_id:
       - input_boolean.kitchen_lights_manual_override
       - input_boolean.livingroom_lights_manual_override
+    action: input_boolean.turn_on
+    data: {}
   mode: single
 - id: '1744570486701'
-  alias: 'Kitchen Hue: Button 4 Short Press – Turn Off Kitchen, Restore Motion'
-  description: Turns off kitchen lights and resets motion after 1 minute.
+  alias: 'Kitchen: Button 2 Short Press – Dim Down'
+  description: 'Decreases Kitchen light brightness by 20% if lights are on. Enables
+    manual override to prevent motion-based automation.
+
+    '
   triggers:
-  - device_id: 19af60f1d1753b29548b35675b6c6005
-    domain: hue
-    type: short_release
-    subtype: 2
-    unique_id: b28cd081-f12c-430a-9d50-0a2831c0672e
-    trigger: device
+  - entity_id:
+    - event.kitchen_hue_switch_button_2
+    to: short_release
+    trigger: state
+    attribute: event_type
+  conditions: []
   actions:
-  - target:
+  - if:
+    - condition: state
       entity_id: light.kitchen_hue_group_switch
-    data:
-      transition: 0.5
-    action: light.turn_off
-  - delay:
-      minutes: 1
-  - action: input_boolean.turn_off
-    metadata: {}
+      state: 'on'
+    then:
+    - target:
+        entity_id: light.kitchen_hue_group_switch
+      data:
+        brightness_step_pct: -20
+      action: light.turn_on
+  - target:
+      entity_id: input_boolean.kitchen_lights_manual_override
+    action: input_boolean.turn_on
     data: {}
-    target:
-      entity_id:
-      - input_boolean.kitchen_lights_manual_override
-      - input_boolean.livingroom_lights_manual_override
-  - action: input_boolean.turn_on
-    metadata: {}
-    data: {}
-    target:
-      entity_id:
-      - input_boolean.kitchen_motion_enabled
-      - input_boolean.livingroom_motion_enabled
   mode: single
 - id: '1744570504251'
-  alias: 'Kitchen Hue: Button 4 Long Press – Turn Off Both, Restore Motion'
-  description: Turns off kitchen and livingroom lights and reactivates motion after
-    1 minute.
+  alias: 'Kitchen: Button 4 Long Press – Turn Off Both, Restore Motion'
+  description: 'Turns off Kitchen and Livingroom lights, then calls reset script to
+    clear overrides and re-enable motion after 30 seconds.
+
+    '
   triggers:
-  - device_id: 19af60f1d1753b29548b35675b6c6005
-    domain: hue
-    type: long_press
-    subtype: 4
-    unique_id: 24a1d37a-439d-4d33-874c-aeb18e4f2a36
-    trigger: device
+  - entity_id:
+    - event.kitchen_hue_switch_button_4
+    to: long_release
+    trigger: state
+    attribute: event_type
+  conditions: []
   actions:
   - target:
       entity_id:
@@ -1194,42 +1190,31 @@
       transition: 0.5
     action: light.turn_off
   - delay:
-      minutes: 1
-  - action: input_boolean.turn_off
-    metadata: {}
+      seconds: 30
+  - action: script.reset_kitchen_livingroom_motion
     data: {}
-    target:
-      entity_id:
-      - input_boolean.kitchen_lights_manual_override
-      - input_boolean.livingroom_lights_manual_override
-  - action: input_boolean.turn_on
-    metadata: {}
-    data: {}
-    target:
-      entity_id:
-      - input_boolean.livingroom_motion_enabled
-      - input_boolean.kitchen_motion_enabled
   mode: single
 - id: '1744572277100'
-  alias: 'Livingroom Hue: Button 1 Short Press – Lights On'
+  alias: 'Livingroom: Button 1 Short Press – Resume or Force On'
+  description: 'If all Livingroom lights are off, turn them on at 100% brightness
+    (2700K). Otherwise leave as-is. Always enable manual override for both rooms.
+
+    '
   triggers:
-  - device_id: 85063f771b186e94a4d128fdfcf24352
-    domain: hue
-    type: short_release
-    subtype: 1
-    unique_id: c90f43ea-db3c-417a-a3d1-2e3464e1a7d6
-    trigger: device
+  - entity_id:
+    - event.livingroom_hue_switch_button_1
+    to: short_release
+    trigger: state
+    attribute: event_type
   conditions: []
   actions:
   - choose:
     - conditions:
       - condition: template
-        value_template: '{% set lights = expand(area_entities(''living_room'')) |
-          select(''search'', ''light.'') | list %} {% set off_lights = lights | selectattr(''state'',
-          ''eq'', ''off'') | list %} {{ lights | count > 0 and off_lights | count
-          == lights | count }}
-
-          '
+        value_template: "{% set lights = expand(area_entities('living_room'))\n   |
+          select('search', 'light.') | list %}\n{% set off_lights = lights\n   | selectattr('state',
+          'eq', 'off') | list %}\n{{ lights | count > 0 and off_lights | count ==
+          lights | count }}\n"
       sequence:
       - target:
           area_id: living_room
@@ -1255,22 +1240,27 @@
     data: {}
   mode: single
 - id: '1744572322132'
-  alias: 'Livingroom Hue: Button 1 Long Press – Turn On Both Rooms & Override'
-  description: Turns on both light groups and sets both manual overrides.
+  alias: 'Livingroom: Button 1 Long Press – All On & Override'
+  description: 'Turns on both Kitchen and Livingroom lights at full brightness, then
+    enables manual override to prevent motion shutoff.
+
+    '
   triggers:
-  - device_id: 85063f771b186e94a4d128fdfcf24352
-    domain: hue
-    type: long_press
-    subtype: 1
-    unique_id: c90f43ea-db3c-417a-a3d1-2e3464e1a7d6
-    trigger: device
+  - entity_id:
+    - event.livingroom_hue_switch_button_1
+    to: long_press
+    trigger: state
+    attribute: event_type
+  conditions: []
   actions:
   - target:
       entity_id:
       - light.kitchen_hue_group_switch
       - light.livingroom_switch
+    data:
+      brightness_pct: 100
+      transition: 0.5
     action: light.turn_on
-    data: {}
   - target:
       entity_id:
       - input_boolean.kitchen_lights_manual_override
@@ -1279,91 +1269,100 @@
     data: {}
   mode: single
 - id: '1744572350355'
-  alias: 'Livingroom Hue: Button 2 Short Press – Brighten Livingroom & Override'
-  description: Increases livingroom light brightness by 20% and sets both overrides.
+  alias: 'Livingroom: Button 2 Short Press – Brighten & Override'
+  description: 'Increases Livingroom light brightness by 20% and enables manual override
+    to prevent motion automation in both rooms.
+
+    '
   triggers:
-  - device_id: 85063f771b186e94a4d128fdfcf24352
-    domain: hue
-    type: short_release
-    subtype: 2
-    unique_id: 735529db-f28e-4200-aa92-2a04229bf744
-    trigger: device
+  - entity_id:
+    - event.livingroom_hue_switch_button_2
+    to: short_release
+    trigger: state
+    attribute: event_type
+  conditions: []
   actions:
   - target:
       entity_id: light.livingroom_switch
     data:
       brightness_step_pct: 20
     action: light.turn_on
-  - action: input_boolean.turn_on
-    metadata: {}
-    data: {}
-    target:
+  - target:
       entity_id:
       - input_boolean.kitchen_lights_manual_override
       - input_boolean.livingroom_lights_manual_override
+    action: input_boolean.turn_on
+    data: {}
   mode: single
 - id: '1744572370241'
-  alias: 'Livingroom Hue: Button 2 Long Press – Brighten Both & Override'
-  description: Sets both rooms to 100% brightness at 3500K and overrides motion.
+  alias: 'Livingroom: Button 2 Long Press – Brighten Both & Override'
+  description: 'Sets Kitchen and Livingroom lights to 100% brightness at 3500K and
+    enables manual override to prevent motion shutoff.
+
+    '
   triggers:
-  - device_id: 85063f771b186e94a4d128fdfcf24352
-    domain: hue
-    type: long_press
-    subtype: 2
-    unique_id: 735529db-f28e-4200-aa92-2a04229bf744
-    trigger: device
+  - entity_id:
+    - event.livingroom_hue_switch_button_2
+    to: long_press
+    trigger: state
+    attribute: event_type
+  conditions: []
   actions:
-  - data:
-      transition: 0.5
-      color_temp_kelvin: 3000
-      brightness_pct: 100
-    target:
+  - target:
       entity_id:
       - light.kitchen_hue_group_switch
       - light.livingroom_switch
+    data:
+      brightness_pct: 100
+      color_temp_kelvin: 3500
+      transition: 0.5
     action: light.turn_on
-  - action: input_boolean.turn_on
-    metadata: {}
-    data: {}
-    target:
+  - target:
       entity_id:
       - input_boolean.kitchen_lights_manual_override
       - input_boolean.livingroom_lights_manual_override
+    action: input_boolean.turn_on
+    data: {}
   mode: single
 - id: '1744572385925'
-  alias: 'Livingroom Hue: Button 3 Short Press – Dim Livingroom & Override'
-  description: Dims livingroom lights by 20% and enables override for both rooms.
+  alias: 'Livingroom: Button 3 Short Press – Dim & Override'
+  description: 'Decreases Livingroom light brightness by 20% and enables manual override
+    to prevent motion-based shutoff in both rooms.
+
+    '
   triggers:
-  - device_id: 85063f771b186e94a4d128fdfcf24352
-    domain: hue
-    type: short_release
-    subtype: 3
-    unique_id: 18468f4f-23ff-4642-9724-02f8bf4ccb34
-    trigger: device
+  - entity_id:
+    - event.livingroom_hue_switch_button_3
+    to: short_release
+    trigger: state
+    attribute: event_type
+  conditions: []
   actions:
   - target:
       entity_id: light.livingroom_switch
     data:
       brightness_step_pct: -20
     action: light.turn_on
-  - action: input_boolean.turn_on
-    metadata: {}
-    data: {}
-    target:
+  - target:
       entity_id:
       - input_boolean.kitchen_lights_manual_override
       - input_boolean.livingroom_lights_manual_override
+    action: input_boolean.turn_on
+    data: {}
   mode: single
 - id: '1744572402585'
-  alias: 'Livingroom Hue: Button 3 Long Press – Dim Both & Override'
-  description: Dims kitchen and livingroom lights by 20% and enables override.
+  alias: 'Livingroom: Button 3 Long Press – Dim Both & Override'
+  description: 'Dims Kitchen and Livingroom lights by 20% and enables manual override
+    to prevent motion-based automation.
+
+    '
   triggers:
-  - device_id: 85063f771b186e94a4d128fdfcf24352
-    domain: hue
-    type: long_press
-    subtype: 3
-    unique_id: 18468f4f-23ff-4642-9724-02f8bf4ccb34
-    trigger: device
+  - entity_id:
+    - event.livingroom_hue_switch_button_3
+    to: long_press
+    trigger: state
+    attribute: event_type
+  conditions: []
   actions:
   - target:
       entity_id:
@@ -1380,15 +1379,18 @@
     data: {}
   mode: single
 - id: '1744572419902'
-  alias: 'Livingroom Hue: Button 4 Short Press – Turn Off Livingroom, Restore Motion'
-  description: Turns off livingroom lights and resets motion after 1 minute.
+  alias: 'Kitchen: Button 4 Short Press – Area Off & Reset Motion'
+  description: 'Turns off Livingroom lights, then calls reset script to clear Kitchen
+    and Livingroom overrides and re-enable motion automation after 30 seconds.
+
+    '
   triggers:
-  - device_id: 85063f771b186e94a4d128fdfcf24352
-    domain: hue
-    type: short_release
-    subtype: 4
-    unique_id: a86fafc4-28c2-404e-8747-70f6bb3e9f4e
-    trigger: device
+  - entity_id:
+    - event.kitchen_hue_switch_button_4
+    to: short_release
+    trigger: state
+    attribute: event_type
+  conditions: []
   actions:
   - target:
       entity_id: light.livingroom_switch
@@ -1396,33 +1398,23 @@
       transition: 0.5
     action: light.turn_off
   - delay:
-      minutes: 1
-  - action: input_boolean.turn_off
-    metadata: {}
+      seconds: 30
+  - action: script.reset_kitchen_livingroom_motion
     data: {}
-    target:
-      entity_id:
-      - input_boolean.kitchen_lights_manual_override
-      - input_boolean.livingroom_lights_manual_override
-  - action: input_boolean.turn_on
-    metadata: {}
-    data: {}
-    target:
-      entity_id:
-      - input_boolean.kitchen_motion_enabled
-      - input_boolean.livingroom_motion_enabled
   mode: single
 - id: '1744572436937'
-  alias: 'Livingroom Hue: Button 4 Long Press – Turn Off Both, Restore Motion'
-  description: Turns off both room lights and re-enables motion automations after
-    1 minute.
+  alias: 'Livingroom: Button 4 Long Press – All Off & Reset Motion'
+  description: 'Turns off Kitchen and Livingroom lights, then calls reset script to
+    clear overrides and re-enable motion automation after 30 seconds.
+
+    '
   triggers:
-  - device_id: 85063f771b186e94a4d128fdfcf24352
-    domain: hue
-    type: long_press
-    subtype: 4
-    unique_id: a86fafc4-28c2-404e-8747-70f6bb3e9f4e
-    trigger: device
+  - entity_id:
+    - event.livingroom_hue_switch_button_4
+    to: long_release
+    trigger: state
+    attribute: event_type
+  conditions: []
   actions:
   - target:
       entity_id:
@@ -1432,21 +1424,9 @@
       transition: 0.5
     action: light.turn_off
   - delay:
-      minutes: 1
-  - action: input_boolean.turn_off
-    metadata: {}
+      seconds: 30
+  - action: script.reset_kitchen_livingroom_motion
     data: {}
-    target:
-      entity_id:
-      - input_boolean.kitchen_lights_manual_override
-      - input_boolean.livingroom_lights_manual_override
-  - action: input_boolean.turn_on
-    metadata: {}
-    data: {}
-    target:
-      entity_id:
-      - input_boolean.livingroom_motion_enabled
-      - input_boolean.kitchen_motion_enabled
   mode: single
 - id: '1744601049270'
   alias: 'Git: Nightly Backup Push'
@@ -1465,8 +1445,10 @@
     trigger: time
   conditions: []
   actions:
-  - action: script.reset_manual_overrides_off
-  - action: script.automation_motion_enable
+  - action: script.global_reset_manual_overrides_off
+    data: {}
+  - action: script.global_enable_motion_automation
+    data: {}
   - target:
       area_id:
       - bathroom_primary
@@ -1504,7 +1486,7 @@
   - action: input_boolean.turn_on
     data: {}
     target:
-      entity_id: input_boolean.office_lights_boolean
+      entity_id: input_boolean.office_lights_manual_override
   - action: light.turn_on
     target:
       area_id: office
@@ -1522,7 +1504,7 @@
   - action: input_boolean.turn_off
     data: {}
     target:
-      entity_id: input_boolean.office_lights_boolean
+      entity_id: input_boolean.office_lights_manual_override
   - if:
     - type: is_off
       condition: device
@@ -1555,7 +1537,7 @@
   actions:
   - target:
       entity_id:
-      - input_boolean.office_lights_boolean
+      - input_boolean.office_lights_manual_override
       - input_boolean.office_lights_hold_boolean
     action: input_boolean.turn_off
     data: {}
@@ -1570,7 +1552,7 @@
   triggers:
   - trigger: state
     entity_id:
-    - input_boolean.bathroom_guest_boolean
+    - input_boolean.bathroom_guest_lights_manual_override
     from: 'off'
     to: 'on'
   conditions: []
@@ -1589,7 +1571,7 @@
   triggers:
   - trigger: state
     entity_id:
-    - input_boolean.movie_boolean
+    - input_boolean.movie
     to: 'on'
   conditions: []
   actions:
