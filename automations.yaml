@@ -237,36 +237,39 @@
   mode: single
 - id: '1739928051409'
   alias: 'Hallway: Motion Not Detected – Turn Off Lights'
-  description: Turns off hallway lights after 5–8 minutes of no motion if automation
-    is allowed
+  description: 'Turns off hallway lights after 5–8 minutes of no motion if automation
+    is allowed. If manual override is active, delay shutdown by 1 hour.
+
+    '
   triggers:
-  - trigger: state
-    entity_id:
-    - binary_sensor.camera_hallway_person
+  - entity_id: binary_sensor.camera_hallway_person
     to: 'off'
     for:
-      hours: 0
       minutes: 5
-      seconds: 0
-  - trigger: state
-    entity_id:
-    - binary_sensor.hue_motion_sensor_3_motion
+    trigger: state
+  - entity_id: binary_sensor.hue_motion_sensor_3_motion
     to: 'off'
     for:
-      hours: 0
       minutes: 8
-      seconds: 0
+    trigger: state
   conditions:
   - condition: state
     entity_id: binary_sensor.motion_hallway_allowed
     state: 'on'
   actions:
-  - action: light.turn_off
-    metadata: {}
-    target:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.hallway_lights_manual_override
+        state: 'on'
+      sequence:
+      - delay:
+          hours: 1
+  - target:
       area_id: hallway
     data:
       transition: 0.5
+    action: light.turn_off
   mode: single
 - id: '1741453716673'
   alias: 'Misc: Primary bathroom fan humidity control'
@@ -928,49 +931,65 @@
   mode: single
 - id: '1744569217413'
   alias: 'Kitchen: Motion Not Detected – Turn Off Lights'
-  description: Turns off kitchen lights 2 minutes after no motion if automation is
-    allowed
+  description: 'Turns off kitchen lights 2 minutes after no motion if automation is
+    allowed. If override is active, delays shutoff for 1 hour before checking again.
+
+    '
   triggers:
-  - trigger: state
-    entity_id:
-    - binary_sensor.camera_downstairs_person
+  - entity_id: binary_sensor.camera_downstairs_person
     to: 'off'
     for:
-      hours: 0
       minutes: 2
-      seconds: 0
+    trigger: state
   conditions:
   - condition: state
     entity_id: binary_sensor.motion_kitchen_allowed
     state: 'on'
   actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.kitchen_lights_manual_override
+        state: 'on'
+      sequence:
+      - delay:
+          hours: 1
   - target:
       entity_id: light.kitchen_hue_group_switch
+    data:
+      transition: 0.5
     action: light.turn_off
-    data: {}
   mode: restart
 - id: '1744569239859'
   alias: 'Livingroom: Motion Not Detected – Turn Off Lights'
-  description: Turns off Livingroom lights after 2 minutes of no motion if automation
-    is allowed
+  description: 'Turns off Livingroom lights after 2 minutes of no motion if automation
+    is allowed. If override is active, delays shutoff for 1 hour before checking again.
+
+    '
   triggers:
-  - trigger: state
-    entity_id:
-    - binary_sensor.camera_downstairs_person
+  - entity_id: binary_sensor.camera_downstairs_person
     to: 'off'
     for:
-      hours: 0
       minutes: 2
-      seconds: 0
+    trigger: state
   conditions:
   - condition: state
     entity_id: binary_sensor.motion_livingroom_allowed
     state: 'on'
   actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.livingroom_lights_manual_override
+        state: 'on'
+      sequence:
+      - delay:
+          hours: 1
   - target:
-      entity_id: light.livingroom_switch
+      entity_id: light.livingroom_hue_group_switch
+    data:
+      transition: 0.5
     action: light.turn_off
-    data: {}
   mode: restart
 - id: '1744569877439'
   alias: 'Kitchen: Button 1 Short Press – Resume or Force On'
@@ -1020,7 +1039,7 @@
   - target:
       entity_id:
       - light.kitchen_hue_group_switch
-      - light.livingroom_switch
+      - light.livingroom_hue_group_switch
     data:
       brightness_pct: 100
       transition: 0.5
@@ -1075,7 +1094,7 @@
   - target:
       entity_id:
       - light.kitchen_hue_group_switch
-      - light.livingroom_switch
+      - light.livingroom_hue_group_switch
     data:
       brightness_pct: 100
       color_temp_kelvin: 3500
@@ -1128,7 +1147,7 @@
   - target:
       entity_id:
       - light.kitchen_hue_group_switch
-      - light.livingroom_switch
+      - light.livingroom_hue_group_switch
     data:
       brightness_step_pct: -20
     action: light.turn_on
@@ -1185,7 +1204,7 @@
   - target:
       entity_id:
       - light.kitchen_hue_group_switch
-      - light.livingroom_switch
+      - light.livingroom_hue_group_switch
     data:
       transition: 0.5
     action: light.turn_off
@@ -1256,7 +1275,7 @@
   - target:
       entity_id:
       - light.kitchen_hue_group_switch
-      - light.livingroom_switch
+      - light.livingroom_hue_group_switch
     data:
       brightness_pct: 100
       transition: 0.5
@@ -1283,7 +1302,7 @@
   conditions: []
   actions:
   - target:
-      entity_id: light.livingroom_switch
+      entity_id: light.livingroom_hue_group_switch
     data:
       brightness_step_pct: 20
     action: light.turn_on
@@ -1311,7 +1330,7 @@
   - target:
       entity_id:
       - light.kitchen_hue_group_switch
-      - light.livingroom_switch
+      - light.livingroom_hue_group_switch
     data:
       brightness_pct: 100
       color_temp_kelvin: 3500
@@ -1339,7 +1358,7 @@
   conditions: []
   actions:
   - target:
-      entity_id: light.livingroom_switch
+      entity_id: light.livingroom_hue_group_switch
     data:
       brightness_step_pct: -20
     action: light.turn_on
@@ -1367,7 +1386,7 @@
   - target:
       entity_id:
       - light.kitchen_hue_group_switch
-      - light.livingroom_switch
+      - light.livingroom_hue_group_switch
     data:
       brightness_step_pct: -20
     action: light.turn_on
@@ -1393,7 +1412,7 @@
   conditions: []
   actions:
   - target:
-      entity_id: light.livingroom_switch
+      entity_id: light.livingroom_hue_group_switch
     data:
       transition: 0.5
     action: light.turn_off
@@ -1419,7 +1438,7 @@
   - target:
       entity_id:
       - light.kitchen_hue_group_switch
-      - light.livingroom_switch
+      - light.livingroom_hue_group_switch
     data:
       transition: 0.5
     action: light.turn_off
@@ -1580,11 +1599,232 @@
     data:
       dynamic: true
       group_name: light.downstairs_inside
-      scene_name: scene.downstairs_inside_tokyo
+      scene_name: scene.downstairs_inside_movie_tokyo
     enabled: false
   - action: scene.turn_on
     metadata: {}
     data: {}
     target:
-      entity_id: scene.downstairs_inside_tokyo
+      entity_id: scene.downstairs_inside_movie_tokyo
+  mode: single
+- id: '1749747077768'
+  alias: 'Downstairs: Motion Streak Tracker'
+  description: 'Tracks streaks of motion in the downstairs area (kitchen + livingroom).
+    Increments streak counter if 60+ seconds passed since last increment. If 6+ spaced
+    motion events occur and no overrides or global modes are active, enables manual
+    override and briefly flashes lights.
+
+    '
+  triggers:
+  - entity_id: binary_sensor.camera_downstairs_person
+    to: 'on'
+    trigger: state
+  conditions:
+  - condition: template
+    value_template: '{% set last = states(''input_datetime.downstairs_motion_last_incremented'')
+      %} {% set last_dt = strptime(last, ''%Y-%m-%d %H:%M:%S'') %} {{ (now() - last_dt).total_seconds()
+      > 60 }}
+
+      '
+  actions:
+  - target:
+      entity_id: counter.downstairs_motion_streak_count
+    action: counter.increment
+  - target:
+      entity_id: input_datetime.downstairs_motion_last_incremented
+    data:
+      datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+    action: input_datetime.set_datetime
+  - target:
+      entity_id: timer.downstairs_motion_streak_window
+    action: timer.start
+  - choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: counter.downstairs_motion_streak_count
+        above: 6
+      - condition: and
+        conditions:
+        - condition: state
+          entity_id: input_boolean.kitchen_lights_manual_override
+          state: 'off'
+        - condition: state
+          entity_id: input_boolean.livingroom_lights_manual_override
+          state: 'off'
+        - condition: state
+          entity_id: input_boolean.cleaning
+          state: 'off'
+        - condition: state
+          entity_id: input_boolean.party
+          state: 'off'
+        - condition: state
+          entity_id: input_boolean.movie
+          state: 'off'
+      sequence:
+      - action: script.downstairs_enable_motion_override
+      - target:
+          entity_id: counter.downstairs_motion_streak_count
+        action: counter.reset
+      - target:
+          entity_id: timer.downstairs_motion_streak_window
+        action: timer.cancel
+  mode: single
+- id: '1749747243302'
+  alias: 'Hallway: Reset Motion Streak Count'
+  description: 'Resets the hallway motion streak counter if no motion is detected
+    within the 5-minute window.
+
+    '
+  triggers:
+  - event_type: timer.finished
+    event_data:
+      entity_id: timer.hallway_motion_streak_window
+    trigger: event
+  conditions: []
+  actions:
+  - target:
+      entity_id: counter.hallway_motion_streak_count
+    action: counter.reset
+    data: {}
+  mode: single
+- id: '1749754054519'
+  alias: 'Kitchen: Motion Streak Tracker'
+  description: 'Tracks motion streaks for the kitchen. If 3 motion events are detected
+    within 5 minutes, it enables manual override and flashes the lights.
+
+    '
+  triggers:
+  - entity_id: binary_sensor.camera_downstairs_person
+    to: 'on'
+    trigger: state
+  conditions: []
+  actions:
+  - target:
+      entity_id: counter.kitchen_motion_streak_count
+    action: counter.increment
+    data: {}
+  - target:
+      entity_id: timer.downstairs_motion_streak_window
+    action: timer.start
+    data: {}
+  - choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: counter.kitchen_motion_streak_count
+        above: 2
+      sequence:
+      - target:
+          entity_id: input_boolean.kitchen_lights_manual_override
+        action: input_boolean.turn_on
+        data: {}
+      - target:
+          entity_id: light.kitchen_hue_group_switch
+        data:
+          transition: 0.2
+        action: light.turn_off
+      - delay:
+          milliseconds: 300
+      - target:
+          entity_id: light.kitchen_hue_group_switch
+        data:
+          brightness_pct: 100
+          transition: 0.3
+        action: light.turn_on
+      - target:
+          entity_id: counter.kitchen_motion_streak_count
+        action: counter.reset
+        data: {}
+      - target:
+          entity_id: timer.downstairs_motion_streak_window
+        action: timer.cancel
+        data: {}
+  mode: single
+- id: '1749754328096'
+  alias: 'Livingroom: Motion Streak Tracker'
+  description: 'Tracks motion streaks for the living room. If 3 motion events are
+    detected within 5 minutes, it enables manual override and flashes the lights.
+
+    '
+  triggers:
+  - entity_id: binary_sensor.camera_downstairs_person
+    to: 'on'
+    trigger: state
+  conditions: []
+  actions:
+  - target:
+      entity_id: counter.livingroom_motion_streak_count
+    action: counter.increment
+    data: {}
+  - target:
+      entity_id: timer.downstairs_motion_streak_window
+    action: timer.start
+    data: {}
+  - choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: counter.livingroom_motion_streak_count
+        above: 2
+      sequence:
+      - target:
+          entity_id: input_boolean.livingroom_lights_manual_override
+        action: input_boolean.turn_on
+        data: {}
+      - target:
+          entity_id: livingroom_hue_group_switch
+        data:
+          transition: 0.2
+        action: light.turn_off
+      - delay:
+          milliseconds: 300
+      - target:
+          entity_id: livingroom_hue_group_switch
+        data:
+          brightness_pct: 100
+          transition: 0.3
+        action: light.turn_on
+      - target:
+          entity_id: counter.livingroom_motion_streak_count
+        action: counter.reset
+        data: {}
+      - target:
+          entity_id: timer.downstairs_motion_streak_window
+        action: timer.cancel
+        data: {}
+  mode: single
+- id: '1749754531848'
+  alias: 'Downstairs: Motion Streak Reset'
+  description: 'Resets both kitchen and livingroom motion streak counters if no motion
+    is detected for 5 minutes.
+
+    '
+  triggers:
+  - event_type: timer.finished
+    event_data:
+      entity_id: timer.downstairs_motion_streak_window
+    trigger: event
+  conditions: []
+  actions:
+  - target:
+      entity_id:
+      - counter.kitchen_motion_streak_count
+      - counter.livingroom_motion_streak_count
+    action: counter.reset
+    data: {}
+  mode: single
+- id: '1749770971600'
+  alias: 'Downstairs: Motion Streak Timeout Reset'
+  description: 'Resets the downstairs motion streak counter after the window expires.
+    This prevents streaks from accumulating if motion activity stops.
+
+    '
+  triggers:
+  - event_type: timer.finished
+    event_data:
+      entity_id: timer.downstairs_motion_streak_window
+    trigger: event
+  actions:
+  - target:
+      entity_id: counter.downstairs_motion_streak_count
+    action: counter.reset
+    data: {}
   mode: single

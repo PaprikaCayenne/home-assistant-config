@@ -48,7 +48,7 @@ homekit:
     include_entities:
       # Hue groups
       - light.kitchen_hue_group_switch
-      - light.livingroom_switch
+      - light.livingroom_hue_group_switch
       - light.bedroom_primary_hue_group_switch
       - light.patio_hue_group_switch
       - light.downstairs_inside
@@ -85,7 +85,7 @@ homekit:
       name: "Downstairs Lights"
     light.kitchen_hue_group_switch:
       name: "Kitchen Lights"
-    light.livingroom_switch:
+    light.livingroom_hue_group_switch:
       name: "Living Room Lights"
     light.bedroom_primary_hue_group_switch:
       name: "Bedroom Lights"

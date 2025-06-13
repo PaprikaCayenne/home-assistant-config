@@ -201,7 +201,7 @@ livingroom_light_control_script:
           color_temp_kelvin: 2700
           transition: 0.5
         target:
-          entity_id: light.livingroom_switch
+          entity_id: light.livingroom_hue_group_switch
     - conditions:
       - condition: time
         after: '23:00:00'
@@ -214,7 +214,7 @@ livingroom_light_control_script:
           color_temp_kelvin: 3000
           transition: 0.5
         target:
-          entity_id: light.livingroom_switch
+          entity_id: light.livingroom_hue_group_switch
     default:
     - action: light.turn_on
       metadata: {}
@@ -223,7 +223,7 @@ livingroom_light_control_script:
         transition: 0.5
         color_temp_kelvin: 3500
       target:
-        entity_id: light.livingroom_switch
+        entity_id: light.livingroom_hue_group_switch
 global_reset_manual_overrides_off:
   alias: 'Global: Reset Manual Overrides Off'
   mode: single
@@ -406,14 +406,14 @@ livingroom_toggle_manual_override:
         value_template: '{{ not is_on }}'
       sequence:
       - target:
-          entity_id: light.livingroom_switch
+          entity_id: light.livingroom_hue_group_switch
         action: light.turn_on
     - conditions:
       - condition: template
         value_template: '{{ is_on }}'
       sequence:
       - target:
-          entity_id: light.livingroom_switch
+          entity_id: light.livingroom_hue_group_switch
         action: light.turn_off
 office_toggle_manual_override:
   alias: 'Office: Toggle Manual Override'
@@ -496,7 +496,7 @@ party_toggle_mode:
       - target:
           entity_id:
           - light.kitchen_hue_group_switch
-          - light.livingroom_switch
+          - light.livingroom_hue_group_switch
           - light.hallway_ceiling_lights
           - light.patio_hue_group_switch
         action: light.turn_on
@@ -507,7 +507,7 @@ party_toggle_mode:
       - target:
           entity_id:
           - light.kitchen_hue_group_switch
-          - light.livingroom_switch
+          - light.livingroom_hue_group_switch
           - light.hallway_ceiling_lights
           - light.patio_hue_group_switch
         action: light.turn_off
@@ -534,7 +534,7 @@ cleaning_toggle_mode:
       - target:
           entity_id:
           - light.kitchen_hue_group_switch
-          - light.livingroom_switch
+          - light.livingroom_hue_group_switch
           - light.bedroom_primary_hue_group_switch
           - light.patio_hue_group_switch
           - light.downstairs_inside
@@ -570,7 +570,7 @@ cleaning_toggle_mode:
       - target:
           entity_id:
           - light.kitchen_hue_group_switch
-          - light.livingroom_switch
+          - light.livingroom_hue_group_switch
           - light.bedroom_primary_hue_group_switch
           - light.patio_hue_group_switch
           - light.downstairs_inside
@@ -639,3 +639,376 @@ bedroom_toggle_private_time:
       - target:
           entity_id: switch.camera_bedroom_primary_privacy_mode
         action: switch.turn_off
+kitchen_toggle_lights_manual_override:
+  alias: 'Kitchen: Toggle Lights & Manual Override'
+  description: 'Turns lights ON using kitchen light control script (if off) and enables
+    override. If lights are ON, turns them OFF, waits 30s, then resets motion and
+    disables override.
+
+    '
+  mode: single
+  icon: mdi:lightbulb-group
+  sequence:
+  - variables:
+      is_on: '{{ is_state(''light.kitchen_hue_group_switch'', ''on'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not is_on }}'
+      sequence:
+      - action: script.kitchen_light_control_script
+        data: {}
+      - target:
+          entity_id: input_boolean.kitchen_lights_manual_override
+        action: input_boolean.turn_on
+        data: {}
+    - conditions:
+      - condition: template
+        value_template: '{{ is_on }}'
+      sequence:
+      - data:
+          transition: 0.5
+        target:
+          entity_id: light.kitchen_hue_group_switch
+        action: light.turn_off
+      - delay:
+          seconds: 30
+      - action: script.reset_kitchen_livingroom_motion
+        data: {}
+livingroom_toggle_lights_manual_override:
+  alias: 'Livingroom: Toggle Lights & Manual Override'
+  description: 'Turns lights ON using living room light control script (if off) and
+    enables override. If lights are ON, turns them OFF, waits 30s, then resets motion
+    and disables override.
+
+    '
+  mode: single
+  icon: mdi:lightbulb-group
+  sequence:
+  - variables:
+      is_on: '{{ is_state(''light.livingroom_hue_group_switch'', ''on'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not is_on }}'
+      sequence:
+      - action: script.livingroom_light_control_script
+        data: {}
+      - target:
+          entity_id: input_boolean.livingroom_lights_manual_override
+        action: input_boolean.turn_on
+        data: {}
+    - conditions:
+      - condition: template
+        value_template: '{{ is_on }}'
+      sequence:
+      - data:
+          transition: 0.5
+        target:
+          entity_id: light.livingroom_hue_group_switch
+        action: light.turn_off
+      - delay:
+          seconds: 30
+      - action: script.reset_kitchen_livingroom_motion
+        data: {}
+downstairs_toggle_lights_manual_override:
+  alias: 'Downstairs: Toggle Lights & Manual Override'
+  description: 'Toggles both kitchen and living room lights with their respective
+    light logic. Enables or disables manual override based on current state. Calls
+    both individual toggle scripts.
+
+    '
+  mode: single
+  icon: mdi:lightbulb-group
+  sequence:
+  - action: script.kitchen_toggle_lights_manual_override
+    metadata: {}
+    data: {}
+  - action: script.livingroom_toggle_lights_manual_override
+    metadata: {}
+    data: {}
+bedroom_toggle_lights_manual_override:
+  alias: 'Bedroom: Toggle Lights & Manual Override'
+  description: 'Toggles bedroom lights and motion override. If lights are off, turns
+    them on using bedroom light control script and enables override. If lights are
+    on, turns them off, waits 30s, then disables override and re-enables motion.
+
+    '
+  mode: single
+  icon: mdi:lightbulb-group
+  sequence:
+  - variables:
+      is_on: '{{ is_state(''light.bedroom_primary_hue_group_switch'', ''on'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not is_on }}'
+      sequence:
+      - action: script.bedroom_primary_light_control_script
+        data: {}
+      - target:
+          entity_id: input_boolean.bedroom_primary_lights_manual_override
+        action: input_boolean.turn_on
+        data: {}
+    - conditions:
+      - condition: template
+        value_template: '{{ is_on }}'
+      sequence:
+      - data:
+          transition: 0.5
+        target:
+          entity_id: light.bedroom_primary_hue_group_switch
+        action: light.turn_off
+      - delay:
+          seconds: 30
+      - action: script.bedroom_primary_reset_motion
+        data: {}
+'1749759181927':
+  alias: 'Bedroom Guest: Toggle Lights & Manual Override'
+  description: 'Toggles guest bedroom lights and manual override. If lights are off,
+    turns them on and enables override. If lights are on, turns them off, waits 30s,
+    then disables override.
+
+    '
+  mode: single
+  icon: mdi:lightbulb-group
+  sequence:
+  - variables:
+      is_on: '{{ is_state(''light.bedroom_guest_main_lights'', ''on'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not is_on }}'
+      sequence:
+      - target:
+          entity_id: light.bedroom_guest_main_lights
+        action: light.turn_on
+        data: {}
+      - target:
+          entity_id: input_boolean.bedroom_guest_lights_manual_override
+        action: input_boolean.turn_on
+        data: {}
+    - conditions:
+      - condition: template
+        value_template: '{{ is_on }}'
+      sequence:
+      - data:
+          transition: 0.5
+        target:
+          entity_id: light.bedroom_guest_main_lights
+        action: light.turn_off
+      - delay:
+          seconds: 30
+      - target:
+          entity_id: input_boolean.bedroom_guest_lights_manual_override
+        action: input_boolean.turn_off
+        data: {}
+hallway_reset_motion:
+  alias: 'Hallway: Reset Motion'
+  description: 'Turns off hallway manual override and re-enables motion automation.
+
+    '
+  mode: single
+  icon: mdi:motion-sensor
+  sequence:
+  - target:
+      entity_id: input_boolean.hallway_lights_manual_override
+    action: input_boolean.turn_off
+    data: {}
+  - target:
+      entity_id: input_boolean.hallway_motion_enabled
+    action: input_boolean.turn_on
+    data: {}
+bedroom_primary_reset_motion:
+  alias: 'Bedroom Primary: Reset Motion'
+  description: 'Turns off manual override and re-enables motion automation in the
+    primary bedroom.
+
+    '
+  mode: single
+  icon: mdi:motion-sensor
+  sequence:
+  - target:
+      entity_id: input_boolean.bedroom_primary_lights_manual_override
+    action: input_boolean.turn_off
+    data: {}
+  - target:
+      entity_id: input_boolean.bedroom_primary_motion_enabled
+    action: input_boolean.turn_on
+    data: {}
+hallway_toggle_lights_manual_override:
+  alias: 'Hallway: Toggle Lights & Manual Override'
+  description: 'Toggles hallway lights and motion override. If lights are off, turns
+    them on and enables override. If lights are on, turns them off, waits 30s, disables
+    override, and re-enables motion.
+
+    '
+  mode: single
+  icon: mdi:lightbulb-group
+  sequence:
+  - variables:
+      is_on: '{{ is_state(''light.hallway_ceiling_lights'', ''on'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not is_on }}'
+      sequence:
+      - target:
+          entity_id: light.hallway_ceiling_lights
+        action: light.turn_on
+        data: {}
+      - target:
+          entity_id: input_boolean.hallway_lights_manual_override
+        action: input_boolean.turn_on
+        data: {}
+    - conditions:
+      - condition: template
+        value_template: '{{ is_on }}'
+      sequence:
+      - data:
+          transition: 0.5
+        target:
+          entity_id: light.hallway_ceiling_lights
+        action: light.turn_off
+      - delay:
+          seconds: 30
+      - action: script.hallway_reset_motion
+        data: {}
+bathroom_primary_reset_motion:
+  alias: 'Bathroom Primary: Reset Motion'
+  description: 'Turns off primary bathroom manual override and re-enables motion automation.
+
+    '
+  mode: single
+  icon: mdi:motion-sensor
+  sequence:
+  - target:
+      entity_id: input_boolean.bathroom_primary_lights_manual_override
+    action: input_boolean.turn_off
+    data: {}
+  - target:
+      entity_id: input_boolean.bathroom_primary_motion_enabled
+    action: input_boolean.turn_on
+    data: {}
+bathroom_primary_toggle_lights_manual_override:
+  alias: 'Bathroom Primary: Toggle Lights & Manual Override'
+  description: 'Toggles primary bathroom lights and motion override. If lights are
+    off, turns them on and enables override. If lights are on, turns them off, waits
+    30s, disables override, and re-enables motion.
+
+    '
+  mode: single
+  icon: mdi:lightbulb-group
+  sequence:
+  - variables:
+      is_on: '{{ is_state(''light.bathroom_primary_ceiling'', ''on'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not is_on }}'
+      sequence:
+      - target:
+          entity_id: light.bathroom_primary_ceiling
+        action: light.turn_on
+        data: {}
+      - target:
+          entity_id: input_boolean.bathroom_primary_lights_manual_override
+        action: input_boolean.turn_on
+        data: {}
+    - conditions:
+      - condition: template
+        value_template: '{{ is_on }}'
+      sequence:
+      - data:
+          transition: 0.5
+        target:
+          entity_id: light.bathroom_primary_ceiling
+        action: light.turn_off
+      - delay:
+          seconds: 30
+      - action: script.bathroom_primary_reset_motion
+        data: {}
+bathroom_guest_reset_motion:
+  alias: 'Bathroom Guest: Reset Motion'
+  description: 'Turns off guest bathroom manual override and re-enables motion automation.
+
+    '
+  mode: single
+  icon: mdi:motion-sensor
+  sequence:
+  - target:
+      entity_id: input_boolean.bathroom_guest_lights_manual_override
+    action: input_boolean.turn_off
+    data: {}
+  - target:
+      entity_id: input_boolean.bathroom_guest_motion_enabled
+    action: input_boolean.turn_on
+    data: {}
+bathroom_guest_toggle_lights_manual_override:
+  alias: 'Bathroom Guest: Toggle Lights & Manual Override'
+  description: 'Toggles guest bathroom lights and motion override. If lights are off,
+    turns them on and enables override. If lights are on, turns them off, waits 30s,
+    disables override, and re-enables motion.
+
+    '
+  mode: single
+  icon: mdi:lightbulb-group
+  sequence:
+  - variables:
+      is_on: '{{ is_state(''light.bathroom_guest_ceiling'', ''on'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not is_on }}'
+      sequence:
+      - target:
+          entity_id: light.bathroom_guest_ceiling
+        action: light.turn_on
+        data: {}
+      - target:
+          entity_id: input_boolean.bathroom_guest_lights_manual_override
+        action: input_boolean.turn_on
+        data: {}
+    - conditions:
+      - condition: template
+        value_template: '{{ is_on }}'
+      sequence:
+      - data:
+          transition: 0.5
+        target:
+          entity_id: light.bathroom_guest_ceiling
+        action: light.turn_off
+      - delay:
+          seconds: 30
+      - action: script.bathroom_guest_reset_motion
+        data: {}
+downstairs_enable_motion_override:
+  alias: 'Downstairs: Enable Motion Override'
+  description: 'Enables manual override for both kitchen and livingroom lights and
+    provides a brief visual cue by flashing the lights.
+
+    '
+  sequence:
+  - target:
+      entity_id:
+      - input_boolean.kitchen_lights_manual_override
+      - input_boolean.livingroom_lights_manual_override
+    action: input_boolean.turn_on
+  - target:
+      entity_id:
+      - light.kitchen_hue_group_switch
+      - light.livingroom_hue_group_switch
+    data:
+      transition: 0.2
+    action: light.turn_off
+  - delay:
+      milliseconds: 300
+  - target:
+      entity_id:
+      - light.kitchen_hue_group_switch
+      - light.livingroom_hue_group_switch
+    data:
+      brightness_pct: 100
+      transition: 0.3
+    action: light.turn_on
+  mode: single
