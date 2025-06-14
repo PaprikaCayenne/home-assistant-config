@@ -248,47 +248,42 @@ global_reset_manual_overrides_off:
     etc.) to restore automation.
 global_enable_motion_automation:
   alias: 'Global: Enable Motion Automation'
-  mode: single
   icon: mdi:motion-sensor
+  mode: single
+  description: 'Enables motion automation toggles for rooms that still use motion
+    booleans. Removes FP2-managed rooms (Kitchen, Livingroom).
+
+    '
   sequence:
-  - action: input_boolean.turn_on
-    metadata: {}
-    data: {}
-    target:
+  - target:
       entity_id:
-      - input_boolean.kitchen_motion_enabled
-      - input_boolean.livingroom_motion_enabled
       - input_boolean.office_motion_enabled
       - input_boolean.bedroom_primary_motion_enabled
       - input_boolean.hallway_motion_enabled
       - input_boolean.bathroom_guest_motion_enabled
       - input_boolean.bathroom_primary_motion_enabled
-  description: Turns on all motion automation toggles so rooms respond to motion again.
-    Useful after disabling motion for parties, private time, or overnight.
+    action: input_boolean.turn_on
 global_disable_motion_automation:
   alias: 'Global: Disable Motion Automation'
-  mode: single
   icon: mdi:motion-pause
+  mode: single
+  description: 'Disables motion automation toggles for rooms still using motion booleans.
+    Excludes Kitchen and Livingroom (FP2-managed).
+
+    '
   sequence:
-  - action: input_boolean.turn_off
-    metadata: {}
-    data: {}
-    target:
+  - target:
       entity_id:
-      - input_boolean.kitchen_motion_enabled
-      - input_boolean.livingroom_motion_enabled
       - input_boolean.office_motion_enabled
       - input_boolean.bedroom_primary_motion_enabled
       - input_boolean.hallway_motion_enabled
       - input_boolean.bathroom_guest_motion_enabled
       - input_boolean.bathroom_primary_motion_enabled
-  description: Turns off all motion automation toggles so rooms no longer respond
-    to motion. Use when you want to manually control lighting or prevent automation
-    triggers.
+    action: input_boolean.turn_off
 reset_kitchen_livingroom_motion:
-  alias: Reset Kitchen & Livingroom Motion
-  description: 'Turns off manual override and re-enables motion automation for both
-    the Kitchen and Livingroom.
+  alias: Reset Kitchen & Livingroom
+  description: 'Turns off manual override booleans for Kitchen and Livingroom. Used
+    when exiting modes like Movie or Party to resume automation control.
 
     '
   mode: single
@@ -298,11 +293,6 @@ reset_kitchen_livingroom_motion:
       - input_boolean.kitchen_lights_manual_override
       - input_boolean.livingroom_lights_manual_override
     action: input_boolean.turn_off
-  - target:
-      entity_id:
-      - input_boolean.kitchen_motion_enabled
-      - input_boolean.livingroom_motion_enabled
-    action: input_boolean.turn_on
 global_clear_all_overrides:
   alias: 'Global: Clear All Overrides'
   description: 'Turns off all manual lighting overrides and global mode booleans that
@@ -514,8 +504,8 @@ party_toggle_mode:
 cleaning_toggle_mode:
   alias: 'Cleaning: Toggle Mode'
   description: 'Toggles cleaning mode. When enabled, turns on all house lights (excluding
-    pantry)  and disables all motion automation booleans. When disabled, turns off
-    lights and  re-enables motion automation.
+    pantry), and disables motion automation for non-FP2 rooms. When disabled, turns
+    off lights and re-enables motion automation.
 
     '
   mode: single
@@ -555,8 +545,6 @@ cleaning_toggle_mode:
         action: light.turn_on
       - target:
           entity_id:
-          - input_boolean.kitchen_motion_enabled
-          - input_boolean.livingroom_motion_enabled
           - input_boolean.office_motion_enabled
           - input_boolean.bedroom_primary_motion_enabled
           - input_boolean.bathroom_primary_motion_enabled
@@ -591,8 +579,6 @@ cleaning_toggle_mode:
         action: light.turn_off
       - target:
           entity_id:
-          - input_boolean.kitchen_motion_enabled
-          - input_boolean.livingroom_motion_enabled
           - input_boolean.office_motion_enabled
           - input_boolean.bedroom_primary_motion_enabled
           - input_boolean.bathroom_primary_motion_enabled
@@ -1012,3 +998,69 @@ downstairs_enable_motion_override:
       transition: 0.3
     action: light.turn_on
   mode: single
+downstairs_enable_manual_override:
+  alias: 'Downstairs: Enable Manual Override'
+  description: 'Enables manual override for Kitchen and Livingroom. Disables motion-based
+    lighting indirectly via presence detection.
+
+    '
+  mode: single
+  sequence:
+  - target:
+      entity_id:
+      - input_boolean.kitchen_lights_manual_override
+      - input_boolean.livingroom_lights_manual_override
+    action: input_boolean.turn_on
+downstairs_activate_concentrate_mode:
+  alias: 'Downstairs: Activate Concentrate Mode'
+  description: 'Activates the Downstairs Concentrate scene and enables manual override
+    for Kitchen and Livingroom (used to suppress FP2-triggered lighting changes).
+
+    '
+  mode: single
+  sequence:
+  - target:
+      entity_id: scene.downstairs_inside_concentrate
+    action: scene.turn_on
+  - target:
+      entity_id:
+      - input_boolean.kitchen_lights_manual_override
+      - input_boolean.livingroom_lights_manual_override
+    action: input_boolean.turn_on
+movie_mode_toggle_and_lights:
+  alias: 'Movie Mode: Toggle and Lights'
+  description: 'Toggles Movie Mode. When turned on, activates the movie scene and
+    enables overrides to suppress FP2-based lighting automations. When turned off,
+    disables overrides and allows FP2 to resume control.
+
+    '
+  icon: mdi:movie-open
+  mode: single
+  sequence:
+  - variables:
+      is_on: '{{ is_state(''input_boolean.movie'', ''on'') }}'
+  - target:
+      entity_id: input_boolean.movie
+    action: input_boolean.toggle
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not is_on }}'
+      sequence:
+      - target:
+          entity_id: scene.downstairs_inside_movie_tokyo
+        action: scene.turn_on
+      - target:
+          entity_id:
+          - input_boolean.kitchen_lights_manual_override
+          - input_boolean.livingroom_lights_manual_override
+        action: input_boolean.turn_on
+    - conditions:
+      - condition: template
+        value_template: '{{ is_on }}'
+      sequence:
+      - target:
+          entity_id:
+          - input_boolean.kitchen_lights_manual_override
+          - input_boolean.livingroom_lights_manual_override
+        action: input_boolean.turn_off

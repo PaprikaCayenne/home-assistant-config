@@ -902,7 +902,7 @@
   triggers:
   - trigger: state
     entity_id:
-    - binary_sensor.camera_downstairs_person
+    - binary_sensor.presence_sensor_fp2_whole_area
     to: 'on'
   conditions:
   - condition: state
@@ -936,7 +936,8 @@
 
     '
   triggers:
-  - entity_id: binary_sensor.camera_downstairs_person
+  - entity_id:
+    - binary_sensor.presence_sensor_fp2_whole_area
     to: 'off'
     for:
       minutes: 2
@@ -992,9 +993,9 @@
     action: light.turn_off
   mode: restart
 - id: '1744569877439'
-  alias: 'Kitchen: Button 1 Short Press – Resume or Force On'
-  description: 'If all Kitchen lights are off, turn them on at 100% brightness. In
-    either case, prevent motion from turning them off by calling the reset script.
+  alias: 'Kitchen: Button 1 Short Press – Enable Manual Override'
+  description: 'Enables manual override and disables motion for Kitchen and Livingroom
+    unless movie mode is active.
 
     '
   triggers:
@@ -1003,52 +1004,13 @@
     to: short_release
     trigger: state
     attribute: event_type
-  conditions: []
+  conditions:
+  - condition: state
+    entity_id: input_boolean.movie
+    state: 'off'
   actions:
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: "{% set lights = expand(area_entities('kitchen')) \n     |
-          select('search', 'light.') | list %}\n{% set off_lights = lights \n     |
-          selectattr('state', 'eq', 'off') | list %}\n{{ lights | count > 0 and off_lights
-          | count == lights | count }}\n"
-      sequence:
-      - target:
-          area_id: kitchen
-        data:
-          brightness_pct: 100
-          transition: 0.5
-        action: light.turn_on
-  - action: script.reset_kitchen_livingroom_motion
-    data: {}
-  mode: single
-- id: '1744569902947'
-  alias: 'Kitchen: Button 1 Long Press – All On & Override'
-  description: 'Turns on both Kitchen and Livingroom lights at 100% brightness and
-    enables override to prevent motion-based automation.
-
-    '
-  triggers:
-  - entity_id:
-    - event.kitchen_hue_switch_button_1
-    to: long_press
-    trigger: state
-    attribute: event_type
-  conditions: []
-  actions:
-  - target:
-      entity_id:
-      - light.kitchen_hue_group_switch
-      - light.livingroom_hue_group_switch
-    data:
-      brightness_pct: 100
-      transition: 0.5
-    action: light.turn_on
-  - target:
-      entity_id:
-      - input_boolean.kitchen_lights_manual_override
-      - input_boolean.livingroom_lights_manual_override
-    action: input_boolean.turn_on
+  - action: script.downstairs_enable_manual_override
+    metadata: {}
     data: {}
   mode: single
 - id: '1744569919431'
@@ -1214,9 +1176,9 @@
     data: {}
   mode: single
 - id: '1744572277100'
-  alias: 'Livingroom: Button 1 Short Press – Resume or Force On'
-  description: 'If all Livingroom lights are off, turn them on at 100% brightness
-    (2700K). Otherwise leave as-is. Always enable manual override for both rooms.
+  alias: 'Livingroom: Button 1 Short Press – Enable Manual Override'
+  description: 'Enables manual override and disables motion for Kitchen and Livingroom
+    unless movie mode is active.
 
     '
   triggers:
@@ -1225,66 +1187,13 @@
     to: short_release
     trigger: state
     attribute: event_type
-  conditions: []
+  conditions:
+  - condition: state
+    entity_id: input_boolean.movie
+    state: 'off'
   actions:
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: "{% set lights = expand(area_entities('living_room'))\n   |
-          select('search', 'light.') | list %}\n{% set off_lights = lights\n   | selectattr('state',
-          'eq', 'off') | list %}\n{{ lights | count > 0 and off_lights | count ==
-          lights | count }}\n"
-      sequence:
-      - target:
-          area_id: living_room
-        data:
-          brightness_pct: 100
-          color_temp_kelvin: 2700
-          transition: 0.5
-        action: light.turn_on
-      - data:
-          title: Livingroom Button Debug
-          message: All lights were off — triggered light.turn_on
-        action: persistent_notification.create
-    default:
-    - data:
-        title: Livingroom Button Debug
-        message: Some lights were already on — skipped light.turn_on
-      action: persistent_notification.create
-  - target:
-      entity_id:
-      - input_boolean.kitchen_lights_manual_override
-      - input_boolean.livingroom_lights_manual_override
-    action: input_boolean.turn_on
-    data: {}
-  mode: single
-- id: '1744572322132'
-  alias: 'Livingroom: Button 1 Long Press – All On & Override'
-  description: 'Turns on both Kitchen and Livingroom lights at full brightness, then
-    enables manual override to prevent motion shutoff.
-
-    '
-  triggers:
-  - entity_id:
-    - event.livingroom_hue_switch_button_1
-    to: long_press
-    trigger: state
-    attribute: event_type
-  conditions: []
-  actions:
-  - target:
-      entity_id:
-      - light.kitchen_hue_group_switch
-      - light.livingroom_hue_group_switch
-    data:
-      brightness_pct: 100
-      transition: 0.5
-    action: light.turn_on
-  - target:
-      entity_id:
-      - input_boolean.kitchen_lights_manual_override
-      - input_boolean.livingroom_lights_manual_override
-    action: input_boolean.turn_on
+  - action: script.downstairs_enable_manual_override
+    metadata: {}
     data: {}
   mode: single
 - id: '1744572350355'
@@ -1584,90 +1493,21 @@
       area_id: bathroom_guest
   mode: single
 - id: '1749509387699'
-  alias: 'Livingroom: Movie Mode – Activate Scene + Disable Motion'
-  description: Activates Watch Movie scene and disables motion sensors in Livingroom
-    and Kitchen when Movie Mode is turned on.
-  triggers:
-  - trigger: state
-    entity_id:
-    - input_boolean.movie
-    to: 'on'
-  conditions: []
-  actions:
-  - action: hue.hue_activate_scene
-    metadata: {}
-    data:
-      dynamic: true
-      group_name: light.downstairs_inside
-      scene_name: scene.downstairs_inside_movie_tokyo
-    enabled: false
-  - action: scene.turn_on
-    metadata: {}
-    data: {}
-    target:
-      entity_id: scene.downstairs_inside_movie_tokyo
-  mode: single
-- id: '1749747077768'
-  alias: 'Downstairs: Motion Streak Tracker'
-  description: 'Tracks streaks of motion in the downstairs area (kitchen + livingroom).
-    Increments streak counter if 60+ seconds passed since last increment. If 6+ spaced
-    motion events occur and no overrides or global modes are active, enables manual
-    override and briefly flashes lights.
+  alias: 'Livingroom: Movie Mode – Activate Scene Only'
+  description: 'Activates the movie scene when movie mode is turned on. No longer
+    disables motion — FP2 handles presence natively.
 
     '
   triggers:
-  - entity_id: binary_sensor.camera_downstairs_person
+  - entity_id: input_boolean.movie
     to: 'on'
     trigger: state
-  conditions:
-  - condition: template
-    value_template: '{% set last = states(''input_datetime.downstairs_motion_last_incremented'')
-      %} {% set last_dt = strptime(last, ''%Y-%m-%d %H:%M:%S'') %} {{ (now() - last_dt).total_seconds()
-      > 60 }}
-
-      '
+  conditions: []
   actions:
   - target:
-      entity_id: counter.downstairs_motion_streak_count
-    action: counter.increment
-  - target:
-      entity_id: input_datetime.downstairs_motion_last_incremented
-    data:
-      datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
-    action: input_datetime.set_datetime
-  - target:
-      entity_id: timer.downstairs_motion_streak_window
-    action: timer.start
-  - choose:
-    - conditions:
-      - condition: numeric_state
-        entity_id: counter.downstairs_motion_streak_count
-        above: 6
-      - condition: and
-        conditions:
-        - condition: state
-          entity_id: input_boolean.kitchen_lights_manual_override
-          state: 'off'
-        - condition: state
-          entity_id: input_boolean.livingroom_lights_manual_override
-          state: 'off'
-        - condition: state
-          entity_id: input_boolean.cleaning
-          state: 'off'
-        - condition: state
-          entity_id: input_boolean.party
-          state: 'off'
-        - condition: state
-          entity_id: input_boolean.movie
-          state: 'off'
-      sequence:
-      - action: script.downstairs_enable_motion_override
-      - target:
-          entity_id: counter.downstairs_motion_streak_count
-        action: counter.reset
-      - target:
-          entity_id: timer.downstairs_motion_streak_window
-        action: timer.cancel
+      entity_id: scene.downstairs_inside_movie_tokyo
+    action: scene.turn_on
+    data: {}
   mode: single
 - id: '1749747243302'
   alias: 'Hallway: Reset Motion Streak Count'
@@ -1687,144 +1527,213 @@
     action: counter.reset
     data: {}
   mode: single
-- id: '1749754054519'
-  alias: 'Kitchen: Motion Streak Tracker'
-  description: 'Tracks motion streaks for the kitchen. If 3 motion events are detected
-    within 5 minutes, it enables manual override and flashes the lights.
+- id: '1749854379022'
+  alias: 'Kitchen: Button 1 Long Press – Activate Concentrate Mode'
+  description: 'Activates Concentrate Mode across Kitchen and Livingroom, disables
+    motion, enables manual override, and exits Movie Mode.
 
     '
   triggers:
-  - entity_id: binary_sensor.camera_downstairs_person
-    to: 'on'
+  - entity_id:
+    - event.kitchen_hue_switch_button_1
+    to: long_release
     trigger: state
+    attribute: event_type
   conditions: []
   actions:
-  - target:
-      entity_id: counter.kitchen_motion_streak_count
-    action: counter.increment
+  - action: script.downstairs_activate_concentrate_mode
+    metadata: {}
     data: {}
-  - target:
-      entity_id: timer.downstairs_motion_streak_window
-    action: timer.start
+  - action: input_boolean.turn_off
+    metadata: {}
     data: {}
-  - choose:
-    - conditions:
-      - condition: numeric_state
-        entity_id: counter.kitchen_motion_streak_count
-        above: 2
-      sequence:
-      - target:
-          entity_id: input_boolean.kitchen_lights_manual_override
-        action: input_boolean.turn_on
-        data: {}
-      - target:
-          entity_id: light.kitchen_hue_group_switch
-        data:
-          transition: 0.2
-        action: light.turn_off
-      - delay:
-          milliseconds: 300
-      - target:
-          entity_id: light.kitchen_hue_group_switch
-        data:
-          brightness_pct: 100
-          transition: 0.3
-        action: light.turn_on
-      - target:
-          entity_id: counter.kitchen_motion_streak_count
-        action: counter.reset
-        data: {}
-      - target:
-          entity_id: timer.downstairs_motion_streak_window
-        action: timer.cancel
-        data: {}
+    target:
+      entity_id: input_boolean.movie_mode
   mode: single
-- id: '1749754328096'
-  alias: 'Livingroom: Motion Streak Tracker'
-  description: 'Tracks motion streaks for the living room. If 3 motion events are
-    detected within 5 minutes, it enables manual override and flashes the lights.
+- id: '1749854614158'
+  alias: 'Livingroom: Button 1 Long Press – Activate Concentrate Mode'
+  description: 'Activates Concentrate Mode across Kitchen and Livingroom, disables
+    motion, enables manual override, and exits Movie Mode.
 
     '
   triggers:
-  - entity_id: binary_sensor.camera_downstairs_person
-    to: 'on'
+  - entity_id:
+    - event.livingroom_hue_switch_button_1
+    to: long_release
     trigger: state
+    attribute: event_type
   conditions: []
   actions:
-  - target:
-      entity_id: counter.livingroom_motion_streak_count
-    action: counter.increment
+  - action: script.downstairs_activate_concentrate_mode
+    metadata: {}
     data: {}
-  - target:
-      entity_id: timer.downstairs_motion_streak_window
-    action: timer.start
+  - action: input_boolean.turn_off
+    metadata: {}
     data: {}
-  - choose:
-    - conditions:
-      - condition: numeric_state
-        entity_id: counter.livingroom_motion_streak_count
-        above: 2
-      sequence:
-      - target:
-          entity_id: input_boolean.livingroom_lights_manual_override
-        action: input_boolean.turn_on
-        data: {}
-      - target:
-          entity_id: livingroom_hue_group_switch
-        data:
-          transition: 0.2
-        action: light.turn_off
-      - delay:
-          milliseconds: 300
-      - target:
-          entity_id: livingroom_hue_group_switch
-        data:
-          brightness_pct: 100
-          transition: 0.3
-        action: light.turn_on
-      - target:
-          entity_id: counter.livingroom_motion_streak_count
-        action: counter.reset
-        data: {}
-      - target:
-          entity_id: timer.downstairs_motion_streak_window
-        action: timer.cancel
-        data: {}
+    target:
+      entity_id: input_boolean.movie_mode
   mode: single
-- id: '1749754531848'
-  alias: 'Downstairs: Motion Streak Reset'
-  description: 'Resets both kitchen and livingroom motion streak counters if no motion
-    is detected for 5 minutes.
+- id: '1749873701875'
+  alias: 'Hallway: Reset Motion Streak Count'
+  description: 'Resets the hallway motion streak counter when the timer expires. Prevents
+    the counter from persisting past the motion streak window.
 
     '
   triggers:
   - event_type: timer.finished
     event_data:
-      entity_id: timer.downstairs_motion_streak_window
+      entity_id: timer.hallway_motion_streak_window
     trigger: event
+  conditions: []
+  actions:
+  - target:
+      entity_id: counter.hallway_motion_streak_count
+    action: counter.reset
+  mode: single
+- id: '1749875456203'
+  alias: 'Movie Mode: Reset Overrides on Exit'
+  description: 'When movie mode turns off, disables override booleans in Kitchen and
+    Livingroom so FP2 presence automations can resume. Lights are not forcibly changed.
+
+    '
+  triggers:
+  - entity_id: input_boolean.movie
+    to: 'off'
+    trigger: state
   conditions: []
   actions:
   - target:
       entity_id:
-      - counter.kitchen_motion_streak_count
-      - counter.livingroom_motion_streak_count
-    action: counter.reset
+      - input_boolean.kitchen_lights_manual_override
+      - input_boolean.livingroom_lights_manual_override
+    action: input_boolean.turn_off
     data: {}
   mode: single
-- id: '1749770971600'
-  alias: 'Downstairs: Motion Streak Timeout Reset'
-  description: 'Resets the downstairs motion streak counter after the window expires.
-    This prevents streaks from accumulating if motion activity stops.
+- id: '1749875600345'
+  alias: 'Movie Mode: Auto Reset After TV Off'
+  description: 'If the Livingroom TV is turned off and movie mode is still active,
+    waits 5 minutes and then disables movie mode. This allows FP2 presence to take
+    back control. Includes a persistent notification for visibility.
 
     '
   triggers:
-  - event_type: timer.finished
-    event_data:
-      entity_id: timer.downstairs_motion_streak_window
-    trigger: event
+  - entity_id: media_player.livingroom_tv
+    to: 'off'
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.movie
+    state: 'on'
+  actions:
+  - delay: 00:05:00
+  - condition: state
+    entity_id: input_boolean.movie
+    state: 'on'
+  - target:
+      entity_id: input_boolean.movie
+    action: input_boolean.turn_off
+  - data:
+      title: Movie Mode Auto Reset
+      message: 'Movie mode was automatically turned off 5 minutes after the Livingroom
+        TV was turned off.
+
+        '
+    action: persistent_notification.create
+  mode: restart
+- id: '1749876129118'
+  alias: 'Movie Mode: Smooth Kitchen Brighten on Presence'
+  description: 'While movie mode is active, brightens kitchen lights by 20% when FP2
+    detects presence in the cooking area. Fades them back down by 20% when presence
+    is gone.
+
+    '
+  triggers:
+  - entity_id:
+    - binary_sensor.presence_sensor_fp2_cooking_area
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.movie
+    state: 'on'
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.presence_sensor_fp2_cooking_area
+        state: 'on'
+      sequence:
+      - target:
+          entity_id: light.kitchen_hue_group_switch
+        data:
+          brightness_step_pct: 50
+          transition: 1
+        action: light.turn_on
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.presence_sensor_fp2_cooking_area
+        state: 'off'
+      sequence:
+      - target:
+          entity_id: light.kitchen_hue_group_switch
+        data:
+          transition: 1
+          brightness_pct: 1
+        action: light.turn_on
+  mode: restart
+- id: '1749879690322'
+  alias: 'Bedroom Primary: Dial Switch Button 1 Short Press – Resume Lighting'
+  description: 'When the Hue dimmer switch button 1 is short-pressed: - If the bedroom
+    lights are off, run the standard light control script. - Always enable the manual
+    override to disable motion-based automation.
+
+    '
+  triggers:
+  - entity_id:
+    - event.hue_tap_dial_switch_bedroom_primary_button_1
+    to: short_release
+    trigger: state
+    attribute: event_type
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: light.bedroom_primary_hue_group_switch
+        state: 'off'
+      sequence:
+      - action: script.bedroom_primary_light_control_script
+        data: {}
+  - target:
+      entity_id: input_boolean.bedroom_primary_lights_manual_override
+    action: input_boolean.turn_on
+    data: {}
+  mode: single
+- id: '1749879901338'
+  alias: 'Bedroom Primary: Dial Switch Button 4 Short Press – Power Off'
+  description: 'Turns off bedroom lights and resets motion automation after 1 minute.
+
+    '
+  triggers:
+  - entity_id:
+    - event.hue_tap_dial_switch_bedroom_primary_button_4
+    to: short_release
+    trigger: state
+    attribute: event_type
+  conditions: []
   actions:
   - target:
-      entity_id: counter.downstairs_motion_streak_count
-    action: counter.reset
+      entity_id: light.bedroom_primary_hue_group_switch
+    data:
+      transition: 0.5
+    action: light.turn_off
+  - delay:
+      minutes: 1
+  - target:
+      entity_id: input_boolean.bedroom_primary_lights_manual_override
+    action: input_boolean.turn_off
+    data: {}
+  - target:
+      entity_id: input_boolean.bedroom_primary_motion_enabled
+    action: input_boolean.turn_on
     data: {}
   mode: single
