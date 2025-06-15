@@ -244,6 +244,7 @@ global_reset_manual_overrides_off:
       - input_boolean.bathroom_guest_lights_manual_override
       - input_boolean.bathroom_primary_lights_manual_override
       - input_boolean.bedroom_primary_lights_manual_override
+      - input_boolean.stairs_lights_manual_override
   description: Turns off all manual override toggles (lights, cleaning, private time,
     etc.) to restore automation.
 global_enable_motion_automation:
@@ -262,7 +263,9 @@ global_enable_motion_automation:
       - input_boolean.hallway_motion_enabled
       - input_boolean.bathroom_guest_motion_enabled
       - input_boolean.bathroom_primary_motion_enabled
+      - input_boolean.stairs_motion_enabled
     action: input_boolean.turn_on
+    data: {}
 global_disable_motion_automation:
   alias: 'Global: Disable Motion Automation'
   icon: mdi:motion-pause
@@ -279,7 +282,9 @@ global_disable_motion_automation:
       - input_boolean.hallway_motion_enabled
       - input_boolean.bathroom_guest_motion_enabled
       - input_boolean.bathroom_primary_motion_enabled
+      - input_boolean.stairs_motion_enabled
     action: input_boolean.turn_off
+    data: {}
 reset_kitchen_livingroom_motion:
   alias: Reset Kitchen & Livingroom
   description: 'Turns off manual override booleans for Kitchen and Livingroom. Used
@@ -314,7 +319,9 @@ global_clear_all_overrides:
       - input_boolean.cleaning
       - input_boolean.party
       - input_boolean.movie
+      - input_boolean.stairs_lights_manual_override
     action: input_boolean.turn_off
+    data: {}
 kitchen_toggle_manual_override:
   alias: 'Kitchen: Toggle Manual Override'
   description: 'Toggles the kitchen manual override boolean and turns the lights on

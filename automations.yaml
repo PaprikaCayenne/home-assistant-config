@@ -184,6 +184,10 @@
     entity_id:
     - binary_sensor.hue_motion_sensor_3_motion
     to: 'on'
+  - trigger: state
+    entity_id:
+    - binary_sensor.hue_motion_sensor_5_motion
+    to: 'on'
   conditions:
   - condition: state
     entity_id: binary_sensor.motion_hallway_allowed
@@ -247,10 +251,21 @@
     for:
       minutes: 5
     trigger: state
-  - entity_id: binary_sensor.hue_motion_sensor_3_motion
+  - entity_id:
+    - binary_sensor.hue_motion_sensor_3_motion
     to: 'off'
     for:
-      minutes: 8
+      hours: 0
+      minutes: 5
+      seconds: 0
+    trigger: state
+  - entity_id:
+    - binary_sensor.hue_motion_sensor_5_motion
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
     trigger: state
   conditions:
   - condition: state
@@ -489,7 +504,7 @@
   triggers:
   - trigger: state
     entity_id:
-    - binary_sensor.bathroom_guest_motion_sensor
+    - binary_sensor.hue_motion_sensor_bathroom_guest_motion
     to: 'on'
   conditions:
   - condition: state
@@ -510,8 +525,12 @@
   triggers:
   - trigger: state
     entity_id:
-    - binary_sensor.bathroom_guest_motion_sensor
+    - binary_sensor.hue_motion_sensor_bathroom_guest_motion
     to: 'off'
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
   conditions:
   - condition: state
     entity_id: binary_sensor.motion_bathroom_guest_allowed
@@ -900,10 +919,10 @@
   alias: 'Kitchen: Motion Detected – Turn On Lights [Run Light Control Script]'
   description: Turns on kitchen lights when motion is detected and automation is allowed
   triggers:
-  - trigger: state
-    entity_id:
+  - entity_id:
     - binary_sensor.presence_sensor_fp2_whole_area
     to: 'on'
+    trigger: state
   conditions:
   - condition: state
     entity_id: binary_sensor.motion_kitchen_allowed
@@ -911,23 +930,6 @@
   actions:
   - action: script.kitchen_light_control_script
     data: {}
-  mode: single
-- id: '1744568103594'
-  alias: 'Livingroom: Motion Detected – Turn On Lights [Run Light Control Script]'
-  description: Turns on Livingroom lights when motion is detected and automation is
-    allowed, with time-based brightness settings
-  triggers:
-  - trigger: state
-    entity_id:
-    - binary_sensor.camera_downstairs_person
-    to: 'on'
-  conditions:
-  - condition: state
-    entity_id: binary_sensor.motion_livingroom_allowed
-    state: 'on'
-  actions:
-  - data: {}
-    action: script.livingroom_light_control_script
   mode: single
 - id: '1744569217413'
   alias: 'Kitchen: Motion Not Detected – Turn Off Lights'
@@ -947,47 +949,8 @@
     entity_id: binary_sensor.motion_kitchen_allowed
     state: 'on'
   actions:
-  - choose:
-    - conditions:
-      - condition: state
-        entity_id: input_boolean.kitchen_lights_manual_override
-        state: 'on'
-      sequence:
-      - delay:
-          hours: 1
   - target:
       entity_id: light.kitchen_hue_group_switch
-    data:
-      transition: 0.5
-    action: light.turn_off
-  mode: restart
-- id: '1744569239859'
-  alias: 'Livingroom: Motion Not Detected – Turn Off Lights'
-  description: 'Turns off Livingroom lights after 2 minutes of no motion if automation
-    is allowed. If override is active, delays shutoff for 1 hour before checking again.
-
-    '
-  triggers:
-  - entity_id: binary_sensor.camera_downstairs_person
-    to: 'off'
-    for:
-      minutes: 2
-    trigger: state
-  conditions:
-  - condition: state
-    entity_id: binary_sensor.motion_livingroom_allowed
-    state: 'on'
-  actions:
-  - choose:
-    - conditions:
-      - condition: state
-        entity_id: input_boolean.livingroom_lights_manual_override
-        state: 'on'
-      sequence:
-      - delay:
-          hours: 1
-  - target:
-      entity_id: light.livingroom_hue_group_switch
     data:
       transition: 0.5
     action: light.turn_off
@@ -1070,7 +1033,7 @@
     data: {}
   mode: single
 - id: '1744570439455'
-  alias: 'Kitchen Hue: Button 3 Short Press – Dim Kitchen & Override'
+  alias: 'Kitchen: Button 3 Short Press – Dim Kitchen & Override'
   description: Dims kitchen lights by 20% and enables override for both rooms.
   triggers:
   - trigger: state
@@ -1386,6 +1349,7 @@
       - kitchen
       - living_room
       - office
+      - stairs
     data:
       transition: 0.5
     action: light.turn_off
@@ -1736,4 +1700,89 @@
       entity_id: input_boolean.bedroom_primary_motion_enabled
     action: input_boolean.turn_on
     data: {}
+  mode: single
+- id: '1749909190648'
+  alias: 'Livingroom: Motion Detected – Turn On Lights [Run Light Control Script]'
+  description: Turns on livingroom lights when motion is detected and automation is
+    allowed
+  triggers:
+  - entity_id:
+    - binary_sensor.presence_sensor_fp2_whole_area
+    to: 'on'
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.motion_livingroom_allowed
+    state: 'on'
+  actions:
+  - action: script.livingroom_light_control_script
+    data: {}
+  mode: single
+- id: '1749922951079'
+  alias: 'Livingroom: Motion Not Detected – Turn Off Lights'
+  description: 'Turns off kitchen lights 2 minutes after no motion if automation is
+    allowed. If override is active, delays shutoff for 1 hour before checking again.
+
+    '
+  triggers:
+  - entity_id:
+    - binary_sensor.presence_sensor_fp2_whole_area
+    to: 'off'
+    for:
+      minutes: 2
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.motion_livingroom_allowed
+    state: 'on'
+  actions:
+  - target:
+      entity_id:
+      - light.livingroom_hue_group_switch
+    data:
+      transition: 0.5
+    action: light.turn_off
+  mode: restart
+- id: '1749924397237'
+  alias: 'Stairs: Motion Detected – Turn On Lights'
+  description: Turns on Stairs lights when motion is detected and automation is allowed
+  triggers:
+  - entity_id:
+    - binary_sensor.hue_motion_sensor_5_motion
+    to: 'on'
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.motion_stairs_allowed
+    state: 'on'
+  actions:
+  - action: light.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: light.stairs_downstairs_switch
+  mode: single
+- id: '1749924454709'
+  alias: 'Stairs: Not Motion Detected – Turn Off Lights'
+  description: Turns off Stairs lights when motion is not detected and automation
+    is allowed
+  triggers:
+  - entity_id:
+    - binary_sensor.hue_motion_sensor_5_motion
+    to: 'off'
+    trigger: state
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.motion_stairs_allowed
+    state: 'on'
+  actions:
+  - action: light.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: light.stairs_downstairs_switch
   mode: single

@@ -94,3 +94,19 @@
            and states('input_boolean.bathroom_primary_lights_manual_override') not in ['unknown', 'unavailable']
            and states('input_boolean.cleaning') not in ['unknown', 'unavailable'] }}
       icon: mdi:motion-sensor
+    
+    - name: "motion_stairs_allowed"
+      unique_id: motion_stairs_allowed
+      state: >
+        {{ is_state('input_boolean.stairs_motion_enabled', 'on')
+           and is_state('input_boolean.stairs_lights_manual_override', 'off')
+           and is_state('input_boolean.cleaning', 'off')
+           and is_state('input_boolean.party', 'off')
+           and is_state('input_boolean.movie', 'off') }}
+      availability: >
+        {{ states('input_boolean.stairs_motion_enabled') not in ['unknown', 'unavailable']
+           and states('input_boolean.stairs_lights_manual_override') not in ['unknown', 'unavailable']
+           and states('input_boolean.cleaning') not in ['unknown', 'unavailable']
+           and states('input_boolean.party') not in ['unknown', 'unavailable']
+           and states('input_boolean.movie') not in ['unknown', 'unavailable'] }}
+      icon: mdi:motion-sensor
