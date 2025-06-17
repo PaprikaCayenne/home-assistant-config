@@ -689,11 +689,11 @@
   - target:
       entity_id:
       - input_boolean.bathroom_guest_lights_manual_override
-      - input_boolean.bedroom_primary_lights_boolean
       - input_boolean.hallway_lights_manual_override
-      - input_boolean.kitchen_light_boolean
-      - input_boolean.livingroom_lights_boolean
       - input_boolean.office_lights_manual_override
+      - input_boolean.bedroom_primary_lights_manual_override
+      - input_boolean.kitchen_lights_manual_override
+      - input_boolean.livingroom_lights_manual_override
     action: input_boolean.turn_off
     data: {}
   mode: single
@@ -1536,23 +1536,6 @@
     data: {}
     target:
       entity_id: input_boolean.movie_mode
-  mode: single
-- id: '1749873701875'
-  alias: 'Hallway: Reset Motion Streak Count'
-  description: 'Resets the hallway motion streak counter when the timer expires. Prevents
-    the counter from persisting past the motion streak window.
-
-    '
-  triggers:
-  - event_type: timer.finished
-    event_data:
-      entity_id: timer.hallway_motion_streak_window
-    trigger: event
-  conditions: []
-  actions:
-  - target:
-      entity_id: counter.hallway_motion_streak_count
-    action: counter.reset
   mode: single
 - id: '1749875456203'
   alias: 'Movie Mode: Reset Overrides on Exit'

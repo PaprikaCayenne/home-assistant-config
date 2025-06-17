@@ -6,10 +6,8 @@
 # Core Settings & Integrations
 # ================================
 
-default_config:
-
 # Enable default UI and dashboards
-my:
+default_config:
 
 # Template sensors, binary sensors, etc.
 template: !include_dir_merge_list templates/
