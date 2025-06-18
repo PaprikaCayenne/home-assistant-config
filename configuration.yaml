@@ -41,54 +41,18 @@ alexa:
 # ================================
 # HomeKit Integration (Filtered)
 # ================================
-homekit:
-  filter:
-    include_entities:
-      # Hue groups
-      - light.kitchen_hue_group_switch
-      - light.livingroom_hue_group_switch
-      - light.bedroom_primary_hue_group_switch
-      - light.patio_hue_group_switch
-      - light.downstairs_inside
-      - light.downstairs_hue_group
-      - light.upstairs_hue_group
 
-      # Lutron lights
-      - light.office_desk_lamp
-      - light.bedroom_lamp_left
-      - light.bedroom_lamp_right
-      - light.livingroom_lamp_1
-      - light.livingroom_lamp_2
-      - light.kitchen_ceiling_lights
-      - light.hallway_ceiling_lights
-
-      # Other non-group lights
-      - light.bathroom_primary_ceiling
-      - light.bathroom_guest_ceiling
-      - light.stairs_lights
-      - light.entryway_ceiling
-      - light.guest_bedroom_ceiling
-
-    exclude_domains:
-      - media_player
-      - camera
-      - climate
-      - sensor
-      - input_boolean
-      - automation
-      - binary_sensor
-
-  entity_config:
-    light.downstairs_inside:
-      name: "Downstairs Lights"
-    light.kitchen_hue_group_switch:
-      name: "Kitchen Lights"
-    light.livingroom_hue_group_switch:
-      name: "Living Room Lights"
-    light.bedroom_primary_hue_group_switch:
-      name: "Bedroom Lights"
-    light.patio_hue_group_switch:
-      name: "Patio Lights"
+    entity_config:
+      light.downstairs_inside:
+        name: "Downstairs Lights"
+      light.kitchen_hue_group_switch:
+        name: "Kitchen Lights"
+      light.livingroom_hue_group_switch:
+        name: "Living Room Lights"
+      light.bedroom_primary_hue_group_switch:
+        name: "Bedroom Lights"
+      light.patio_hue_group_switch:
+        name: "Patio Lights"
 
 # ================================
 # Authentication & File Access

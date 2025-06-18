@@ -369,11 +369,7 @@
   triggers:
   - trigger: state
     entity_id:
-    - binary_sensor.camera_office_person
-    to: 'on'
-  - trigger: state
-    entity_id:
-    - binary_sensor.office_motion
+    - binary_sensor.presence_sensor_fp2_whole_office
     to: 'on'
   conditions:
   - condition: state
@@ -394,20 +390,12 @@
   triggers:
   - trigger: state
     entity_id:
-    - binary_sensor.camera_office_person
-    to: 'off'
+    - binary_sensor.presence_sensor_fp2_whole_office
     for:
       hours: 0
-      minutes: 10
+      minutes: 2
       seconds: 0
-  - trigger: state
-    entity_id:
-    - binary_sensor.office_motion
     to: 'off'
-    for:
-      hours: 0
-      minutes: 10
-      seconds: 0
   conditions:
   - condition: state
     entity_id: binary_sensor.motion_office_allowed
@@ -550,7 +538,6 @@
   - trigger: state
     entity_id:
     - input_boolean.office_lights_manual_override
-    from: 'off'
     to: 'on'
   conditions: []
   actions:
@@ -560,41 +547,6 @@
       brightness_pct: 100
     target:
       area_id: office
-  mode: single
-- id: '1742528617652'
-  alias: 'Office: Lights Manually Off'
-  description: Office Lights Boolean to Off
-  triggers:
-  - trigger: state
-    entity_id:
-    - input_boolean.office_lights_manual_override
-    from: 'on'
-    to: 'off'
-  conditions: []
-  actions:
-  - action: light.turn_off
-    metadata: {}
-    data:
-      transition: 1
-    target:
-      area_id: office
-  - sequence:
-    - action: automation.turn_off
-      metadata: {}
-      data:
-        stop_actions: true
-      target:
-        entity_id: automation.office_camera_human_detected_lights_on
-    - delay:
-        hours: 0
-        minutes: 1
-        seconds: 0
-        milliseconds: 0
-    - action: automation.turn_on
-      metadata: {}
-      data: {}
-      target:
-        entity_id: automation.office_camera_human_detected_lights_on
   mode: single
 - id: '1742563148793'
   alias: 'Global: Cleaning Mode – Lights On & Motion Override'
@@ -659,21 +611,24 @@
   alias: 'Office: Manually Turn Off Light'
   description: If the Office Light is Turned Off then Office Boolean set to Off
   triggers:
-  - type: turned_on
+  - type: turned_off
     device_id: 89e3ce49a9ef408981d0e60f103232fc
     entity_id: 820f53c15c7657430b5b5b1f19634993
     domain: light
     trigger: device
   conditions: []
   actions:
-  - if:
-    - condition: state
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
       entity_id: input_boolean.office_lights_manual_override
-      state: 'on'
-    then:
-    - action: input_boolean.turn_off
-      metadata: {}
-      data: {}
+  - action: light.turn_off
+    metadata: {}
+    data:
+      transition: 0.5
+    target:
+      area_id: office
   mode: single
 - id: '1743455765879'
   alias: 'Leaves: Turn Off All Booleans'
@@ -696,28 +651,6 @@
       - input_boolean.livingroom_lights_manual_override
     action: input_boolean.turn_off
     data: {}
-  mode: single
-- id: '1743647203259'
-  alias: 'Office: Fan Light Turned Off'
-  description: Checks the office boolean and turns it off
-  triggers:
-  - type: turned_off
-    device_id: 89e3ce49a9ef408981d0e60f103232fc
-    entity_id: 820f53c15c7657430b5b5b1f19634993
-    domain: light
-    trigger: device
-  conditions: []
-  actions:
-  - if:
-    - condition: state
-      entity_id: input_boolean.office_lights_manual_override
-      state: 'on'
-    then:
-    - action: input_boolean.turn_off
-      metadata: {}
-      data: {}
-      target:
-        entity_id: input_boolean.office_lights_manual_override
   mode: single
 - id: '1744084082903'
   alias: 'Bedroom Primary: Motion Detected – Turn Lights On [Run Light Control Script]'
@@ -920,7 +853,7 @@
   description: Turns on kitchen lights when motion is detected and automation is allowed
   triggers:
   - entity_id:
-    - binary_sensor.presence_sensor_fp2_whole_area
+    - binary_sensor.presence_sensor_fp2_whole_downstairs
     to: 'on'
     trigger: state
   conditions:
@@ -939,7 +872,7 @@
     '
   triggers:
   - entity_id:
-    - binary_sensor.presence_sensor_fp2_whole_area
+    - binary_sensor.presence_sensor_fp2_whole_downstairs
     to: 'off'
     for:
       minutes: 2
@@ -1415,29 +1348,6 @@
         transition: 1
       action: light.turn_off
   mode: single
-- id: '1745968774027'
-  alias: 'Office: Manual Fan Light Off → Reset Automation'
-  description: If lights + booleans are on and fan light is manually turned off, shut
-    down all lights and re-enable motion
-  triggers:
-  - type: turned_off
-    device_id: 89e3ce49a9ef408981d0e60f103232fc
-    entity_id: 820f53c15c7657430b5b5b1f19634993
-    domain: light
-    trigger: device
-  conditions: []
-  actions:
-  - target:
-      entity_id:
-      - input_boolean.office_lights_manual_override
-      - input_boolean.office_lights_hold_boolean
-    action: input_boolean.turn_off
-    data: {}
-  - target:
-      area_id: office
-    action: light.turn_off
-    data: {}
-  mode: single
 - id: '1746206656134'
   alias: 'Bathroom Guest: Manually Stay On'
   description: Guest Bathroom Boolean to On and turn on lights to keep them on
@@ -1690,7 +1600,7 @@
     allowed
   triggers:
   - entity_id:
-    - binary_sensor.presence_sensor_fp2_whole_area
+    - binary_sensor.presence_sensor_fp2_whole_downstairs
     to: 'on'
     trigger: state
   conditions:
@@ -1709,7 +1619,7 @@
     '
   triggers:
   - entity_id:
-    - binary_sensor.presence_sensor_fp2_whole_area
+    - binary_sensor.presence_sensor_fp2_whole_downstairs
     to: 'off'
     for:
       minutes: 2
