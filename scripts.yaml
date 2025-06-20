@@ -322,48 +322,6 @@ global_clear_all_overrides:
       - input_boolean.stairs_lights_manual_override
     action: input_boolean.turn_off
     data: {}
-kitchen_toggle_manual_override:
-  alias: 'Kitchen: Toggle Lights & Manual Override'
-  description: 'Turns lights ON using kitchen light control script (if off) and enables
-    override. If lights are ON, turns them OFF, disables override, and starts a motion
-    cooldown to suppress immediate reactivation.
-
-    '
-  mode: single
-  icon: mdi:lightbulb-group
-  sequence:
-  - choose:
-    - conditions:
-      - condition: state
-        entity_id: light.kitchen_hue_group_switch
-        state: 'off'
-      sequence:
-      - action: script.kitchen_light_control_script
-        metadata: {}
-        data: {}
-      - action: input_boolean.turn_on
-        metadata: {}
-        data: {}
-        target:
-          entity_id: input_boolean.kitchen_lights_manual_override
-    - conditions:
-      - condition: state
-        entity_id: light.kitchen_hue_group_switch
-        state: 'on'
-      sequence:
-      - action: light.turn_off
-        metadata: {}
-        data:
-          transition: 0.5
-        target:
-          entity_id: light.kitchen_hue_group_switch
-      - action: input_boolean.turn_off
-        metadata: {}
-        data: {}
-        target:
-          entity_id: input_boolean.kitchen_lights_manual_override
-      - action: script.kitchen_start_motion_cooldown
-        data: {}
 kitchen_toggle_manual_override_2:
   alias: 'Kitchen: Toggle Manual Override'
   description: 'Toggles the kitchen manual override boolean and turns the lights on
@@ -394,46 +352,6 @@ kitchen_toggle_manual_override_2:
       - target:
           entity_id: light.kitchen_hue_group_switch
         action: light.turn_off
-office_toggle_manual_override:
-  alias: 'Office: Toggle Lights & Manual Override'
-  description: 'Turns lights ON and enables override (if off). If lights are ON, turns
-    them OFF and disables override. Used to control office desk lamp and suppress
-    motion during manual usage.
-
-    '
-  mode: single
-  icon: mdi:desk-lamp
-  sequence:
-  - choose:
-    - conditions:
-      - condition: state
-        entity_id: light.office_lights_group
-        state: 'off'
-      sequence:
-      - action: light.turn_on
-        data:
-          brightness_pct: 100
-          transition: 0.5
-        target:
-          entity_id: light.office_lights_group
-      - action: input_boolean.turn_on
-        target:
-          entity_id: input_boolean.office_lights_manual_override
-        data: {}
-    - conditions:
-      - condition: state
-        entity_id: light.office_lights_group
-        state: 'on'
-      sequence:
-      - action: light.turn_off
-        data:
-          transition: 0.5
-        target:
-          entity_id: light.office_lights_group
-      - action: input_boolean.turn_off
-        target:
-          entity_id: input_boolean.office_lights_manual_override
-        data: {}
 party_toggle_mode:
   alias: 'Party: Toggle Mode'
   description: 'Toggles party mode and turns on common area lights for social settings.
@@ -596,12 +514,13 @@ bedroom_toggle_private_time:
         action: switch.turn_off
 livingroom_toggle_lights_manual_override:
   alias: 'Livingroom: Toggle Lights & Manual Override'
-  description: 'Turns lights ON using living room light control script (if off) and
-    enables override. If lights are ON, turns them OFF and disables override.
+  description: 'Toggles living room lights and override based on current state: -
+    If lights are OFF, turn ON using control script and enable override. - If lights
+    are ON and override is OFF, enable override (keep lights ON). - If lights are
+    ON and override is ON, turn OFF and disable override.
 
     '
-  mode: single
-  icon: mdi:lightbulb-group
+  mode: restart
   sequence:
   - choose:
     - conditions:
@@ -621,6 +540,22 @@ livingroom_toggle_lights_manual_override:
       - condition: state
         entity_id: light.livingroom_hue_group_switch
         state: 'on'
+      - condition: state
+        entity_id: input_boolean.livingroom_lights_manual_override
+        state: 'off'
+      sequence:
+      - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.livingroom_lights_manual_override
+    - conditions:
+      - condition: state
+        entity_id: light.livingroom_hue_group_switch
+        state: 'on'
+      - condition: state
+        entity_id: input_boolean.livingroom_lights_manual_override
+        state: 'on'
       sequence:
       - action: light.turn_off
         metadata: {}
@@ -633,49 +568,11 @@ livingroom_toggle_lights_manual_override:
         data: {}
         target:
           entity_id: input_boolean.livingroom_lights_manual_override
-'1749759181927':
-  alias: 'Bedroom Guest: Toggle Lights & Manual Override'
-  description: 'Turns guest bedroom lights ON (if off) and enables override. If lights
-    are ON, turns them OFF and disables override.
-
-    '
-  mode: single
-  icon: mdi:lightbulb-group
-  sequence:
-  - choose:
-    - conditions:
-      - condition: state
-        entity_id: light.bedroom_guest_main_lights
-        state: 'off'
-      sequence:
-      - action: light.turn_on
-        metadata: {}
-        data:
-          brightness_pct: 100
-          transition: 0.5
-        target:
-          entity_id: light.bedroom_guest_main_lights
-      - action: input_boolean.turn_on
+      - action: script.turn_on
         metadata: {}
         data: {}
         target:
-          entity_id: input_boolean.bedroom_guest_lights_manual_override
-    - conditions:
-      - condition: state
-        entity_id: light.bedroom_guest_main_lights
-        state: 'on'
-      sequence:
-      - action: light.turn_off
-        metadata: {}
-        data:
-          transition: 0.5
-        target:
-          entity_id: light.bedroom_guest_main_lights
-      - action: input_boolean.turn_off
-        metadata: {}
-        data: {}
-        target:
-          entity_id: input_boolean.bedroom_guest_lights_manual_override
+          entity_id: script.livingroom_start_motion_cooldown
 hallway_reset_motion:
   alias: 'Hallway: Reset Motion'
   description: 'Turns off hallway manual override and re-enables motion automation.
@@ -711,42 +608,70 @@ bedroom_primary_reset_motion:
     data: {}
 hallway_toggle_lights_manual_override:
   alias: 'Hallway: Toggle Lights & Manual Override'
-  description: 'Toggles hallway lights and motion override. If lights are off, turns
-    them on and enables override. If lights are on, turns them off, waits 30s, disables
-    override, and re-enables motion.
+  description: 'Toggles hallway lights and override based on current state: - If lights
+    are OFF, turn ON and enable override. - If lights are ON and override is OFF,
+    enable override (keep lights ON). - If lights are ON and override is ON, turn
+    OFF and disable override.
 
     '
-  mode: single
-  icon: mdi:lightbulb-group
+  mode: restart
   sequence:
-  - variables:
-      is_on: '{{ is_state(''light.hallway_ceiling_lights'', ''on'') }}'
   - choose:
     - conditions:
-      - condition: template
-        value_template: '{{ not is_on }}'
+      - condition: state
+        entity_id: light.hallway_main_lights
+        state: 'off'
       sequence:
-      - target:
-          entity_id: light.hallway_ceiling_lights
-        action: light.turn_on
+      - action: light.turn_on
+        metadata: {}
+        data:
+          transition: 0.5
+          brightness_pct: 100
+        target:
+          entity_id: light.hallway_main_lights
+      - action: input_boolean.turn_on
+        metadata: {}
         data: {}
-      - target:
+        target:
           entity_id: input_boolean.hallway_lights_manual_override
-        action: input_boolean.turn_on
-        data: {}
     - conditions:
-      - condition: template
-        value_template: '{{ is_on }}'
+      - condition: state
+        entity_id: light.hallway_main_lights
+        state: 'on'
+      - condition: state
+        entity_id: input_boolean.hallway_lights_manual_override
+        state: 'off'
       sequence:
-      - data:
+      - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.hallway_lights_manual_override
+    - conditions:
+      - condition: state
+        entity_id: light.hallway_main_lights
+        state: 'on'
+      - condition: state
+        entity_id: input_boolean.hallway_lights_manual_override
+        state: 'on'
+      sequence:
+      - action: light.turn_off
+        metadata: {}
+        data:
           transition: 0.5
         target:
-          entity_id: light.hallway_ceiling_lights
-        action: light.turn_off
-      - delay:
-          seconds: 30
-      - action: script.hallway_reset_motion
+          entity_id:
+          - light.hallway_main_lights
+      - action: input_boolean.turn_off
+        metadata: {}
         data: {}
+        target:
+          entity_id: input_boolean.hallway_lights_manual_override
+      - action: script.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: script.hallway_start_motion_cooldown
 bathroom_primary_reset_motion:
   alias: 'Bathroom Primary: Reset Motion'
   description: 'Turns off primary bathroom manual override and re-enables motion automation.
@@ -765,21 +690,22 @@ bathroom_primary_reset_motion:
     data: {}
 bathroom_primary_toggle_lights_manual_override:
   alias: 'Bedroom Primary: Toggle Lights & Manual Override'
-  description: 'Turns lights ON and enables override (if off). If lights are ON, turns
-    them OFF and disables override. Used to control bedroom lights and suppress motion
-    during manual usage.
+  description: 'Toggles lights and override based on current state: - If lights are
+    OFF, turn ON and enable override. - If lights are ON and override is OFF, enable
+    override (keep lights ON). - If lights are ON and override is ON, turn OFF and
+    disable override.
 
     '
-  mode: single
-  icon: mdi:bed-king-outline
+  mode: restart
   sequence:
   - choose:
     - conditions:
       - condition: state
-        entity_id: light.bedroom_primary_main_lights
+        entity_id: light.bedroom_primary_hue_group_switch
         state: 'off'
       sequence:
       - action: light.turn_on
+        metadata: {}
         data:
           transition: 0.5
           color_temp_kelvin: 3500
@@ -787,23 +713,47 @@ bathroom_primary_toggle_lights_manual_override:
         target:
           entity_id: light.bedroom_primary_hue_group_switch
       - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
         target:
           entity_id: input_boolean.bedroom_primary_lights_manual_override
-        data: {}
     - conditions:
       - condition: state
         entity_id: light.bedroom_primary_hue_group_switch
         state: 'on'
+      - condition: state
+        entity_id: input_boolean.bedroom_primary_lights_manual_override
+        state: 'off'
+      sequence:
+      - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.bedroom_primary_lights_manual_override
+    - conditions:
+      - condition: state
+        entity_id: light.bedroom_primary_hue_group_switch
+        state: 'on'
+      - condition: state
+        entity_id: input_boolean.bedroom_primary_lights_manual_override
+        state: 'on'
       sequence:
       - action: light.turn_off
+        metadata: {}
         data:
           transition: 0.5
         target:
           entity_id: light.bedroom_primary_hue_group_switch
       - action: input_boolean.turn_off
+        metadata: {}
+        data: {}
         target:
           entity_id: input_boolean.bedroom_primary_lights_manual_override
+      - action: script.turn_on
+        metadata: {}
         data: {}
+        target:
+          entity_id: script.bedroom_primary_start_motion_cooldown
 bathroom_guest_reset_motion:
   alias: 'Bathroom Guest: Reset Motion'
   description: 'Turns off guest bathroom manual override and re-enables motion automation.
@@ -822,13 +772,13 @@ bathroom_guest_reset_motion:
     data: {}
 bathroom_guest_toggle_lights_manual_override:
   alias: 'Bathroom Guest: Toggle Lights & Manual Override'
-  description: 'Turns lights ON and enables override (if off). If lights are ON, turns
-    them OFF and disables override. Used to control guest bathroom lights and suppress
-    motion during manual usage.
+  description: 'Toggles lights and override based on current state: - If lights are
+    OFF, turn ON and enable override. - If lights are ON and override is OFF, enable
+    override (keep lights ON). - If lights are ON and override is ON, turn OFF and
+    disable override.
 
     '
-  mode: single
-  icon: mdi:toilet
+  mode: restart
   sequence:
   - choose:
     - conditions:
@@ -837,30 +787,55 @@ bathroom_guest_toggle_lights_manual_override:
         state: 'off'
       sequence:
       - action: light.turn_on
-        target:
-          entity_id:
-          - light.bathroom_guest_vanity_lights
+        metadata: {}
         data:
-          brightness_pct: 100
           transition: 0.5
+          brightness_pct: 100
+        target:
+          entity_id: light.bathroom_guest_vanity_lights
       - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
         target:
           entity_id: input_boolean.bathroom_guest_lights_manual_override
-        data: {}
     - conditions:
       - condition: state
         entity_id: light.bathroom_guest_vanity_lights
         state: 'on'
+      - condition: state
+        entity_id: input_boolean.bathroom_guest_lights_manual_override
+        state: 'off'
+      sequence:
+      - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.bathroom_guest_lights_manual_override
+    - conditions:
+      - condition: state
+        entity_id: light.bathroom_guest_vanity_lights
+        state: 'on'
+      - condition: state
+        entity_id: input_boolean.bathroom_guest_lights_manual_override
+        state: 'on'
       sequence:
       - action: light.turn_off
+        metadata: {}
         data:
           transition: 0.5
         target:
-          entity_id: light.bathroom_guest_vanity_lights
+          entity_id:
+          - light.bathroom_guest_vanity_lights
       - action: input_boolean.turn_off
+        metadata: {}
+        data: {}
         target:
           entity_id: input_boolean.bathroom_guest_lights_manual_override
+      - action: script.turn_on
+        metadata: {}
         data: {}
+        target:
+          entity_id: script.bathroom_guest_start_motion_cooldown
 downstairs_enable_motion_override:
   alias: 'Downstairs: Enable Motion Override'
   description: 'Enables manual override for both kitchen and livingroom lights and
@@ -920,48 +895,6 @@ downstairs_activate_concentrate_mode:
       - input_boolean.kitchen_lights_manual_override
       - input_boolean.livingroom_lights_manual_override
     action: input_boolean.turn_on
-movie_mode_toggle_and_lights:
-  alias: 'Movie Mode: Toggle and Lights'
-  description: 'Toggles Movie Mode. When turned on, activates the movie scene and
-    enables overrides to suppress FP2-based lighting automations. When turned off,
-    disables overrides and allows FP2 to resume control.
-
-    '
-  icon: mdi:movie-open
-  mode: single
-  sequence:
-  - variables:
-      is_on: '{{ is_state(''input_boolean.movie'', ''on'') }}'
-  - action: input_boolean.toggle
-    metadata: {}
-    data: {}
-    target:
-      entity_id: input_boolean.movie
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ not is_on }}'
-      sequence:
-      - target:
-          entity_id: scene.downstairs_inside_movie_tokyo
-        action: scene.turn_on
-        data: {}
-      - target:
-          entity_id:
-          - input_boolean.kitchen_lights_manual_override
-          - input_boolean.livingroom_lights_manual_override
-        action: input_boolean.turn_on
-        data: {}
-    - conditions:
-      - condition: template
-        value_template: '{{ is_on }}'
-      sequence:
-      - target:
-          entity_id:
-          - input_boolean.kitchen_lights_manual_override
-          - input_boolean.livingroom_lights_manual_override
-        action: input_boolean.turn_off
-        data: {}
 livingroom_start_motion_cooldown:
   alias: 'Livingroom: Start Motion Cooldown'
   description: 'Enables the motion cooldown boolean for Livingroom, waits 15 seconds,
@@ -1034,28 +967,6 @@ guest_bedroom_start_motion_cooldown:
     data: {}
     target:
       entity_id: input_boolean.bedroom_guest_motion_cooldown_boolean
-'1750264264749':
-  alias: 'Office: Start Motion Cooldown'
-  description: 'Enables the motion cooldown boolean for Office, waits 15 seconds,
-    then disables it — but only if the override is still off. Prevents motion from
-    reactivating if the user turns the override back on.
-
-    '
-  mode: restart
-  sequence:
-  - action: input_boolean.turn_on
-    target:
-      entity_id: input_boolean.office_motion_cooldown_boolean
-    data: {}
-  - delay:
-      seconds: 15
-  - condition: state
-    entity_id: input_boolean.office_lights_manual_override
-    state: 'off'
-  - action: input_boolean.turn_off
-    target:
-      entity_id: input_boolean.office_motion_cooldown_boolean
-    data: {}
 hallway_start_motion_cooldown:
   alias: 'Hallway: Start Motion Cooldown'
   description: 'Enables the motion cooldown boolean for Hallway, waits 15 seconds,
@@ -1168,13 +1079,13 @@ stairs_start_motion_cooldown:
     data: {}
 stairs_toggle_lights_manual_override:
   alias: 'Stairs: Toggle Lights & Manual Override'
-  description: 'Turns lights ON and enables override (if off). If lights are ON, turns
-    them OFF and disables override. Used to control stairway lights and suppress motion
-    during manual usage.
+  description: 'Toggles stairway lights and override based on current state: - If
+    lights are OFF, turn ON and enable override. - If lights are ON and override is
+    OFF, enable override (keep lights ON). - If lights are ON and override is ON,
+    turn OFF and disable override.
 
     '
-  mode: single
-  icon: mdi:stairs
+  mode: restart
   sequence:
   - choose:
     - conditions:
@@ -1183,29 +1094,54 @@ stairs_toggle_lights_manual_override:
         state: 'off'
       sequence:
       - action: light.turn_on
+        metadata: {}
         data:
-          transition: 0.5
           brightness_pct: 100
+          transition: 0.5
         target:
           entity_id: light.stairs_downstairs_switch
       - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
         target:
           entity_id: input_boolean.stairs_lights_manual_override
-        data: {}
     - conditions:
       - condition: state
         entity_id: light.stairs_downstairs_switch
         state: 'on'
+      - condition: state
+        entity_id: input_boolean.stairs_lights_manual_override
+        state: 'off'
+      sequence:
+      - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.stairs_lights_manual_override
+    - conditions:
+      - condition: state
+        entity_id: light.stairs_downstairs_switch
+        state: 'on'
+      - condition: state
+        entity_id: input_boolean.stairs_lights_manual_override
+        state: 'on'
       sequence:
       - action: light.turn_off
+        metadata: {}
         data:
           transition: 0.5
         target:
           entity_id: light.stairs_downstairs_switch
       - action: input_boolean.turn_off
+        metadata: {}
+        data: {}
         target:
           entity_id: input_boolean.stairs_lights_manual_override
+      - action: script.turn_on
+        metadata: {}
         data: {}
+        target:
+          entity_id: script.stairs_start_motion_cooldown
 downstairs_toggle_lights_manual_override:
   alias: 'Downstairs: Toggle Lights & Manual Override'
   sequence:
@@ -1217,3 +1153,481 @@ downstairs_toggle_lights_manual_override:
     data: {}
   mode: single
   description: ''
+bedroom_guest_toggle_lights_manual_override:
+  alias: 'Bedroom Guest: Toggle Lights & Manual Override'
+  description: 'Toggles lights and override based on current state: - If lights are
+    OFF, turn ON and enable override. - If lights are ON and override is OFF, enable
+    override (keep lights ON). - If lights are ON and override is ON, turn OFF and
+    disable override.
+
+    '
+  icon: mdi:lightbulb-group-outline
+  mode: restart
+  sequence:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: light.bedroom_guest_main_lights
+        state: 'off'
+      sequence:
+      - action: light.turn_on
+        metadata: {}
+        data:
+          transition: 0.5
+          brightness_pct: 100
+        target:
+          entity_id: light.bedroom_guest_main_lights
+      - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.bedroom_guest_lights_manual_override
+    - conditions:
+      - condition: state
+        entity_id: light.bedroom_guest_main_lights
+        state: 'on'
+      - condition: state
+        entity_id: input_boolean.bedroom_guest_lights_manual_override
+        state: 'off'
+      sequence:
+      - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.bedroom_guest_lights_manual_override
+    - conditions:
+      - condition: state
+        entity_id: light.bedroom_guest_main_lights
+        state: 'on'
+      - condition: state
+        entity_id: input_boolean.bedroom_guest_lights_manual_override
+        state: 'on'
+      sequence:
+      - action: light.turn_off
+        metadata: {}
+        data:
+          transition: 0.5
+        target:
+          entity_id: light.bedroom_guest_main_lights
+      - action: input_boolean.turn_off
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.bedroom_guest_lights_manual_override
+      - action: script.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: script.guest_bedroom_start_motion_cooldown
+kitchen_toggle_lights_manual_override:
+  alias: 'Kitchen: Toggle Lights & Manual Override'
+  description: 'Toggles kitchen lights and override based on current state: - If lights
+    are OFF, turn ON using control script and enable override. - If lights are ON
+    and override is OFF, enable override (keep lights ON). - If lights are ON and
+    override is ON, turn OFF, disable override, and start cooldown.
+
+    '
+  mode: restart
+  sequence:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: light.kitchen_hue_group_switch
+        state: 'off'
+      sequence:
+      - action: script.kitchen_light_control_script
+        metadata: {}
+        data: {}
+      - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.kitchen_lights_manual_override
+    - conditions:
+      - condition: state
+        entity_id: light.kitchen_hue_group_switch
+        state: 'on'
+      - condition: state
+        entity_id: input_boolean.kitchen_lights_manual_override
+        state: 'off'
+      sequence:
+      - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.kitchen_lights_manual_override
+    - conditions:
+      - condition: state
+        entity_id: light.kitchen_hue_group_switch
+        state: 'on'
+      - condition: state
+        entity_id: input_boolean.kitchen_lights_manual_override
+        state: 'on'
+      sequence:
+      - action: light.turn_off
+        metadata: {}
+        data:
+          transition: 0.5
+        target:
+          entity_id: light.kitchen_hue_group_switch
+      - action: input_boolean.turn_off
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.kitchen_lights_manual_override
+      - action: script.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: script.kitchen_start_motion_cooldown
+  icon: mdi:lightbulb-group-outline
+office_toggle_lights_manual_override:
+  alias: 'Office: Toggle Lights & Manual Override'
+  description: 'Toggles office lights and override based on current state: - If lights
+    are OFF, turn ON and enable override. - If lights are ON and override is OFF,
+    enable override (keep lights ON). - If lights are ON and override is ON, turn
+    OFF and disable override.
+
+    '
+  mode: restart
+  sequence:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: light.office_lights_group
+        state: 'off'
+      sequence:
+      - action: light.turn_on
+        metadata: {}
+        data:
+          brightness_pct: 100
+          transition: 0.5
+        target:
+          entity_id: light.office_lights_group
+      - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.office_lights_manual_override
+    - conditions:
+      - condition: state
+        entity_id: light.office_lights_group
+        state: 'on'
+      - condition: state
+        entity_id: input_boolean.office_lights_manual_override
+        state: 'off'
+      sequence:
+      - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.office_lights_manual_override
+    - conditions:
+      - condition: state
+        entity_id: light.office_lights_group
+        state: 'on'
+      - condition: state
+        entity_id: input_boolean.office_lights_manual_override
+        state: 'on'
+      sequence:
+      - action: light.turn_off
+        metadata: {}
+        data:
+          transition: 0.5
+        target:
+          entity_id: light.office_lights_group
+      - action: input_boolean.turn_off
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.office_lights_manual_override
+      - action: script.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: script.office_start_motion_cooldown
+  icon: mdi:lightbulb-group-outline
+office_start_motion_cooldown:
+  alias: 'Office: Start Motion Cooldown'
+  description: 'Enables the motion cooldown boolean for Office, waits 15 seconds,
+    then disables it — but only if the override is still off. Cancels immediately
+    if override is already on.
+
+    '
+  mode: restart
+  sequence:
+  - action: input_boolean.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.office_motion_cooldown_boolean
+  - delay:
+      seconds: 15
+  - condition: state
+    entity_id: input_boolean.office_lights_manual_override
+    state: 'off'
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.office_motion_cooldown_boolean
+reset_all_active_overrides:
+  alias: Reset All Active Overrides
+  description: Checks all manual override booleans and global mode toggles. If any
+    are ON, it runs the corresponding toggle script to turn them OFF. Each override
+    is checked and reset independently.
+  mode: parallel
+  sequence:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.kitchen_lights_manual_override
+        state: 'on'
+      sequence:
+      - action: script.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: script.kitchen_toggle_lights_manual_override
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.livingroom_lights_manual_override
+        state: 'on'
+      sequence:
+      - action: script.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: script.livingroom_toggle_lights_manual_override
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.office_lights_manual_override
+        state: 'on'
+      sequence:
+      - action: script.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: script.office_toggle_lights_manual_override
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.hallway_lights_manual_override
+        state: 'on'
+      sequence:
+      - action: script.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: script.hallway_toggle_lights_manual_override
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.stairs_lights_manual_override
+        state: 'on'
+      sequence:
+      - action: script.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: script.stairs_toggle_lights_manual_override
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.bathroom_primary_lights_manual_override
+        state: 'on'
+      sequence:
+      - action: script.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: script.bathroom_primary_toggle_lights_manual_override
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.bathroom_guest_lights_manual_override
+        state: 'on'
+      sequence:
+      - action: script.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: script.bathroom_guest_toggle_lights_manual_override
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.bedroom_primary_lights_manual_override
+        state: 'on'
+      sequence:
+      - action: script.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: script.bedroom_primary_toggle_lights_manual_override
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.cleaning
+        state: 'on'
+      sequence:
+      - action: script.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: script.cleaning_mode_toggle_and_lights
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.party
+        state: 'on'
+      sequence:
+      - action: script.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: script.party_mode_toggle_and_lights
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.movie
+        state: 'on'
+      sequence:
+      - action: script.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: script.movie_mode_toggle_and_lights
+movie_mode_power_on_devices_set_scene_enable_overrides:
+  alias: 'Movie Mode: Power On Devices, Set Scene, Enable Overrides'
+  description: 'When Movie Mode is off, this script powers on the TV and receiver,
+    sets the receiver to the correct input, enables override booleans, and activates
+    the movie lighting scene. It does not handle "off" logic — that is managed separately
+    via the auto-reset automation.
+
+    '
+  icon: mdi:movie-open
+  mode: single
+  sequence:
+  - condition: state
+    entity_id: input_boolean.movie
+    state: 'off'
+  - action: input_boolean.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.movie
+  - condition: state
+    state: 'off'
+    entity_id: media_player.livingroom_tv
+  - action: media_player.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: media_player.livingroom_tv
+  - condition: state
+    entity_id: media_player.tx_rz50
+    state: 'off'
+  - action: media_player.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: media_player.tx_rz50
+  - condition: template
+    value_template: '{{ state_attr(''media_player.tx_rz50'', ''source'') != ''Living
+      Room TV'' }}
+
+      '
+  - action: media_player.select_source
+    metadata: {}
+    data:
+      source: Living Room TV
+    target:
+      entity_id: media_player.tx_rz50
+  - action: scene.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: scene.downstairs_inside_movie_tokyo
+  - action: input_boolean.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - input_boolean.kitchen_lights_manual_override
+      - input_boolean.livingroom_lights_manual_override
+movie_mode_toggle_with_popup:
+  alias: 'Movie Mode: Toggle With Popup'
+  description: 'Handles Movie Mode toggle logic. If mode is off, it powers on the
+    TV, receiver, sets input, and enables overrides. If already on, shows a confirmation
+    popup before turning it off. Use this script in your Mushroom dashboard button.
+
+    '
+  mode: single
+  sequence:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.movie
+        state: 'off'
+      sequence:
+      - action: script.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: script.movie_mode_power_on_devices_set_scene_enable_overrides
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.movie
+        state: 'on'
+      sequence:
+      - action: browser_mod.popup
+        metadata: {}
+        data:
+          dismissable: true
+          autoclose: false
+          allow_nested_more_info: true
+          title: Turn off Movie Mode?
+          content: Are you sure you want to exit Movie Mode? This will disable overrides,
+            power off devices, and resume motion-based control.
+          left_button: Cancel
+          left_button_action: fire-dom-event
+          right_button: Yes, turn it off
+          right_button_action:
+            service: script.movie_mode_turn_off_and_reset_devices
+movie_mode_turn_off_and_reset_devices:
+  alias: 'Movie Mode: Turn Off and Reset Devices'
+  description: 'Fully disables Movie Mode: powers down the receiver and TV, disables
+    override booleans, and relies on motion sensors to resume control. This script
+    is used by the auto-reset automation and the confirmation popup script.
+
+    '
+  mode: single
+  sequence:
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.movie
+  - action: media_player.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - media_player.livingroom_tv
+      - media_player.tx_rz50
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - input_boolean.kitchen_lights_manual_override
+      - input_boolean.livingroom_lights_manual_override
+  - action: script.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - script.livingroom_light_control_script
+      - script.kitchen_light_control_script

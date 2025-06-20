@@ -37,11 +37,6 @@ alexa:
     filter:
       include_entities:
         - light.bedroom_primary_hue_group_switch
-
-# ================================
-# HomeKit Integration (Filtered)
-# ================================
-
     entity_config:
       light.downstairs_inside:
         name: "Downstairs Lights"
@@ -53,6 +48,13 @@ alexa:
         name: "Bedroom Lights"
       light.patio_hue_group_switch:
         name: "Patio Lights"
+
+# ================================
+# Browser Mod Integration
+# ================================
+
+browser_mod:
+  prefix: browser_
 
 # ================================
 # Authentication & File Access
