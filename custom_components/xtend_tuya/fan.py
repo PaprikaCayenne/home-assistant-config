@@ -24,7 +24,9 @@ from .entity import (
     XTEntity,
 )
 
-XT_SUPPORT_TYPE = set()
+XT_SUPPORT_TYPE = {
+    "xfj",
+}
 
 
 async def async_setup_entry(

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Any
 from tuya_sharing.customerapi import (
     CustomerApi,
 )
@@ -7,16 +8,13 @@ from tuya_sharing.customerapi import (
 from tuya_sharing.device import (
     CustomerDevice,
     DeviceRepository,
-    DeviceStatusRange,
 )
 
 from ...const import (
     LOGGER,  # noqa: F401
 )
 
-from .xt_tuya_sharing_manager import (
-    XTSharingDeviceManager,
-)
+import custom_components.xtend_tuya.multi_manager.tuya_sharing.xt_tuya_sharing_manager as sm
 
 from ..multi_manager import (
     MultiManager,
@@ -30,7 +28,7 @@ from ..shared.threading import (
 )
 
 class XTSharingDeviceRepository(DeviceRepository):
-    def __init__(self, customer_api: CustomerApi, manager: XTSharingDeviceManager, multi_manager: MultiManager):
+    def __init__(self, customer_api: CustomerApi, manager: sm.XTSharingDeviceManager, multi_manager: MultiManager):
         super().__init__(customer_api)
         self.manager = manager
         self.multi_manager = multi_manager
@@ -128,3 +126,7 @@ class XTSharingDeviceRepository(DeviceRepository):
         #         device.status_range[code].values = loc_strat["valueDesc"]
 
         self.multi_manager.virtual_state_handler.apply_init_virtual_states(device) # type: ignore
+    
+    def send_commands(self, device_id: str, commands: list[dict[str, Any]]):
+        #LOGGER.warning(f"Calling send_command DR: {device_id} <=> {commands}")
+        return super().send_commands(device_id, commands)

@@ -12,10 +12,6 @@ from homeassistant.const import (
     Platform,
 )
 
-from .ha_tuya_integration.tuya_integration_imports import (
-    TuyaDPType as DPType
-)
-
 DOMAIN = "xtend_tuya"
 DOMAIN_ORIG = "tuya"
 LOGGER = logging.getLogger(__package__)
@@ -213,6 +209,7 @@ class XTDPCode(StrEnum):
     B_VOLTAGE = "B_Voltage"
     B_SENSITIVITY = "b_sensitivity"
     C_F = "c_f"  # Temperature unit switching
+    C_F_ = "C_F_"  # Temperature unit switching
     CALIBRATION = "calibration"
     CAPACITY_CALIBRATION = "capacity_calibration"
     CAT_WEIGHT = "cat_weight"
@@ -295,6 +292,8 @@ class XTDPCode(StrEnum):
     CURRENTA = "CurrentA"
     CURRENTB = "CurrentB"
     CURRENTC = "CurrentC"
+    CURRENT_A = "current_a"
+    CURRENT_B = "current_b"
     CURRENT_YD = "current_yd"
     CUR_CURRENT = "cur_current"  # Actual current
     CUR_NEUTRAL = "cur_neutral"  # Total reverse energy
@@ -322,6 +321,8 @@ class XTDPCode(StrEnum):
     DEVICETEMP = "DeviceTemp"
     DEVICETEMP2 = "DeviceTemp2"
     DEVICE_MODE = "device_mode"
+    DIRECTION_A = "direction_a"
+    DIRECTION_B = "direction_b"
     DISINFECTION = "disinfection"
     DO_NOT_DISTURB = "do_not_disturb"
     DOORBELL_VOLUME = "doorbell_volume"
@@ -371,6 +372,8 @@ class XTDPCode(StrEnum):
     GAS_SENSOR_STATE = "gas_sensor_state"
     GAS_SENSOR_STATUS = "gas_sensor_status"
     GAS_SENSOR_VALUE = "gas_sensor_value"
+    GET_HUM = "get_hum"
+    GET_TEMP = "get_temp"
     HEART_RATE = "heart_rate"
     HISTORY = "History"
     HOLD_SENSITIVITY = "hold_sensitivity"
@@ -427,6 +430,7 @@ class XTDPCode(StrEnum):
     MINI_SET = "mini_set"
     MONITORING = "monitoring"
     MODE = "mode"  # Working mode / Mode
+    MODE1 = "mode1"  # Working mode / Mode
     MODE2 = "Mode"
     MOODLIGHTING = "moodlighting"  # Mood light
     MOTION_RECORD = "motion_record"
@@ -486,12 +490,16 @@ class XTDPCode(StrEnum):
     POWDER_SET = "powder_set"  # Powder
     POWER = "power"
     POWER2 = "Power"
+    POWER_A = "power_a"
+    POWER_B = "power_b"
     POWERFACTORA = "PowerFactorA"
     POWERFACTORB = "PowerFactorB"
     POWERFACTORC = "PowerFactorC"
     POWERON = "poweron"
     POWERONOFF = "PowerOnOff"
     POWER_CONSUMPTION = "power_consumption"
+    POWER_FACTOR = "power_factor"
+    POWER_FACTOR_B = "power_factor_b"
     POWER_GO = "power_go"
     POWER_SET = "power_set"
     POWER_TOTAL = "power_total"
@@ -703,6 +711,7 @@ class XTDPCode(StrEnum):
     VOLTAGEA = "VoltageA"
     VOLTAGEB = "VoltageB"
     VOLTAGEC = "VoltageC"
+    VOLTAGE_A = "voltage_a"
     VOLTAGE_CURRENT = "voltage_current"
     WAKEUP = "wakeup"
     WARM = "warm"  # Heat preservation
@@ -718,9 +727,13 @@ class XTDPCode(StrEnum):
     WEATHER_DELAY = "weather_delay"
     WEATHER_SWITCH = "weather_switch"
     WET = "wet"  # Humidification
+    WINDSHAKE = "windshake"
+    WINDSHAKE1 = "windshake1"
+    WINDSHAKEH = "windshakeH"
     WINDOW_CHECK = "window_check"
     WINDOW_STATE = "window_state"
     WINDSPEED = "windspeed"
+    WINDSPEED1 = "windspeed1"
     WIRELESS_BATTERYLOCK = "wireless_batterylock"
     WIRELESS_ELECTRICITY = "wireless_electricity"
     WORK_MODE = "work_mode"  # Working mode
