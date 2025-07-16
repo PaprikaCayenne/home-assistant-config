@@ -1526,6 +1526,12 @@ movie_mode_power_on_devices_set_scene_enable_overrides:
     data: {}
     target:
       entity_id: media_player.livingroom_tv
+  - action: media_player.select_source
+    metadata: {}
+    data:
+      source: HDMI
+    target:
+      entity_id: media_player.livingroom_tv
   - condition: state
     entity_id: media_player.tx_rz50
     state: 'off'
@@ -1539,10 +1545,24 @@ movie_mode_power_on_devices_set_scene_enable_overrides:
       Room TV'' }}
 
       '
+    enabled: false
   - action: media_player.select_source
     metadata: {}
     data:
       source: Living Room TV
+    target:
+      entity_id: media_player.tx_rz50
+    enabled: false
+  - condition: template
+    value_template: '{{ state_attr(''media_player.tx_rz50'', ''source'') != ''Multiroom
+      - Firestick'' }}
+
+      '
+    enabled: true
+  - action: media_player.select_source
+    metadata: {}
+    data:
+      source: '  Multiroom - Firestick'
     target:
       entity_id: media_player.tx_rz50
   - action: scene.turn_on
