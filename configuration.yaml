@@ -96,3 +96,4 @@ logger:
 
 shell_command:
   nightly_git_backup: bash /config/git-nightly.sh
+
