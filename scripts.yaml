@@ -1616,6 +1616,10 @@ movie_mode_toggle_with_popup:
           right_button: Yes, turn it off
           right_button_action:
             service: script.movie_mode_turn_off_and_reset_devices
+        enabled: false
+      - action: script.movie_mode_turn_off_and_reset_devices
+        metadata: {}
+        data: {}
 movie_mode_turn_off_and_reset_devices:
   alias: 'Movie Mode: Turn Off and Reset Devices'
   description: 'Fully disables Movie Mode: powers down the receiver and TV, disables
