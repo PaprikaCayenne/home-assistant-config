@@ -1,5 +1,5 @@
 new_script:
-  alias: Trigger URC Event
+  alias: Trigger URC Event | Script
   sequence:
   - event: urc_event_trigger
     event_data:
@@ -14,8 +14,9 @@ new_script:
   mode: parallel
   max: 100
   icon: mdi:home-sound-out-outline
+  description: ''
 bedroom_primary_light_control_script:
-  alias: Bedroom Primary Light Control Script
+  alias: Bedroom Primary Light Control | Script
   description: ''
   sequence:
   - choose:
@@ -82,7 +83,7 @@ bedroom_primary_light_control_script:
         target:
           entity_id: light.bedroom_primary_hue_group_switch
 bedroom_primary_manual_on_via_dashboard:
-  alias: 'Bedroom Primary: Manual On via Dashboard'
+  alias: 'Bedroom Primary: Manual On via Dashboard | Script'
   description: Manually turns on the bedroom light and enables the manual override
     toggle.
   mode: single
@@ -98,7 +99,7 @@ bedroom_primary_manual_on_via_dashboard:
     target:
       entity_id: input_boolean.bedroom_primary_lights_manual_override
 bedroom_primary_manual_off_via_dashboard:
-  alias: 'Bedroom Primary: Manual Off via Dashboard'
+  alias: 'Bedroom Primary: Manual Off via Dashboard | Script'
   description: Disables lights and motion override for Bedroom Primary when turned
     off via dashboard.
   mode: single
@@ -119,7 +120,7 @@ bedroom_primary_manual_off_via_dashboard:
     data: {}
     metadata: {}
 bedroom_primary_dashboard_tap_logic:
-  alias: 'Bedroom Primary: Dashboard Tap Logic'
+  alias: 'Bedroom Primary: Dashboard Tap Logic | Script'
   mode: single
   sequence:
   - choose:
@@ -129,14 +130,17 @@ bedroom_primary_dashboard_tap_logic:
         state: 'off'
       sequence:
       - action: script.bedroom_primary_manual_on_via_dashboard
+        data: {}
     - conditions:
       - condition: state
         entity_id: light.bedroom_primary_hue_group_switch
         state: 'on'
       sequence:
       - action: script.bedroom_primary_manual_off_via_dashboard
+        data: {}
+  description: ''
 kitchen_light_control_script:
-  alias: 'Kitchen: Light Control - Script'
+  alias: 'Kitchen: Light Control | Script'
   description: Adjusts kitchen lighting based on time of day and motion detection
   sequence:
   - choose:
@@ -157,6 +161,13 @@ kitchen_light_control_script:
           brightness_pct: 100
         target:
           entity_id: light.kitchen_hue_group_switch
+      - action: light.turn_on
+        metadata: {}
+        data:
+          transition: 0.5
+          brightness_pct: 100
+        target:
+          entity_id: light.kitchen_above_cabinet_lightstrip
     - conditions:
       - condition: time
         after: '23:00:00'
@@ -170,6 +181,13 @@ kitchen_light_control_script:
           brightness_pct: 50
         target:
           entity_id: light.kitchen_hue_group_switch
+      - action: light.turn_on
+        metadata: {}
+        data:
+          brightness_pct: 50
+          transition: 0.5
+        target:
+          entity_id: light.kitchen_above_cabinet_lightstrip
     default:
     - action: light.turn_on
       metadata: {}
@@ -179,8 +197,15 @@ kitchen_light_control_script:
         color_temp_kelvin: 3500
       target:
         entity_id: light.kitchen_hue_group_switch
+    - action: light.turn_on
+      metadata: {}
+      data:
+        transition: 0.5
+        brightness_pct: 100
+      target:
+        entity_id: light.kitchen_above_cabinet_lightstrip
 livingroom_light_control_script:
-  alias: 'Livingroom: Light Control - Script'
+  alias: 'Livingroom: Light Control | Script'
   description: Adjusts Livingroom lighting based on time of day and motion detection
   sequence:
   - choose:
@@ -201,6 +226,16 @@ livingroom_light_control_script:
           transition: 0.5
         target:
           entity_id: light.livingroom_hue_group_switch
+      - action: light.turn_on
+        metadata: {}
+        data: {}
+      - action: light.turn_on
+        metadata: {}
+        data:
+          brightness_pct: 100
+          transition: 0.5
+        target:
+          entity_id: light.livingroom_couch_lightstrip
     - conditions:
       - condition: time
         after: '23:00:00'
@@ -223,8 +258,15 @@ livingroom_light_control_script:
         color_temp_kelvin: 3500
       target:
         entity_id: light.livingroom_hue_group_switch
+    - action: light.turn_on
+      metadata: {}
+      data:
+        transition: 5
+        brightness_pct: 100
+      target:
+        entity_id: light.livingroom_couch_lightstrip
 global_reset_manual_overrides_off:
-  alias: 'Global: Reset Manual Overrides Off'
+  alias: 'Global: Reset Manual Overrides Off | Script'
   mode: single
   icon: mdi:toggle-switch-off
   sequence:
@@ -247,7 +289,7 @@ global_reset_manual_overrides_off:
   description: Turns off all manual override toggles (lights, cleaning, private time,
     etc.) to restore automation.
 global_enable_motion_automation:
-  alias: 'Global: Enable Motion Automation'
+  alias: 'Global: Enable Motion Automation | Script'
   icon: mdi:motion-sensor
   mode: single
   description: 'Enables motion automation toggles for rooms that still use motion
@@ -266,7 +308,7 @@ global_enable_motion_automation:
     action: input_boolean.turn_on
     data: {}
 global_disable_motion_automation:
-  alias: 'Global: Disable Motion Automation'
+  alias: 'Global: Disable Motion Automation | Script'
   icon: mdi:motion-pause
   mode: single
   description: 'Disables motion automation toggles for rooms still using motion booleans.
@@ -299,7 +341,7 @@ reset_kitchen_livingroom_motion:
     action: input_boolean.turn_off
     data: {}
 global_clear_all_overrides:
-  alias: 'Global: Clear All Overrides'
+  alias: 'Global: Clear All Overrides | Script'
   description: 'Turns off all manual lighting overrides and global mode booleans that
     interfere with motion automation.
 
@@ -323,7 +365,7 @@ global_clear_all_overrides:
     action: input_boolean.turn_off
     data: {}
 kitchen_toggle_manual_override_2:
-  alias: 'Kitchen: Toggle Manual Override'
+  alias: 'Kitchen: Toggle Manual Override | Script'
   description: 'Toggles the kitchen manual override boolean and turns the lights on
     if enabling override, or off if disabling it.
 
@@ -337,6 +379,7 @@ kitchen_toggle_manual_override_2:
   - target:
       entity_id: input_boolean.kitchen_lights_manual_override
     action: input_boolean.toggle
+    data: {}
   - choose:
     - conditions:
       - condition: template
@@ -345,6 +388,7 @@ kitchen_toggle_manual_override_2:
       - target:
           entity_id: light.kitchen_hue_group_switch
         action: light.turn_on
+        data: {}
     - conditions:
       - condition: template
         value_template: '{{ is_on }}'
@@ -352,8 +396,9 @@ kitchen_toggle_manual_override_2:
       - target:
           entity_id: light.kitchen_hue_group_switch
         action: light.turn_off
+        data: {}
 party_toggle_mode:
-  alias: 'Party: Toggle Mode'
+  alias: 'Party: Toggle Mode | Script'
   description: 'Toggles party mode and turns on common area lights for social settings.
 
     '
@@ -365,6 +410,7 @@ party_toggle_mode:
   - target:
       entity_id: input_boolean.party
     action: input_boolean.toggle
+    data: {}
   - choose:
     - conditions:
       - condition: template
@@ -377,6 +423,7 @@ party_toggle_mode:
           - light.hallway_ceiling_lights
           - light.patio_hue_group_switch
         action: light.turn_on
+        data: {}
     - conditions:
       - condition: template
         value_template: '{{ is_on }}'
@@ -388,8 +435,9 @@ party_toggle_mode:
           - light.hallway_ceiling_lights
           - light.patio_hue_group_switch
         action: light.turn_off
+        data: {}
 cleaning_toggle_mode:
-  alias: 'Cleaning: Toggle Mode'
+  alias: 'Cleaning: Toggle Mode | Script'
   description: 'Toggles cleaning mode. When enabled, turns on all house lights (excluding
     pantry), and disables motion automation for non-FP2 rooms. When disabled, turns
     off lights and re-enables motion automation.
@@ -403,6 +451,7 @@ cleaning_toggle_mode:
   - target:
       entity_id: input_boolean.cleaning
     action: input_boolean.toggle
+    data: {}
   - choose:
     - conditions:
       - condition: template
@@ -430,6 +479,7 @@ cleaning_toggle_mode:
           - light.entryway_ceiling
           - light.guest_bedroom_ceiling
         action: light.turn_on
+        data: {}
       - target:
           entity_id:
           - input_boolean.office_motion_enabled
@@ -438,6 +488,7 @@ cleaning_toggle_mode:
           - input_boolean.bathroom_guest_motion_enabled
           - input_boolean.hallway_motion_enabled
         action: input_boolean.turn_off
+        data: {}
     - conditions:
       - condition: template
         value_template: '{{ is_on }}'
@@ -464,6 +515,7 @@ cleaning_toggle_mode:
           - light.entryway_ceiling
           - light.guest_bedroom_ceiling
         action: light.turn_off
+        data: {}
       - target:
           entity_id:
           - input_boolean.office_motion_enabled
@@ -472,8 +524,9 @@ cleaning_toggle_mode:
           - input_boolean.bathroom_guest_motion_enabled
           - input_boolean.hallway_motion_enabled
         action: input_boolean.turn_on
+        data: {}
 bedroom_toggle_private_time:
-  alias: 'Bedroom: Toggle Private Time'
+  alias: 'Bedroom: Toggle Private Time | Script'
   description: 'Toggles private time mode in the primary bedroom. When enabled, sets
     lights  to low brightness, activates Blood Moon lighting, and enables privacy
     mode  on the bedroom camera. When disabled, turns off lights and disables privacy
@@ -488,6 +541,7 @@ bedroom_toggle_private_time:
   - target:
       entity_id: input_boolean.private_time
     action: input_boolean.toggle
+    data: {}
   - choose:
     - conditions:
       - condition: template
@@ -502,6 +556,7 @@ bedroom_toggle_private_time:
       - target:
           entity_id: switch.camera_bedroom_primary_privacy_mode
         action: switch.turn_on
+        data: {}
     - conditions:
       - condition: template
         value_template: '{{ is_on }}'
@@ -509,11 +564,13 @@ bedroom_toggle_private_time:
       - target:
           entity_id: light.bedroom_primary_hue_group_switch
         action: light.turn_off
+        data: {}
       - target:
           entity_id: switch.camera_bedroom_primary_privacy_mode
         action: switch.turn_off
+        data: {}
 livingroom_toggle_lights_manual_override:
-  alias: 'Livingroom: Toggle Lights & Manual Override'
+  alias: 'Livingroom: Toggle Lights & Manual Override | Script'
   description: 'Toggles living room lights and override based on current state: -
     If lights are OFF, turn ON using control script and enable override. - If lights
     are ON and override is OFF, enable override (keep lights ON). - If lights are
@@ -574,7 +631,7 @@ livingroom_toggle_lights_manual_override:
         target:
           entity_id: script.livingroom_start_motion_cooldown
 hallway_reset_motion:
-  alias: 'Hallway: Reset Motion'
+  alias: 'Hallway: Reset Motion | Script'
   description: 'Turns off hallway manual override and re-enables motion automation.
 
     '
@@ -590,7 +647,7 @@ hallway_reset_motion:
     action: input_boolean.turn_on
     data: {}
 bedroom_primary_reset_motion:
-  alias: 'Bedroom Primary: Reset Motion'
+  alias: 'Bedroom Primary: Reset Motion | Script'
   description: 'Turns off manual override and re-enables motion automation in the
     primary bedroom.
 
@@ -607,7 +664,7 @@ bedroom_primary_reset_motion:
     action: input_boolean.turn_on
     data: {}
 hallway_toggle_lights_manual_override:
-  alias: 'Hallway: Toggle Lights & Manual Override'
+  alias: 'Hallway: Toggle Lights & Manual Override | Script'
   description: 'Toggles hallway lights and override based on current state: - If lights
     are OFF, turn ON and enable override. - If lights are ON and override is OFF,
     enable override (keep lights ON). - If lights are ON and override is ON, turn
@@ -673,7 +730,7 @@ hallway_toggle_lights_manual_override:
         target:
           entity_id: script.hallway_start_motion_cooldown
 bathroom_primary_reset_motion:
-  alias: 'Bathroom Primary: Reset Motion'
+  alias: 'Bathroom Primary: Reset Motion | Script'
   description: 'Turns off primary bathroom manual override and re-enables motion automation.
 
     '
@@ -689,7 +746,7 @@ bathroom_primary_reset_motion:
     action: input_boolean.turn_on
     data: {}
 bathroom_primary_toggle_lights_manual_override:
-  alias: 'Bedroom Primary: Toggle Lights & Manual Override'
+  alias: 'Bedroom Primary: Toggle Lights & Manual Override | Script'
   description: 'Toggles lights and override based on current state: - If lights are
     OFF, turn ON and enable override. - If lights are ON and override is OFF, enable
     override (keep lights ON). - If lights are ON and override is ON, turn OFF and
@@ -755,7 +812,7 @@ bathroom_primary_toggle_lights_manual_override:
         target:
           entity_id: script.bedroom_primary_start_motion_cooldown
 bathroom_guest_reset_motion:
-  alias: 'Bathroom Guest: Reset Motion'
+  alias: 'Bathroom Guest: Reset Motion | Script'
   description: 'Turns off guest bathroom manual override and re-enables motion automation.
 
     '
@@ -771,7 +828,7 @@ bathroom_guest_reset_motion:
     action: input_boolean.turn_on
     data: {}
 bathroom_guest_toggle_lights_manual_override:
-  alias: 'Bathroom Guest: Toggle Lights & Manual Override'
+  alias: 'Bathroom Guest: Toggle Lights & Manual Override | Script'
   description: 'Toggles lights and override based on current state: - If lights are
     OFF, turn ON and enable override. - If lights are ON and override is OFF, enable
     override (keep lights ON). - If lights are ON and override is ON, turn OFF and
@@ -837,7 +894,7 @@ bathroom_guest_toggle_lights_manual_override:
         target:
           entity_id: script.bathroom_guest_start_motion_cooldown
 downstairs_enable_motion_override:
-  alias: 'Downstairs: Enable Motion Override'
+  alias: 'Downstairs: Enable Motion Override | Script'
   description: 'Enables manual override for both kitchen and livingroom lights and
     provides a brief visual cue by flashing the lights.
 
@@ -848,6 +905,7 @@ downstairs_enable_motion_override:
       - input_boolean.kitchen_lights_manual_override
       - input_boolean.livingroom_lights_manual_override
     action: input_boolean.turn_on
+    data: {}
   - target:
       entity_id:
       - light.kitchen_hue_group_switch
@@ -867,7 +925,7 @@ downstairs_enable_motion_override:
     action: light.turn_on
   mode: single
 downstairs_enable_manual_override:
-  alias: 'Downstairs: Enable Manual Override'
+  alias: 'Downstairs: Enable Manual Override | Script'
   description: 'Enables manual override for Kitchen and Livingroom. Disables motion-based
     lighting indirectly via presence detection.
 
@@ -879,8 +937,9 @@ downstairs_enable_manual_override:
       - input_boolean.kitchen_lights_manual_override
       - input_boolean.livingroom_lights_manual_override
     action: input_boolean.turn_on
+    data: {}
 downstairs_activate_concentrate_mode:
-  alias: 'Downstairs: Activate Concentrate Mode'
+  alias: 'Downstairs: Activate Concentrate Mode | Script'
   description: 'Activates the Downstairs Concentrate scene and enables manual override
     for Kitchen and Livingroom (used to suppress FP2-triggered lighting changes).
 
@@ -890,13 +949,15 @@ downstairs_activate_concentrate_mode:
   - target:
       entity_id: scene.downstairs_inside_concentrate
     action: scene.turn_on
+    data: {}
   - target:
       entity_id:
       - input_boolean.kitchen_lights_manual_override
       - input_boolean.livingroom_lights_manual_override
     action: input_boolean.turn_on
+    data: {}
 livingroom_start_motion_cooldown:
-  alias: 'Livingroom: Start Motion Cooldown'
+  alias: 'Livingroom: Start Motion Cooldown | Script'
   description: 'Enables the motion cooldown boolean for Livingroom, waits 15 seconds,
     then disables it — but only if the override is still off. Prevents motion from
     reactivating if the user turns the override back on.
@@ -920,7 +981,7 @@ livingroom_start_motion_cooldown:
     target:
       entity_id: input_boolean.livingroom_motion_cooldown_boolean
 kitchen_start_motion_cooldown:
-  alias: 'Kitchen: Start Motion Cooldown'
+  alias: 'Kitchen: Start Motion Cooldown | Script'
   description: 'Enables the motion cooldown boolean for Kitchen, waits 15 seconds,
     then disables it — but only if the override is still off. Prevents motion from
     reactivating if the user turns the override back on.
@@ -944,7 +1005,7 @@ kitchen_start_motion_cooldown:
     target:
       entity_id: input_boolean.kitchen_motion_cooldown_boolean
 guest_bedroom_start_motion_cooldown:
-  alias: 'Guest Bedroom: Start Motion Cooldown'
+  alias: 'Guest Bedroom: Start Motion Cooldown | Script'
   description: 'Enables the motion cooldown boolean for Guest Bedroom, waits 15 seconds,
     then disables it — but only if the override is still off. Prevents motion from
     reactivating if the user turns the override back on.
@@ -968,7 +1029,7 @@ guest_bedroom_start_motion_cooldown:
     target:
       entity_id: input_boolean.bedroom_guest_motion_cooldown_boolean
 hallway_start_motion_cooldown:
-  alias: 'Hallway: Start Motion Cooldown'
+  alias: 'Hallway: Start Motion Cooldown | Script'
   description: 'Enables the motion cooldown boolean for Hallway, waits 15 seconds,
     then disables it — but only if the override is still off. Prevents motion from
     reactivating if the user turns the override back on.
@@ -990,7 +1051,7 @@ hallway_start_motion_cooldown:
       entity_id: input_boolean.hallway_motion_cooldown_boolean
     data: {}
 bedroom_primary_start_motion_cooldown:
-  alias: 'Bedroom Primary: Start Motion Cooldown'
+  alias: 'Bedroom Primary: Start Motion Cooldown | Script'
   description: 'Enables the motion cooldown boolean for Primary Bedroom, waits 15
     seconds, then disables it — but only if the override is still off. Prevents motion
     from reactivating if the user turns the override back on.
@@ -1012,7 +1073,7 @@ bedroom_primary_start_motion_cooldown:
       entity_id: input_boolean.bedroom_primary_motion_cooldown_boolean
     data: {}
 bathroom_primary_start_motion_cooldown:
-  alias: 'Bathroom Primary: Start Motion Cooldown'
+  alias: 'Bathroom Primary: Start Motion Cooldown | Script'
   description: 'Enables the motion cooldown boolean for Primary Bathroom, waits 15
     seconds, then disables it — but only if the override is still off. Prevents motion
     from reactivating if the user turns the override back on.
@@ -1034,7 +1095,7 @@ bathroom_primary_start_motion_cooldown:
       entity_id: input_boolean.bathroom_primary_motion_cooldown_boolean
     data: {}
 bathroom_guest_start_motion_cooldown:
-  alias: 'Bathroom Guest: Start Motion Cooldown'
+  alias: 'Bathroom Guest: Start Motion Cooldown | Script'
   description: 'Enables the motion cooldown boolean for Guest Bathroom, waits 15 seconds,
     then disables it — but only if the override is still off. Prevents motion from
     reactivating if the user turns the override back on.
@@ -1056,7 +1117,7 @@ bathroom_guest_start_motion_cooldown:
       entity_id: input_boolean.bathroom_guest_motion_cooldown_boolean
     data: {}
 stairs_start_motion_cooldown:
-  alias: 'Stairs: Start Motion Cooldown'
+  alias: 'Stairs: Start Motion Cooldown | Script'
   description: 'Enables the motion cooldown boolean for Stairs, waits 15 seconds,
     then disables it — but only if the override is still off. Prevents motion from
     reactivating if the user turns the override back on.
@@ -1078,7 +1139,7 @@ stairs_start_motion_cooldown:
       entity_id: input_boolean.stairs_motion_cooldown_boolean
     data: {}
 stairs_toggle_lights_manual_override:
-  alias: 'Stairs: Toggle Lights & Manual Override'
+  alias: 'Stairs: Toggle Lights & Manual Override | Script'
   description: 'Toggles stairway lights and override based on current state: - If
     lights are OFF, turn ON and enable override. - If lights are ON and override is
     OFF, enable override (keep lights ON). - If lights are ON and override is ON,
@@ -1143,7 +1204,7 @@ stairs_toggle_lights_manual_override:
         target:
           entity_id: script.stairs_start_motion_cooldown
 downstairs_toggle_lights_manual_override:
-  alias: 'Downstairs: Toggle Lights & Manual Override'
+  alias: 'Downstairs: Toggle Lights & Manual Override | Script'
   sequence:
   - action: script.kitchen_toggle_manual_override_2
     metadata: {}
@@ -1154,7 +1215,7 @@ downstairs_toggle_lights_manual_override:
   mode: single
   description: ''
 bedroom_guest_toggle_lights_manual_override:
-  alias: 'Bedroom Guest: Toggle Lights & Manual Override'
+  alias: 'Bedroom Guest: Toggle Lights & Manual Override | Script'
   description: 'Toggles lights and override based on current state: - If lights are
     OFF, turn ON and enable override. - If lights are ON and override is OFF, enable
     override (keep lights ON). - If lights are ON and override is ON, turn OFF and
@@ -1220,7 +1281,7 @@ bedroom_guest_toggle_lights_manual_override:
         target:
           entity_id: script.guest_bedroom_start_motion_cooldown
 kitchen_toggle_lights_manual_override:
-  alias: 'Kitchen: Toggle Lights & Manual Override'
+  alias: 'Kitchen: Toggle Lights & Manual Override | Script'
   description: 'Toggles kitchen lights and override based on current state: - If lights
     are OFF, turn ON using control script and enable override. - If lights are ON
     and override is OFF, enable override (keep lights ON). - If lights are ON and
@@ -1282,7 +1343,7 @@ kitchen_toggle_lights_manual_override:
           entity_id: script.kitchen_start_motion_cooldown
   icon: mdi:lightbulb-group-outline
 office_toggle_lights_manual_override:
-  alias: 'Office: Toggle Lights & Manual Override'
+  alias: 'Office: Toggle Lights & Manual Override | Script'
   description: 'Toggles office lights and override based on current state: - If lights
     are OFF, turn ON and enable override. - If lights are ON and override is OFF,
     enable override (keep lights ON). - If lights are ON and override is ON, turn
@@ -1348,7 +1409,7 @@ office_toggle_lights_manual_override:
           entity_id: script.office_start_motion_cooldown
   icon: mdi:lightbulb-group-outline
 office_start_motion_cooldown:
-  alias: 'Office: Start Motion Cooldown'
+  alias: 'Office: Start Motion Cooldown | Script'
   description: 'Enables the motion cooldown boolean for Office, waits 15 seconds,
     then disables it — but only if the override is still off. Cancels immediately
     if override is already on.
@@ -1372,7 +1433,7 @@ office_start_motion_cooldown:
     target:
       entity_id: input_boolean.office_motion_cooldown_boolean
 reset_all_active_overrides:
-  alias: Reset All Active Overrides
+  alias: Reset All Active Overrides | Script
   description: Checks all manual override booleans and global mode toggles. If any
     are ON, it runs the corresponding toggle script to turn them OFF. Each override
     is checked and reset independently.
@@ -1500,7 +1561,7 @@ reset_all_active_overrides:
         target:
           entity_id: script.movie_mode_toggle_and_lights
 movie_mode_power_on_devices_set_scene_enable_overrides:
-  alias: 'Movie Mode: Power On Devices, Set Scene, Enable Overrides'
+  alias: 'Movie Mode: Power On Devices, Set Scene, Enable Overrides | Script'
   description: 'When Movie Mode is off, this script powers on the TV and receiver,
     sets the receiver to the correct input, enables override booleans, and activates
     the movie lighting scene. It does not handle "off" logic — that is managed separately
@@ -1517,21 +1578,29 @@ movie_mode_power_on_devices_set_scene_enable_overrides:
     metadata: {}
     data: {}
     target:
-      entity_id: input_boolean.movie
-  - condition: state
-    state: 'off'
-    entity_id: media_player.livingroom_tv
-  - action: media_player.turn_on
+      entity_id:
+      - input_boolean.kitchen_lights_manual_override
+      - input_boolean.livingroom_lights_manual_override
+      - input_boolean.movie
+  - action: scene.turn_on
     metadata: {}
     data: {}
     target:
-      entity_id: media_player.livingroom_tv
-  - action: media_player.select_source
+      entity_id: scene.downstairs_inside_movie_tokyo
+  - action: light.turn_on
     metadata: {}
     data:
-      source: HDMI
+      transition: 0.5
+      brightness_pct: 10
     target:
-      entity_id: media_player.livingroom_tv
+      entity_id: light.kitchen_above_cabinet_lightstrip
+  - action: light.turn_on
+    metadata: {}
+    data:
+      transition: 0.5
+      brightness_pct: 10
+    target:
+      entity_id: light.livingroom_couch_lightstrip
   - condition: state
     entity_id: media_player.tx_rz50
     state: 'off'
@@ -1540,19 +1609,6 @@ movie_mode_power_on_devices_set_scene_enable_overrides:
     data: {}
     target:
       entity_id: media_player.tx_rz50
-  - condition: template
-    value_template: '{{ state_attr(''media_player.tx_rz50'', ''source'') != ''Living
-      Room TV'' }}
-
-      '
-    enabled: false
-  - action: media_player.select_source
-    metadata: {}
-    data:
-      source: Living Room TV
-    target:
-      entity_id: media_player.tx_rz50
-    enabled: false
   - condition: template
     value_template: '{{ state_attr(''media_player.tx_rz50'', ''source'') != ''Multiroom
       - Firestick'' }}
@@ -1565,20 +1621,40 @@ movie_mode_power_on_devices_set_scene_enable_overrides:
       source: '  Multiroom - Firestick'
     target:
       entity_id: media_player.tx_rz50
-  - action: scene.turn_on
+  - condition: state
+    state: 'off'
+    entity_id: media_player.livingroom_tv
+  - condition: template
+    value_template: '{{ state_attr(''media_player.tx_rz50'', ''source'') != ''Living
+      Room TV'' }}
+
+      '
+    enabled: false
+  - action: media_player.turn_on
     metadata: {}
     data: {}
     target:
-      entity_id: scene.downstairs_inside_movie_tokyo
-  - action: input_boolean.turn_on
+      entity_id: media_player.livingroom_tv
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - action: media_player.select_source
     metadata: {}
-    data: {}
+    data:
+      source: HDMI
     target:
-      entity_id:
-      - input_boolean.kitchen_lights_manual_override
-      - input_boolean.livingroom_lights_manual_override
+      entity_id: media_player.livingroom_tv
+  - action: media_player.select_source
+    metadata: {}
+    data:
+      source: Living Room TV
+    target:
+      entity_id: media_player.tx_rz50
+    enabled: false
 movie_mode_toggle_with_popup:
-  alias: 'Movie Mode: Toggle With Popup'
+  alias: 'Movie Mode: Toggle With Popup | Script'
   description: 'Handles Movie Mode toggle logic. If mode is off, it powers on the
     TV, receiver, sets input, and enables overrides. If already on, shows a confirmation
     popup before turning it off. Use this script in your Mushroom dashboard button.
@@ -1621,7 +1697,7 @@ movie_mode_toggle_with_popup:
         metadata: {}
         data: {}
 movie_mode_turn_off_and_reset_devices:
-  alias: 'Movie Mode: Turn Off and Reset Devices'
+  alias: 'Movie Mode: Turn Off and Reset Devices | Script'
   description: 'Fully disables Movie Mode: powers down the receiver and TV, disables
     override booleans, and relies on motion sensors to resume control. This script
     is used by the auto-reset automation and the confirmation popup script.
@@ -1633,14 +1709,8 @@ movie_mode_turn_off_and_reset_devices:
     metadata: {}
     data: {}
     target:
-      entity_id: input_boolean.movie
-  - action: media_player.turn_off
-    metadata: {}
-    data: {}
-    target:
       entity_id:
-      - media_player.livingroom_tv
-      - media_player.tx_rz50
+      - input_boolean.movie
   - action: input_boolean.turn_off
     metadata: {}
     data: {}
@@ -1655,3 +1725,195 @@ movie_mode_turn_off_and_reset_devices:
       entity_id:
       - script.livingroom_light_control_script
       - script.kitchen_light_control_script
+  - condition: state
+    entity_id: media_player.tx_rz50
+    state: 'on'
+  - action: media_player.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - media_player.tx_rz50
+  - condition: state
+    entity_id: media_player.livingroom_tv
+    state: 'on'
+  - action: media_player.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: media_player.livingroom_tv
+hallway_lighting_control_script:
+  alias: 'Hallway: Lighting Control | Script'
+  description: 'Turns on hallway lights with different brightness levels based on
+    time of day.
+
+    '
+  mode: single
+  sequence:
+  - choose:
+    - conditions:
+      - condition: time
+        after: 06:00:00
+        before: 08:00:00
+      sequence:
+      - action: light.turn_on
+        metadata: {}
+        data:
+          transition: 0.5
+          brightness_pct: 40
+        target:
+          area_id: hallway
+    - conditions:
+      - condition: time
+        after: 08:00:00
+        before: '18:00:00'
+      sequence:
+      - action: light.turn_on
+        metadata: {}
+        data:
+          transition: 0.5
+          brightness_pct: 80
+        target:
+          area_id: hallway
+    - conditions:
+      - condition: time
+        after: '18:00:00'
+        before: '23:00:00'
+      sequence:
+      - action: light.turn_on
+        metadata: {}
+        data:
+          transition: 0.5
+          brightness_pct: 100
+        target:
+          area_id: hallway
+    - conditions:
+      - condition: time
+        after: '23:00:00'
+        before: 06:00:00
+      sequence:
+      - action: light.turn_on
+        metadata: {}
+        data:
+          transition: 0.5
+          brightness_pct: 10
+        target:
+          area_id: hallway
+stairway_lighting_control_script:
+  alias: 'Stairs: Lighting Control | Script'
+  description: 'Turns on stairway lights with different brightness levels based on
+    time of day.
+
+    '
+  mode: single
+  sequence:
+  - choose:
+    - conditions:
+      - condition: time
+        after: 06:00:00
+        before: 08:00:00
+      sequence:
+      - action: light.turn_on
+        metadata: {}
+        data:
+          transition: 0.5
+          brightness_pct: 40
+        target:
+          area_id: stairs
+    - conditions:
+      - condition: time
+        after: 08:00:00
+        before: '18:00:00'
+      sequence:
+      - action: light.turn_on
+        metadata: {}
+        data:
+          transition: 0.5
+          brightness_pct: 80
+        target:
+          area_id: stairs
+    - conditions:
+      - condition: time
+        after: '18:00:00'
+        before: '23:00:00'
+      sequence:
+      - action: light.turn_on
+        metadata: {}
+        data:
+          transition: 0.5
+          brightness_pct: 100
+        target:
+          area_id: stairs
+    - conditions:
+      - condition: time
+        after: '23:00:00'
+        before: 06:00:00
+      sequence:
+      - action: light.turn_on
+        metadata: {}
+        data:
+          transition: 0.5
+          brightness_pct: 10
+        target:
+          area_id: stairs
+bathroom_guest_lighting_control_script:
+  alias: 'Bathroom Guest: Lighting Control | Script'
+  description: 'Turns on guest bathroom lights with different brightness levels based
+    on time of day.
+
+    '
+  mode: single
+  sequence:
+  - choose:
+    - conditions:
+      - condition: time
+        after: 06:00:00
+        before: 08:00:00
+      sequence:
+      - action: light.turn_on
+        metadata: {}
+        data:
+          transition: 0.5
+          brightness_pct: 40
+        target:
+          entity_id:
+          - light.bathroom_guest_vanity_lights
+    - conditions:
+      - condition: time
+        after: 08:00:00
+        before: '18:00:00'
+      sequence:
+      - action: light.turn_on
+        metadata: {}
+        data:
+          transition: 0.5
+          brightness_pct: 75
+        target:
+          entity_id:
+          - light.bathroom_guest_vanity_lights
+    - conditions:
+      - condition: time
+        after: '18:00:00'
+        before: '23:00:00'
+      sequence:
+      - action: light.turn_on
+        metadata: {}
+        data:
+          transition: 0.5
+          brightness_pct: 75
+        target:
+          entity_id:
+          - light.bathroom_guest_vanity_lights
+    - conditions:
+      - condition: time
+        after: '23:00:00'
+        before: 06:00:00
+      sequence:
+      - action: light.turn_on
+        metadata: {}
+        data:
+          transition: 0.5
+          brightness_pct: 15
+        target:
+          entity_id:
+          - light.bathroom_guest_vanity_lights

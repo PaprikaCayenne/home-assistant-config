@@ -238,6 +238,10 @@
         target:
           area_id: hallway
         action: light.turn_on
+    enabled: false
+  - action: script.hallway_lighting_control_script
+    metadata: {}
+    data: {}
   mode: single
 - id: '1739928051409'
   alias: 'Hallway: Motion Not Detected – Turn Off Lights'
@@ -246,17 +250,20 @@
 
     '
   triggers:
-  - entity_id: binary_sensor.camera_hallway_person
+  - entity_id:
+    - binary_sensor.camera_hallway_person
     to: 'off'
     for:
-      minutes: 5
+      hours: 0
+      minutes: 3
+      seconds: 0
     trigger: state
   - entity_id:
     - binary_sensor.hue_motion_sensor_3_motion
     to: 'off'
     for:
       hours: 0
-      minutes: 5
+      minutes: 3
       seconds: 0
     trigger: state
   - entity_id:
@@ -264,7 +271,7 @@
     to: 'off'
     for:
       hours: 0
-      minutes: 5
+      minutes: 3
       seconds: 0
     trigger: state
   conditions:
@@ -272,14 +279,6 @@
     entity_id: binary_sensor.motion_hallway_allowed
     state: 'on'
   actions:
-  - choose:
-    - conditions:
-      - condition: state
-        entity_id: input_boolean.hallway_lights_manual_override
-        state: 'on'
-      sequence:
-      - delay:
-          hours: 1
   - target:
       area_id: hallway
     data:
@@ -494,6 +493,10 @@
     entity_id:
     - binary_sensor.hue_motion_sensor_bathroom_guest_motion
     to: 'on'
+  - trigger: state
+    entity_id:
+    - binary_sensor.bathroom_guest_motion_sensor
+    to: 'on'
   conditions:
   - condition: state
     entity_id: binary_sensor.motion_bathroom_guest_allowed
@@ -505,6 +508,10 @@
     target:
       area_id: bathroom_guest
     action: light.turn_on
+    enabled: false
+  - action: script.bathroom_guest_lighting_control_script
+    metadata: {}
+    data: {}
   mode: single
 - id: '1742396391798'
   alias: 'Bathroom Guest: Motion Not Detected – Turn Off Lights'
@@ -517,8 +524,12 @@
     to: 'off'
     for:
       hours: 0
-      minutes: 5
+      minutes: 1
       seconds: 0
+  - trigger: state
+    entity_id:
+    - binary_sensor.bathroom_guest_motion_sensor
+    to: 'off'
   conditions:
   - condition: state
     entity_id: binary_sensor.motion_bathroom_guest_allowed
@@ -527,7 +538,8 @@
   - action: light.turn_off
     metadata: {}
     target:
-      area_id: bathroom_guest
+      entity_id:
+      - light.bathroom_guest_vanity_lights
     data:
       transition: 0.5
   mode: single
@@ -883,7 +895,9 @@
     state: 'on'
   actions:
   - target:
-      entity_id: light.kitchen_hue_group_switch
+      entity_id:
+      - light.kitchen_hue_group_switch
+      - light.kitchen_above_cabinet_lightstrip
     data:
       transition: 0.5
     action: light.turn_off
@@ -1063,6 +1077,8 @@
       entity_id:
       - light.kitchen_hue_group_switch
       - light.livingroom_hue_group_switch
+      - light.kitchen_above_cabinet_lightstrip
+      - light.livingroom_couch_lightstrip
     data:
       transition: 0.5
     action: light.turn_off
@@ -1216,11 +1232,13 @@
     attribute: event_type
   conditions: []
   actions:
-  - target:
-      entity_id: light.livingroom_hue_group_switch
-    data:
+  - data:
       transition: 0.5
     action: light.turn_off
+    target:
+      entity_id:
+      - light.kitchen_hue_group_switch
+      - light.kitchen_above_cabinet_lightstrip
   - delay:
       seconds: 30
   - action: script.reset_kitchen_livingroom_motion
@@ -1244,6 +1262,8 @@
       entity_id:
       - light.kitchen_hue_group_switch
       - light.livingroom_hue_group_switch
+      - light.kitchen_above_cabinet_lightstrip
+      - light.livingroom_couch_lightstrip
     data:
       transition: 0.5
     action: light.turn_off
@@ -1470,6 +1490,7 @@
   - target:
       entity_id: input_boolean.movie
     action: input_boolean.turn_off
+    data: {}
   - data:
       title: Movie Mode Auto Reset
       message: 'Movie mode was automatically turned off 5 minutes after the Livingroom
@@ -1477,6 +1498,22 @@
 
         '
     action: persistent_notification.create
+  - condition: state
+    entity_id: input_boolean.kitchen_lights_manual_override
+    state: 'on'
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.kitchen_lights_manual_override
+  - condition: state
+    entity_id: input_boolean.livingroom_lights_manual_override
+    state: 'on'
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.livingroom_lights_manual_override
   mode: restart
 - id: '1749876129118'
   alias: 'Movie Mode: Smooth Kitchen Brighten on Presence'
@@ -1613,6 +1650,7 @@
   - target:
       entity_id:
       - light.livingroom_hue_group_switch
+      - light.livingroom_couch_lightstrip
     data:
       transition: 0.5
     action: light.turn_off
@@ -1630,11 +1668,9 @@
     entity_id: binary_sensor.motion_stairs_allowed
     state: 'on'
   actions:
-  - action: light.turn_on
+  - action: script.stairway_lighting_control_script
     metadata: {}
     data: {}
-    target:
-      entity_id: light.stairs_downstairs_switch
   mode: single
 - id: '1749924454709'
   alias: 'Stairs: Not Motion Detected – Turn Off Lights'
@@ -1659,4 +1695,30 @@
     data: {}
     target:
       entity_id: light.stairs_downstairs_switch
+  mode: single
+- id: '1753320650160'
+  alias: 'Livongroom: Button 4 Short Press – Area Off & Reset Motion'
+  description: 'Turns off Livingroom lights, then calls reset script to clear Kitchen
+    and Livingroom overrides and re-enable motion automation after 30 seconds.
+
+    '
+  triggers:
+  - entity_id:
+    - event.hue_tap_dial_switch_livingroom_button_4
+    to: short_release
+    trigger: state
+    attribute: event_type
+  conditions: []
+  actions:
+  - data:
+      transition: 0.5
+    action: light.turn_off
+    target:
+      entity_id:
+      - light.livingroom_hue_group_switch
+      - light.livingroom_couch_lightstrip
+  - delay:
+      seconds: 30
+  - action: script.reset_kitchen_livingroom_motion
+    data: {}
   mode: single
