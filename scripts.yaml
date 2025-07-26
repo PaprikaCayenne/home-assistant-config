@@ -1624,12 +1624,6 @@ movie_mode_power_on_devices_set_scene_enable_overrides:
   - condition: state
     state: 'off'
     entity_id: media_player.livingroom_tv
-  - condition: template
-    value_template: '{{ state_attr(''media_player.tx_rz50'', ''source'') != ''Living
-      Room TV'' }}
-
-      '
-    enabled: false
   - action: media_player.turn_on
     metadata: {}
     data: {}
@@ -1646,6 +1640,12 @@ movie_mode_power_on_devices_set_scene_enable_overrides:
       source: HDMI
     target:
       entity_id: media_player.livingroom_tv
+  - condition: template
+    value_template: '{{ state_attr(''media_player.tx_rz50'', ''source'') != ''Living
+      Room TV'' }}
+
+      '
+    enabled: false
   - action: media_player.select_source
     metadata: {}
     data:

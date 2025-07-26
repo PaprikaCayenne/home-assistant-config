@@ -1722,3 +1722,44 @@
   - action: script.reset_kitchen_livingroom_motion
     data: {}
   mode: single
+- id: '1753475079383'
+  alias: 'Bedroom Guest: Motion Detected – Turn On Lights'
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.office_motion
+    to: 'on'
+  conditions: []
+  actions:
+  - action: light.turn_on
+    metadata: {}
+    data:
+      brightness_pct: 100
+      transition: 0.5
+    target:
+      entity_id:
+      - light.bedroom_guest_main_lights
+  mode: single
+- id: '1753475189498'
+  alias: 'Bedroom Guest: Motion Not Detected – Turn Off Lights'
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.office_motion
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 0
+  conditions: []
+  actions:
+  - action: light.turn_off
+    metadata: {}
+    data:
+      transition: 0.5
+    target:
+      entity_id:
+      - light.bedroom_guest_main_lights
+  mode: single
