@@ -17,7 +17,7 @@
       - light.pantry_small_light
   mode: single
 - id: '1735003869392'
-  alias: 'Bathroom Primary: Motion Detected – Turn On Lights'
+  alias: 'Bathroom Primary: Motion Detected | Turn On Lights'
   description: Turns on Primary Bathroom lights when motion is detected and automation
     is allowed.
   triggers:
@@ -36,12 +36,13 @@
         after: '23:00:00'
         before: 05:00:00
       sequence:
-      - data:
-          brightness_pct: 10
+      - action: light.turn_on
+        metadata: {}
+        data:
           transition: 0.5
+          brightness_pct: 100
         target:
           entity_id: light.shellyplus2pm_10061cc9d5d0_switch_1
-        action: light.turn_on
     - conditions:
       - condition: time
         after: 05:00:00
@@ -51,11 +52,15 @@
           brightness_pct: 100
           transition: 0.5
         target:
-          area_id: bathroom_primary
+          device_id:
+          - a3d4249470addab0d5b13b3927049a1f
+          entity_id:
+          - light.primary_bathroom_bathroom_tub_lights
+          - light.primary_bathroom_bathroom_vanity_lights
         action: light.turn_on
   mode: single
 - id: '1735010780789'
-  alias: 'Bathroom Primary: Motion Not Detected – Turn Off Lights'
+  alias: 'Bathroom Primary: Motion Not Detected | Turn Off Lights'
   description: Turns off bathroom lights when motion clears and automation is allowed
   triggers:
   - trigger: state
@@ -485,7 +490,7 @@
     data: {}
   mode: single
 - id: '1742396296105'
-  alias: 'Bathroom Guest: Motion Detected – Turn On Lights'
+  alias: 'Bathroom Guest: Motion Detected | Turn On Lights'
   description: Turns on guest bathroom lights when motion is detected and automation
     is allowed.
   triggers:
@@ -514,7 +519,7 @@
     data: {}
   mode: single
 - id: '1742396391798'
-  alias: 'Bathroom Guest: Motion Not Detected – Turn Off Lights'
+  alias: 'Bathroom Guest: Motion Not Detected | Turn Off Lights'
   description: Turns off Guest Bathroom lights after motion clears and automation
     is allowed.
   triggers:
