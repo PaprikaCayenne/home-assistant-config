@@ -1582,6 +1582,157 @@ movie_mode_power_on_devices_set_scene_enable_overrides:
       - input_boolean.kitchen_lights_manual_override
       - input_boolean.livingroom_lights_manual_override
       - input_boolean.movie
+  - parallel:
+    - choose:
+      - conditions:
+        - condition: state
+          entity_id: media_player.livingroom_fire_tv
+          state: 'off'
+        sequence:
+        - action: media_player.turn_on
+          metadata: {}
+          data: {}
+          target:
+            entity_id: media_player.livingroom_fire_tv
+        - delay:
+            hours: 0
+            minutes: 0
+            seconds: 3
+            milliseconds: 0
+        - if:
+          - condition: state
+            entity_id: media_player.tx_rz50
+            state: 'off'
+          then:
+          - action: media_player.turn_on
+            metadata: {}
+            data: {}
+            target:
+              entity_id: media_player.tx_rz50
+          - delay:
+              hours: 0
+              minutes: 0
+              seconds: 2
+              milliseconds: 0
+          - action: media_player.select_source
+            metadata: {}
+            data:
+              source: Multiroom - Firestick
+            target:
+              entity_id: media_player.tx_rz50
+          - if:
+            - condition: state
+              entity_id: media_player.livingroom_tv
+              state: 'off'
+            then:
+            - action: media_player.turn_on
+              metadata: {}
+              data: {}
+              target:
+                entity_id: media_player.bedroom_primary_tv
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 3
+                milliseconds: 0
+              enabled: false
+            - action: media_player.select_source
+              metadata: {}
+              data:
+                source: HDMI
+              target:
+                entity_id: media_player.livingroom_tv
+              enabled: false
+      - conditions:
+        - condition: state
+          entity_id: media_player.livingroom_fire_tv
+          state: 'on'
+        - condition: state
+          entity_id: media_player.tx_rz50
+          state: 'off'
+        sequence:
+        - action: media_player.turn_on
+          metadata: {}
+          data: {}
+          target:
+            entity_id: media_player.tx_rz50
+        - delay:
+            hours: 0
+            minutes: 0
+            seconds: 2
+            milliseconds: 0
+        - action: media_player.select_source
+          metadata: {}
+          data:
+            source: Multiroom - Firestick
+          target:
+            entity_id: media_player.tx_rz50
+        - if:
+          - condition: state
+            entity_id: media_player.livingroom_tv
+            state: 'off'
+          then:
+          - action: media_player.turn_on
+            metadata: {}
+            data: {}
+            target:
+              entity_id: media_player.livingroom_tv
+          - delay:
+              hours: 0
+              minutes: 0
+              seconds: 3
+              milliseconds: 0
+            enabled: false
+          - action: media_player.select_source
+            metadata: {}
+            data:
+              source: HDMI
+            target:
+              entity_id: media_player.livingroom_tv
+            enabled: false
+          else:
+          - action: media_player.select_source
+            metadata: {}
+            data:
+              source: HDMI
+            target:
+              entity_id: media_player.livingroom_tv
+            enabled: false
+      - conditions:
+        - condition: state
+          entity_id: media_player.livingroom_tv
+          state: 'off'
+        - condition: state
+          entity_id: media_player.livingroom_fire_tv
+          state: 'on'
+        - condition: state
+          entity_id: media_player.tx_rz50
+          state: 'on'
+        sequence:
+        - action: media_player.turn_on
+          metadata: {}
+          data: {}
+          target:
+            entity_id: media_player.livingroom_tv
+        - action: media_player.select_source
+          metadata: {}
+          data:
+            source: Multiroom - Firestick
+          target:
+            entity_id: media_player.tx_rz50
+        - delay:
+            hours: 0
+            minutes: 0
+            seconds: 3
+            milliseconds: 0
+          enabled: false
+        - action: media_player.select_source
+          metadata: {}
+          data:
+            source: HDMI
+          target:
+            entity_id: media_player.livingroom_tv
+          enabled: false
   - action: scene.turn_on
     metadata: {}
     data: {}
@@ -1601,58 +1752,6 @@ movie_mode_power_on_devices_set_scene_enable_overrides:
       brightness_pct: 10
     target:
       entity_id: light.livingroom_couch_lightstrip
-  - condition: state
-    entity_id: media_player.tx_rz50
-    state: 'off'
-  - action: media_player.turn_on
-    metadata: {}
-    data: {}
-    target:
-      entity_id: media_player.tx_rz50
-  - condition: template
-    value_template: '{{ state_attr(''media_player.tx_rz50'', ''source'') != ''Multiroom
-      - Firestick'' }}
-
-      '
-    enabled: true
-  - action: media_player.select_source
-    metadata: {}
-    data:
-      source: '  Multiroom - Firestick'
-    target:
-      entity_id: media_player.tx_rz50
-  - condition: state
-    state: 'off'
-    entity_id: media_player.livingroom_tv
-  - action: media_player.turn_on
-    metadata: {}
-    data: {}
-    target:
-      entity_id: media_player.livingroom_tv
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 5
-      milliseconds: 0
-  - action: media_player.select_source
-    metadata: {}
-    data:
-      source: HDMI
-    target:
-      entity_id: media_player.livingroom_tv
-  - condition: template
-    value_template: '{{ state_attr(''media_player.tx_rz50'', ''source'') != ''Living
-      Room TV'' }}
-
-      '
-    enabled: false
-  - action: media_player.select_source
-    metadata: {}
-    data:
-      source: Living Room TV
-    target:
-      entity_id: media_player.tx_rz50
-    enabled: false
 movie_mode_toggle_with_popup:
   alias: 'Movie Mode: Toggle With Popup | Script'
   description: 'Handles Movie Mode toggle logic. If mode is off, it powers on the
@@ -1742,6 +1841,28 @@ movie_mode_turn_off_and_reset_devices:
     data: {}
     target:
       entity_id: media_player.livingroom_tv
+  - condition: state
+    entity_id: media_player.livingroom_fire_tv
+    state: 'on'
+  - action: media_player.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: media_player.livingroom_fire_tv
+  - action: light.turn_on
+    metadata: {}
+    data:
+      transition: 0.5
+      brightness_pct: 100
+    target:
+      entity_id: light.kitchen_above_cabinet_lightstrip
+  - action: light.turn_on
+    metadata: {}
+    data:
+      transition: 0.5
+      brightness_pct: 100
+    target:
+      entity_id: light.livingroom_couch_lightstrip
 hallway_lighting_control_script:
   alias: 'Hallway: Lighting Control | Script'
   description: 'Turns on hallway lights with different brightness levels based on
