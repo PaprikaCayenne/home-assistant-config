@@ -1684,12 +1684,12 @@
   triggers:
   - entity_id:
     - binary_sensor.hue_motion_sensor_5_motion
-    to: 'off'
     trigger: state
     for:
       hours: 0
       minutes: 1
       seconds: 0
+    to: 'off'
   conditions:
   - condition: state
     entity_id: binary_sensor.motion_stairs_allowed
@@ -1697,7 +1697,8 @@
   actions:
   - action: light.turn_off
     metadata: {}
-    data: {}
+    data:
+      transition: 0.5
     target:
       entity_id: light.stairs_downstairs_switch
   mode: single
