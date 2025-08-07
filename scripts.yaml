@@ -1,5 +1,5 @@
 new_script:
-  alias: Trigger URC Event | Script
+  alias: Trigger URC Event
   sequence:
   - event: urc_event_trigger
     event_data:
@@ -14,7 +14,6 @@ new_script:
   mode: parallel
   max: 100
   icon: mdi:home-sound-out-outline
-  description: ''
 bedroom_primary_light_control_script:
   alias: Bedroom Primary Light Control | Script
   description: ''
