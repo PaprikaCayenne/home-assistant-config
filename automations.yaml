@@ -1769,3 +1769,100 @@
       entity_id:
       - light.bedroom_guest_main_lights
   mode: single
+- id: '1754591416762'
+  alias: 'Guest Bathroom: Manual Override via Hue Dial Buttons'
+  description: 'When any button on the Livingroom Hue Tap Dial Switch is pressed,
+    the Guest Bathroom manual override is enabled and lights stay on for 1 hour.
+
+    '
+  triggers:
+  - trigger: state
+    entity_id:
+    - event.hue_tap_dial_switch_livingroom_button_1
+    attribute: event_type
+    to: short_release
+  - trigger: state
+    entity_id:
+    - event.hue_tap_dial_switch_livingroom_button_2
+    attribute: event_type
+    to: short_release
+  - trigger: state
+    entity_id:
+    - event.hue_tap_dial_switch_livingroom_button_3
+    attribute: event_type
+    to: short_release
+  - trigger: state
+    entity_id:
+    - event.hue_tap_dial_switch_livingroom_button_4
+    attribute: event_type
+    to: short_release
+  actions:
+  - target:
+      entity_id: input_boolean.bathroom_guest_lights_manual_override
+    action: input_boolean.turn_on
+    data: {}
+  - action: light.turn_on
+    data:
+      transition: 0.5
+      brightness_pct: 100
+    target:
+      entity_id: light.bathroom_guest_vanity_lights
+  - delay: 01:00:00
+  - target:
+      entity_id: input_boolean.bathroom_guest_lights_manual_override
+    action: input_boolean.turn_off
+    data: {}
+  - action: light.turn_off
+    data:
+      transition: 0.5
+    target:
+      entity_id: light.bathroom_guest_vanity_lights
+  mode: restart
+- id: '1754591980878'
+  alias: 'Bathroom Guest: Fan Timer If Vanity On 7 Minutes'
+  description: If the guest vanity light stays on for 7 minutes, turn on the guest
+    bathroom fan for 1 hour.
+  triggers:
+  - trigger: state
+    entity_id:
+    - light.bathroom_guest_vanity_lights
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 7
+      seconds: 0
+  conditions: []
+  actions:
+  - action: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.bathroom_guest_fan_outlet_switch_0
+  - delay:
+      hours: 1
+      minutes: 0
+      seconds: 0
+      milliseconds: 0
+  - action: switch.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.bathroom_guest_fan_outlet_switch_0
+  mode: single
+- id: '1754593545728'
+  alias: 'Bathroom Guest: Manual off (Temp)'
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - light.bathroom_guest_vanity_lights
+    from: 'on'
+    to: 'off'
+  conditions: []
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.bathroom_guest_lights_manual_override
+  mode: single
