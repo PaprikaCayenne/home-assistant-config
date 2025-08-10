@@ -1791,11 +1791,6 @@
     - event.hue_tap_dial_switch_livingroom_button_3
     attribute: event_type
     to: short_release
-  - trigger: state
-    entity_id:
-    - event.hue_tap_dial_switch_livingroom_button_4
-    attribute: event_type
-    to: short_release
   actions:
   - target:
       entity_id: input_boolean.bathroom_guest_lights_manual_override
@@ -1865,4 +1860,31 @@
     data: {}
     target:
       entity_id: input_boolean.bathroom_guest_lights_manual_override
+  mode: single
+- id: '1754752514545'
+  alias: Bathroom Guest Fan
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - event.hue_tap_dial_switch_livingroom_button_4
+    attribute: event_type
+    to: short_release
+  conditions: []
+  actions:
+  - action: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      device_id: 826855180a14c54053f4417df2568c48
+  - delay:
+      hours: 0
+      minutes: 20
+      seconds: 0
+      milliseconds: 0
+  - action: switch.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.bathroom_guest_fan_outlet_switch_0
   mode: single
