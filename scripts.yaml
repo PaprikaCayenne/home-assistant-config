@@ -2037,3 +2037,294 @@ bathroom_guest_lighting_control_script:
         target:
           entity_id:
           - light.bathroom_guest_vanity_lights
+audio_rz50_main_ensure_power_and_source:
+  alias: 'Audio: RZ50 Main Ensure Power And Source'
+  description: Retry power on, then set source to Multiroom - Firestick with waits
+    and verification.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ not is_state(''media_player.tx_rz50'',''on'') }}'
+          sequence:
+          - target:
+              entity_id: media_player.tx_rz50
+            action: media_player.turn_on
+            data: {}
+          - wait_template: '{{ is_state(''media_player.tx_rz50'',''on'') }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+          - delay: 00:00:04
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ ''Multiroom - Firestick'' in state_attr(''media_player.tx_rz50'',''source_list'')
+              | default([]) }}'
+          - condition: template
+            value_template: '{{ state_attr(''media_player.tx_rz50'',''source'') !=
+              ''Multiroom - Firestick'' }}'
+          sequence:
+          - target:
+              entity_id: media_player.tx_rz50
+            data:
+              source: Multiroom - Firestick
+            action: media_player.select_source
+          - wait_template: '{{ state_attr(''media_player.tx_rz50'',''source'') ==
+              ''Multiroom - Firestick'' }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_state(''media_player.tx_rz50'',''on'') and state_attr(''media_player.tx_rz50'',''source'')
+              == ''Multiroom - Firestick'' }}'
+          sequence:
+          - stop: RZ50 power and source confirmed
+      - delay: 00:00:02
+audio_rz50_zone_2_ensure_power_and_source:
+  alias: 'Audio: RZ50 Zone 2 Ensure Power And Source'
+  description: Retry power on, then set source to Main Zone Audio with waits and verification.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ not is_state(''media_player.tx_rz50_zone_2'',''on'')
+              }}'
+          sequence:
+          - target:
+              entity_id: media_player.tx_rz50_zone_2
+            action: media_player.turn_on
+            data: {}
+          - wait_template: '{{ is_state(''media_player.tx_rz50_zone_2'',''on'') }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+          - delay: 00:00:03
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ ''Main Zone Audio'' in state_attr(''media_player.tx_rz50_zone_2'',''source_list'')
+              | default([]) }}'
+          - condition: template
+            value_template: '{{ state_attr(''media_player.tx_rz50_zone_2'',''source'')
+              != ''Main Zone Audio'' }}'
+          sequence:
+          - target:
+              entity_id: media_player.tx_rz50_zone_2
+            data:
+              source: Main Zone Audio
+            action: media_player.select_source
+          - wait_template: '{{ state_attr(''media_player.tx_rz50_zone_2'',''source'')
+              == ''Main Zone Audio'' }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_state(''media_player.tx_rz50_zone_2'',''on'') and
+              state_attr(''media_player.tx_rz50_zone_2'',''source'') == ''Main Zone
+              Audio'' }}'
+          sequence:
+          - stop: RZ50 Zone 2 power and source confirmed
+      - delay: 00:00:02
+audio_rz50_zone_3_ensure_power_and_source:
+  alias: 'Audio: RZ50 Zone 3 Ensure Power And Source'
+  description: Retry power on, then set source to Main Zone Audio with waits and verification.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ not is_state(''media_player.tx_rz50_zone_3'',''on'')
+              }}'
+          sequence:
+          - target:
+              entity_id: media_player.tx_rz50_zone_3
+            action: media_player.turn_on
+            data: {}
+          - wait_template: '{{ is_state(''media_player.tx_rz50_zone_3'',''on'') }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+          - delay: 00:00:03
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ ''Main Zone Audio'' in state_attr(''media_player.tx_rz50_zone_3'',''source_list'')
+              | default([]) }}'
+          - condition: template
+            value_template: '{{ state_attr(''media_player.tx_rz50_zone_3'',''source'')
+              != ''Main Zone Audio'' }}'
+          sequence:
+          - target:
+              entity_id: media_player.tx_rz50_zone_3
+            data:
+              source: Main Zone Audio
+            action: media_player.select_source
+          - wait_template: '{{ state_attr(''media_player.tx_rz50_zone_3'',''source'')
+              == ''Main Zone Audio'' }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_state(''media_player.tx_rz50_zone_3'',''on'') and
+              state_attr(''media_player.tx_rz50_zone_3'',''source'') == ''Main Zone
+              Audio'' }}'
+          sequence:
+          - stop: RZ50 Zone 3 power and source confirmed
+      - delay: 00:00:02
+audio_denon_office_hallway_ensure_power_and_source:
+  alias: 'Audio: Denon Office Hallway Ensure Power And Source'
+  description: Retry power on, then set source to Livingroom with waits and verification.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ not is_state(''media_player.denon_office_hallway'',''on'')
+              }}'
+          sequence:
+          - target:
+              entity_id: media_player.denon_office_hallway
+            action: media_player.turn_on
+          - wait_template: '{{ is_state(''media_player.denon_office_hallway'',''on'')
+              }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+          - delay: 00:00:03
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ ''Livingroom'' in state_attr(''media_player.denon_office_hallway'',''source_list'')
+              | default([]) }}'
+          - condition: template
+            value_template: '{{ state_attr(''media_player.denon_office_hallway'',''source'')
+              != ''Livingroom'' }}'
+          sequence:
+          - target:
+              entity_id: media_player.denon_office_hallway
+            data:
+              source: Livingroom
+            action: media_player.select_source
+          - wait_template: '{{ state_attr(''media_player.denon_office_hallway'',''source'')
+              == ''Livingroom'' }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_state(''media_player.denon_office_hallway'',''on'')
+              and state_attr(''media_player.denon_office_hallway'',''source'') ==
+              ''Livingroom'' }}'
+          sequence:
+          - stop: Denon Office Hallway power and source confirmed
+      - delay: 00:00:02
+audio_nr6100_main_ensure_power_and_source:
+  alias: 'Audio: NR6100 Main Ensure Power And Source'
+  description: Retry power on, then set source to Multiroom - Firestick with waits
+    and verification.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ not is_state(''media_player.tx_nr6100'',''on'') }}'
+          sequence:
+          - target:
+              entity_id: media_player.tx_nr6100
+            action: media_player.turn_on
+          - wait_template: '{{ is_state(''media_player.tx_nr6100'',''on'') }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+          - delay: 00:00:03
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ ''Multiroom - Firestick'' in state_attr(''media_player.tx_nr6100'',''source_list'')
+              | default([]) }}'
+          - condition: template
+            value_template: '{{ state_attr(''media_player.tx_nr6100'',''source'')
+              != ''Multiroom - Firestick'' }}'
+          sequence:
+          - target:
+              entity_id: media_player.tx_nr6100
+            data:
+              source: Multiroom - Firestick
+            action: media_player.select_source
+          - wait_template: '{{ state_attr(''media_player.tx_nr6100'',''source'') ==
+              ''Multiroom - Firestick'' }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_state(''media_player.tx_nr6100'',''on'') and state_attr(''media_player.tx_nr6100'',''source'')
+              == ''Multiroom - Firestick'' }}'
+          sequence:
+          - stop: NR6100 power and source confirmed
+      - delay: 00:00:02
+audio_nr6100_zone_2_ensure_power_and_source:
+  alias: 'Audio: NR6100 Zone 2 Ensure Power And Source'
+  description: Retry power on, then set source to Main Zone Audio with waits and verification.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ not is_state(''media_player.tx_nr6100_zone_2'',''on'')
+              }}'
+          sequence:
+          - target:
+              entity_id: media_player.tx_nr6100_zone_2
+            action: media_player.turn_on
+          - wait_template: '{{ is_state(''media_player.tx_nr6100_zone_2'',''on'')
+              }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+          - delay: 00:00:03
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ ''Main Zone Audio'' in state_attr(''media_player.tx_nr6100_zone_2'',''source_list'')
+              | default([]) }}'
+          - condition: template
+            value_template: '{{ state_attr(''media_player.tx_nr6100_zone_2'',''source'')
+              != ''Main Zone Audio'' }}'
+          sequence:
+          - target:
+              entity_id: media_player.tx_nr6100_zone_2
+            data:
+              source: Main Zone Audio
+            action: media_player.select_source
+          - wait_template: '{{ state_attr(''media_player.tx_nr6100_zone_2'',''source'')
+              == ''Main Zone Audio'' }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_state(''media_player.tx_nr6100_zone_2'',''on'')
+              and state_attr(''media_player.tx_nr6100_zone_2'',''source'') == ''Main
+              Zone Audio'' }}'
+          sequence:
+          - stop: NR6100 Zone 2 power and source confirmed
+      - delay: 00:00:02
