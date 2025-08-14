@@ -2328,3 +2328,443 @@ audio_nr6100_zone_2_ensure_power_and_source:
           sequence:
           - stop: NR6100 Zone 2 power and source confirmed
       - delay: 00:00:02
+audio_denon_office_hallway_2_ensure_power_and_source:
+  alias: 'Audio: Denon Office Hallway 2 Ensure Power And Source'
+  description: Retry power on, then set source to Livingroom with waits and verification.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ not is_state(''media_player.denon_office_hallway_2'',''on'')
+              }}'
+          sequence:
+          - target:
+              entity_id: media_player.denon_office_hallway_2
+            action: media_player.turn_on
+            data: {}
+          - wait_template: '{{ is_state(''media_player.denon_office_hallway_2'',''on'')
+              }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+          - delay: 00:00:03
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ ''Livingroom'' in state_attr(''media_player.denon_office_hallway_2'',''source_list'')
+              | default([]) }}'
+          - condition: template
+            value_template: '{{ state_attr(''media_player.denon_office_hallway_2'',''source'')
+              != ''Livingroom'' }}'
+          sequence:
+          - target:
+              entity_id: media_player.denon_office_hallway_2
+            data:
+              source: Livingroom
+            action: media_player.select_source
+          - wait_template: '{{ state_attr(''media_player.denon_office_hallway_2'',''source'')
+              == ''Livingroom'' }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_state(''media_player.denon_office_hallway_2'',''on'')
+              and state_attr(''media_player.denon_office_hallway_2'',''source'') ==
+              ''Livingroom'' }}'
+          sequence:
+audio_rz50_main_power_off:
+  alias: 'Audio: RZ50 Main Power Off'
+  description: Retry power off with waits and verification.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_state(''media_player.tx_rz50'',''on'') }}'
+          sequence:
+          - target:
+              entity_id: media_player.tx_rz50
+            action: media_player.turn_off
+            data: {}
+          - wait_template: '{{ not is_state(''media_player.tx_rz50'',''on'') }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ not is_state(''media_player.tx_rz50'',''on'') }}'
+          sequence:
+          - stop: RZ50 is off
+      - delay: 00:00:02
+audio_rz50_zone_2_power_off:
+  alias: 'Audio: RZ50 Zone 2 Power Off'
+  description: Retry power off with waits and verification.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_state(''media_player.tx_rz50_zone_2'',''on'') }}'
+          sequence:
+          - target:
+              entity_id: media_player.tx_rz50_zone_2
+            action: media_player.turn_off
+          - wait_template: '{{ not is_state(''media_player.tx_rz50_zone_2'',''on'')
+              }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ not is_state(''media_player.tx_rz50_zone_2'',''on'')
+              }}'
+          sequence:
+          - stop: RZ50 Zone 2 is off
+      - delay: 00:00:02
+audio_rz50_zone_3_power_off:
+  alias: 'Audio: RZ50 Zone 3 Power Off'
+  description: Retry power off with waits and verification.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_state(''media_player.tx_rz50_zone_3'',''on'') }}'
+          sequence:
+          - target:
+              entity_id: media_player.tx_rz50_zone_3
+            action: media_player.turn_off
+            data: {}
+          - wait_template: '{{ not is_state(''media_player.tx_rz50_zone_3'',''on'')
+              }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ not is_state(''media_player.tx_rz50_zone_3'',''on'')
+              }}'
+          sequence:
+          - stop: RZ50 Zone 3 is off
+      - delay: 00:00:02
+audio_denon_office_hallway_power_off:
+  alias: 'Audio: Denon Office Hallway Power Off'
+  description: Retry power off with waits and verification.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_state(''media_player.denon_office_hallway'',''on'')
+              }}'
+          sequence:
+          - target:
+              entity_id: media_player.denon_office_hallway
+            action: media_player.turn_off
+            data: {}
+          - wait_template: '{{ not is_state(''media_player.denon_office_hallway'',''on'')
+              }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ not is_state(''media_player.denon_office_hallway'',''on'')
+              }}'
+          sequence:
+          - stop: Denon Office Hallway is off
+      - delay: 00:00:02
+audio_denon_office_hallway_2_power_off:
+  alias: 'Audio: Denon Office Hallway 2 Power Off'
+  description: Retry power off with waits and verification.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_state(''media_player.denon_office_hallway_2'',''on'')
+              }}'
+          sequence:
+          - target:
+              entity_id: media_player.denon_office_hallway_2
+            action: media_player.turn_off
+          - wait_template: '{{ not is_state(''media_player.denon_office_hallway_2'',''on'')
+              }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ not is_state(''media_player.denon_office_hallway_2'',''on'')
+              }}'
+          sequence:
+          - stop: Denon Office Hallway 2 is off
+      - delay: 00:00:02
+audio_nr6100_power_off:
+  alias: 'Audio: NR6100 Power Off'
+  description: Retry power off with waits and verification.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_state(''media_player.tx_nr6100'',''on'') }}'
+          sequence:
+          - target:
+              entity_id: media_player.tx_nr6100
+            action: media_player.turn_off
+          - wait_template: '{{ not is_state(''media_player.tx_nr6100'',''on'') }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ not is_state(''media_player.tx_nr6100'',''on'') }}'
+          sequence:
+          - stop: NR6100 is off
+      - delay: 00:00:02
+audio_nr6100_zone_2_power_off:
+  alias: 'Audio: NR6100 Zone 2 Power Off'
+  description: Retry power off with waits and verification.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_state(''media_player.tx_nr6100_zone_2'',''on'')
+              }}'
+          sequence:
+          - target:
+              entity_id: media_player.tx_nr6100_zone_2
+            action: media_player.turn_off
+          - wait_template: '{{ not is_state(''media_player.tx_nr6100_zone_2'',''on'')
+              }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ not is_state(''media_player.tx_nr6100_zone_2'',''on'')
+              }}'
+          sequence:
+          - stop: NR6100 Zone 2 is off
+      - delay: 00:00:02
+livingroom_tv_ensure_power:
+  alias: 'Livingroom: TV Ensure Power'
+  description: Retry power on with waits and verification. Does not change source.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ states(''media_player.livingroom_tv'') in [''off'',''standby'',''unavailable'',''unknown'']
+              }}'
+          sequence:
+          - target:
+              entity_id: media_player.livingroom_tv
+            action: media_player.turn_on
+          - wait_template: '{{ states(''media_player.livingroom_tv'') not in [''off'',''standby'',''unavailable'',''unknown'']
+              }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ states(''media_player.livingroom_tv'') not in [''off'',''standby'',''unavailable'',''unknown'']
+              }}'
+          sequence:
+          - stop: Livingroom TV is on
+      - delay: 00:00:02
+livingroom_tv_power_off:
+  alias: 'Livingroom: TV Power Off'
+  description: Retry power off with waits and verification.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ states(''media_player.livingroom_tv'') not in [''off'',''standby'',''unavailable'',''unknown'']
+              }}'
+          sequence:
+          - target:
+              entity_id: media_player.livingroom_tv
+            action: media_player.turn_off
+          - wait_template: '{{ states(''media_player.livingroom_tv'') in [''off'',''standby'',''unavailable'',''unknown'']
+              }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ states(''media_player.livingroom_tv'') in [''off'',''standby'',''unavailable'',''unknown'']
+              }}'
+          sequence:
+          - stop: Livingroom TV is off
+      - delay: 00:00:02
+livingroom_fire_tv_ensure_power:
+  alias: 'Livingroom: Fire TV Ensure Power'
+  description: Retry power on with waits and verification. Does not change source.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ states(''media_player.livingroom_fire_tv'') in [''off'',''standby'',''unavailable'',''unknown'']
+              }}'
+          sequence:
+          - target:
+              entity_id: media_player.livingroom_fire_tv
+            action: media_player.turn_on
+          - wait_template: '{{ states(''media_player.livingroom_fire_tv'') not in
+              [''off'',''standby'',''unavailable'',''unknown''] }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ states(''media_player.livingroom_fire_tv'') not in
+              [''off'',''standby'',''unavailable'',''unknown''] }}'
+          sequence:
+          - stop: Fire TV is on
+      - delay: 00:00:02
+livingroom_fire_tv_power_off:
+  alias: 'Livingroom: Fire TV Power Off'
+  description: Retry power off with waits and verification.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ states(''media_player.livingroom_fire_tv'') not in
+              [''off'',''standby'',''unavailable'',''unknown''] }}'
+          sequence:
+          - target:
+              entity_id: media_player.livingroom_fire_tv
+            action: media_player.turn_off
+          - wait_template: '{{ states(''media_player.livingroom_fire_tv'') in [''off'',''standby'',''unavailable'',''unknown'']
+              }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ states(''media_player.livingroom_fire_tv'') in [''off'',''standby'',''unavailable'',''unknown'']
+              }}'
+          sequence:
+          - stop: Fire TV is off
+      - delay: 00:00:02
+livingroom_fire_tv_ensure_power_2:
+  alias: 'Livingroom: Fire TV Ensure Power'
+  description: Turn on Fire TV with retry. Uses ADB WAKEUP + HOME as fallback.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ states(''media_player.livingroom_fire_tv'') in [''off'',''standby'',''unavailable'',''unknown'']
+              }}
+
+              '
+          sequence:
+          - target:
+              entity_id: media_player.livingroom_fire_tv
+            action: media_player.turn_on
+          - delay: 00:00:02
+          - target:
+              entity_id: media_player.livingroom_fire_tv
+            data:
+              command: WAKEUP
+            action: androidtv.adb_command
+          - delay: 00:00:01
+          - target:
+              entity_id: media_player.livingroom_fire_tv
+            data:
+              command: HOME
+            action: androidtv.adb_command
+          - delay: 00:00:02
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ states(''media_player.livingroom_fire_tv'') not in
+              [''off'',''standby'',''unavailable'',''unknown''] }}
+
+              '
+          sequence:
+          - stop: Fire TV is on
+      - delay: 00:00:02
+livingroom_fire_tv_power_off_2:
+  alias: 'Livingroom: Fire TV Power Off'
+  description: Turn off Fire TV with retry. Uses ADB SLEEP as fallback.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ states(''media_player.livingroom_fire_tv'') not in
+              [''off'',''standby'',''unavailable'',''unknown''] }}
+
+              '
+          sequence:
+          - target:
+              entity_id: media_player.livingroom_fire_tv
+            action: media_player.turn_off
+          - delay: 00:00:02
+          - target:
+              entity_id: media_player.livingroom_fire_tv
+            data:
+              command: SLEEP
+            action: androidtv.adb_command
+          - delay: 00:00:02
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ states(''media_player.livingroom_fire_tv'') in [''off'',''standby'',''unavailable'',''unknown'']
+              }}
+
+              '
+          sequence:
+          - stop: Fire TV is off
+      - delay: 00:00:02
