@@ -2136,7 +2136,8 @@ audio_rz50_zone_2_ensure_power_and_source:
       - delay: 00:00:02
 audio_rz50_zone_3_ensure_power_and_source:
   alias: 'Audio: RZ50 Zone 3 Ensure Power And Source'
-  description: Retry power on, then set source to Main Zone Audio with waits and verification.
+  description: Retry power on, set source to Main Zone Audio, and force volume to
+    100%.
   mode: restart
   sequence:
   - repeat:
@@ -2148,9 +2149,9 @@ audio_rz50_zone_3_ensure_power_and_source:
             value_template: '{{ not is_state(''media_player.tx_rz50_zone_3'',''on'')
               }}'
           sequence:
-          - target:
+          - action: media_player.turn_on
+            target:
               entity_id: media_player.tx_rz50_zone_3
-            action: media_player.turn_on
             data: {}
           - wait_template: '{{ is_state(''media_player.tx_rz50_zone_3'',''on'') }}'
             timeout: 00:00:05
@@ -2160,16 +2161,20 @@ audio_rz50_zone_3_ensure_power_and_source:
         - conditions:
           - condition: template
             value_template: '{{ ''Main Zone Audio'' in state_attr(''media_player.tx_rz50_zone_3'',''source_list'')
-              | default([]) }}'
+              | default([]) }}
+
+              '
           - condition: template
             value_template: '{{ state_attr(''media_player.tx_rz50_zone_3'',''source'')
-              != ''Main Zone Audio'' }}'
+              != ''Main Zone Audio'' }}
+
+              '
           sequence:
-          - target:
+          - action: media_player.select_source
+            target:
               entity_id: media_player.tx_rz50_zone_3
             data:
               source: Main Zone Audio
-            action: media_player.select_source
           - wait_template: '{{ state_attr(''media_player.tx_rz50_zone_3'',''source'')
               == ''Main Zone Audio'' }}'
             timeout: 00:00:05
@@ -2177,11 +2182,32 @@ audio_rz50_zone_3_ensure_power_and_source:
       - choose:
         - conditions:
           - condition: template
-            value_template: '{{ is_state(''media_player.tx_rz50_zone_3'',''on'') and
-              state_attr(''media_player.tx_rz50_zone_3'',''source'') == ''Main Zone
-              Audio'' }}'
+            value_template: '{{ (state_attr(''media_player.tx_rz50_zone_3'',''volume_level'')
+              | float(0)) < 0.99 }}'
           sequence:
-          - stop: RZ50 Zone 3 power and source confirmed
+          - action: media_player.volume_mute
+            target:
+              entity_id: media_player.tx_rz50_zone_3
+            data:
+              is_volume_muted: false
+          - action: media_player.volume_set
+            target:
+              entity_id: media_player.tx_rz50_zone_3
+            data:
+              volume_level: 1
+          - wait_template: '{{ (state_attr(''media_player.tx_rz50_zone_3'',''volume_level'')
+              | float(0)) >= 0.99 }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{ is_state('media_player.tx_rz50_zone_3','on')\n   and
+              state_attr('media_player.tx_rz50_zone_3','source') == 'Main Zone Audio'\n
+              \  and (state_attr('media_player.tx_rz50_zone_3','volume_level') | float(1))
+              >= 0.99 }}\n"
+          sequence:
+          - stop: RZ50 Zone 3 power, source, and volume confirmed
       - delay: 00:00:02
 audio_denon_office_hallway_ensure_power_and_source:
   alias: 'Audio: Denon Office Hallway Ensure Power And Source'
@@ -2768,3 +2794,215 @@ livingroom_fire_tv_power_off_2:
           sequence:
           - stop: Fire TV is off
       - delay: 00:00:02
+audio_rz50_main_ensure_power_and_source_2:
+  alias: 'Audio: RZ50 Main Ensure Power And Source'
+  description: Retry power on, then set source to Multiroom - Firestick with waits
+    and verification.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ not is_state(''media_player.tx_rz50'',''on'') }}'
+          sequence:
+          - target:
+              entity_id: media_player.tx_rz50
+            action: media_player.turn_on
+          - wait_template: '{{ is_state(''media_player.tx_rz50'',''on'') }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+          - delay: 00:00:04
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ ''Multiroom - Firestick'' in state_attr(''media_player.tx_rz50'',''source_list'')
+              | default([]) }}'
+          - condition: template
+            value_template: '{{ state_attr(''media_player.tx_rz50'',''source'') !=
+              ''Multiroom - Firestick'' }}'
+          sequence:
+          - target:
+              entity_id: media_player.tx_rz50
+            data:
+              source: Multiroom - Firestick
+            action: media_player.select_source
+          - wait_template: '{{ state_attr(''media_player.tx_rz50'',''source'') ==
+              ''Multiroom - Firestick'' }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_state(''media_player.tx_rz50'',''on'') and state_attr(''media_player.tx_rz50'',''source'')
+              == ''Multiroom - Firestick'' }}'
+          sequence:
+          - stop: RZ50 power and source confirmed
+      - delay: 00:00:02
+audio_all_speakers_on:
+  alias: 'Audio: All Speakers ON (Full Parallel)'
+  description: Turn on all receivers and set multiroom sources in parallel.
+  mode: restart
+  sequence:
+  - parallel:
+    - sequence:
+      - action: script.audio_rz50_main_ensure_power_and_source
+        data: {}
+    - sequence:
+      - action: script.audio_rz50_zone_2_ensure_power_and_source
+        data: {}
+    - sequence:
+      - action: script.audio_rz50_zone_3_ensure_power_and_source
+        data: {}
+    - sequence:
+      - action: script.audio_denon_office_hallway_ensure_power_and_source
+        data: {}
+    - sequence:
+      - action: script.audio_denon_office_hallway_2_ensure_power_and_source
+        data: {}
+    - sequence:
+      - action: script.audio_nr6100_main_ensure_power_and_source
+        data: {}
+    - sequence:
+      - action: script.audio_nr6100_zone_2_ensure_power_and_source
+        data: {}
+    - sequence:
+      - action: media_player.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: media_player.bedroom_primary_tv
+      - action: media_player.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: media_player.livingroom_tv
+'1755179931505':
+  alias: 'Audio: All Speakers OFF (Full Parallel)'
+  description: Turn off all receivers in parallel.
+  mode: restart
+  sequence:
+  - parallel:
+    - sequence:
+      - action: script.audio_rz50_zone_2_power_off
+        data: {}
+    - sequence:
+      - action: script.audio_rz50_zone_3_power_off
+        data: {}
+    - sequence:
+      - action: script.audio_denon_office_hallway_power_off
+        data: {}
+    - sequence:
+      - action: script.audio_denon_office_hallway_2_power_off
+        data: {}
+    - sequence:
+      - action: script.audio_nr6100_zone_2_power_off
+        data: {}
+    - sequence:
+      - action: script.audio_nr6100_power_off
+        data: {}
+    - sequence:
+      - action: script.audio_rz50_main_power_off
+        data: {}
+    - sequence:
+      - action: media_player.turn_off
+        metadata: {}
+        data: {}
+        target:
+          entity_id: media_player.livingroom_tv
+      - action: media_player.turn_off
+        metadata: {}
+        data: {}
+        target:
+          entity_id: media_player.bedroom_primary_tv
+audio_verify_multiroom:
+  alias: 'Audio: Verify Multiroom'
+  description: Checks power and expected source on all zones; reports mismatches.
+  mode: single
+  sequence:
+  - variables:
+      report: '{% set ns = namespace(text='''') %}
+
+        {% set e=''media_player.tx_rz50'' %} {% set st=states(e) %}{% set cur=state_attr(e,''source'')
+        %}{% set list=state_attr(e,''source_list'')|default([]) %} {% if st != ''on''
+        %}{% set ns.text = ns.text + ''RZ50 Main is '' ~ st ~ ''\n'' %} {% elif ''Multiroom
+        - Firestick'' not in list %}{% set ns.text = ns.text + ''RZ50 Main missing
+        expected source "Multiroom - Firestick" in source_list\n'' %} {% elif cur
+        != ''Multiroom - Firestick'' %}{% set ns.text = ns.text + ''RZ50 Main source
+        is "'' ~ (cur|default(''unknown'')) ~ ''" not "Multiroom - Firestick"\n''
+        %}{% endif %}
+
+        {% set e=''media_player.tx_rz50_zone_2'' %} {% set st=states(e) %}{% set cur=state_attr(e,''source'')
+        %}{% set list=state_attr(e,''source_list'')|default([]) %} {% if st != ''on''
+        %}{% set ns.text = ns.text + ''RZ50 Zone 2 is '' ~ st ~ ''\n'' %} {% elif
+        ''Main Zone Audio'' not in list %}{% set ns.text = ns.text + ''RZ50 Zone 2
+        missing expected source "Main Zone Audio" in source_list\n'' %} {% elif cur
+        != ''Main Zone Audio'' %}{% set ns.text = ns.text + ''RZ50 Zone 2 source is
+        "'' ~ (cur|default(''unknown'')) ~ ''" not "Main Zone Audio"\n'' %}{% endif
+        %}
+
+        {% set e=''media_player.tx_rz50_zone_3'' %} {% set st=states(e) %}{% set cur=state_attr(e,''source'')
+        %}{% set list=state_attr(e,''source_list'')|default([]) %} {% if st != ''on''
+        %}{% set ns.text = ns.text + ''RZ50 Zone 3 is '' ~ st ~ ''\n'' %} {% elif
+        ''Main Zone Audio'' not in list %}{% set ns.text = ns.text + ''RZ50 Zone 3
+        missing expected source "Main Zone Audio" in source_list\n'' %} {% elif cur
+        != ''Main Zone Audio'' %}{% set ns.text = ns.text + ''RZ50 Zone 3 source is
+        "'' ~ (cur|default(''unknown'')) ~ ''" not "Main Zone Audio"\n'' %}{% endif
+        %}
+
+        {% set e=''media_player.denon_office_hallway'' %} {% set st=states(e) %}{%
+        set cur=state_attr(e,''source'') %}{% set list=state_attr(e,''source_list'')|default([])
+        %} {% if st != ''on'' %}{% set ns.text = ns.text + ''Denon Office/Hallway
+        is '' ~ st ~ ''\n'' %} {% elif ''Livingroom'' not in list %}{% set ns.text
+        = ns.text + ''Denon Office/Hallway missing expected source "Livingroom" in
+        source_list\n'' %} {% elif cur != ''Livingroom'' %}{% set ns.text = ns.text
+        + ''Denon Office/Hallway source is "'' ~ (cur|default(''unknown'')) ~ ''"
+        not "Livingroom"\n'' %}{% endif %}
+
+        {% set e=''media_player.denon_office_hallway_2'' %} {% set st=states(e) %}{%
+        set cur=state_attr(e,''source'') %}{% set list=state_attr(e,''source_list'')|default([])
+        %} {% if st != ''on'' %}{% set ns.text = ns.text + ''Denon Office/Hallway
+        2 is '' ~ st ~ ''\n'' %} {% elif ''Livingroom'' not in list %}{% set ns.text
+        = ns.text + ''Denon Office/Hallway 2 missing expected source "Livingroom"
+        in source_list\n'' %} {% elif cur != ''Livingroom'' %}{% set ns.text = ns.text
+        + ''Denon Office/Hallway 2 source is "'' ~ (cur|default(''unknown'')) ~ ''"
+        not "Livingroom"\n'' %}{% endif %}
+
+        {% set e=''media_player.tx_nr6100'' %} {% set st=states(e) %}{% set cur=state_attr(e,''source'')
+        %}{% set list=state_attr(e,''source_list'')|default([]) %} {% if st != ''on''
+        %}{% set ns.text = ns.text + ''NR6100 Main is '' ~ st ~ ''\n'' %} {% elif
+        ''Multiroom - Firestick'' not in list %}{% set ns.text = ns.text + ''NR6100
+        Main missing expected source "Multiroom - Firestick" in source_list\n'' %}
+        {% elif cur != ''Multiroom - Firestick'' %}{% set ns.text = ns.text + ''NR6100
+        Main source is "'' ~ (cur|default(''unknown'')) ~ ''" not "Multiroom - Firestick"\n''
+        %}{% endif %}
+
+        {% set e=''media_player.tx_nr6100_zone_2'' %} {% set st=states(e) %}{% set
+        cur=state_attr(e,''source'') %}{% set list=state_attr(e,''source_list'')|default([])
+        %} {% if st != ''on'' %}{% set ns.text = ns.text + ''NR6100 Zone 2 is '' ~
+        st ~ ''\n'' %} {% elif ''Main Zone Audio'' not in list %}{% set ns.text =
+        ns.text + ''NR6100 Zone 2 missing expected source "Main Zone Audio" in source_list\n''
+        %} {% elif cur != ''Main Zone Audio'' %}{% set ns.text = ns.text + ''NR6100
+        Zone 2 source is "'' ~ (cur|default(''unknown'')) ~ ''" not "Main Zone Audio"\n''
+        %}{% endif %}
+
+        {{ ns.text.strip() }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ report | length > 0 }}'
+      sequence:
+      - data:
+          title: Audio Verify – Problems Found
+          message: '{{ report }}'
+        action: persistent_notification.create
+    - conditions:
+      - condition: template
+        value_template: '{{ report | length == 0 }}'
+      sequence:
+      - data:
+          title: Audio Verify
+          message: All zones are on and sources match.
+        action: persistent_notification.create

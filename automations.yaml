@@ -1888,3 +1888,129 @@
     target:
       entity_id: switch.bathroom_guest_fan_outlet_switch_0
   mode: single
+- id: '1755184304934'
+  alias: 'Audio: All Speakers Volume'
+  triggers:
+  - entity_id: input_number.all_speakers_volume
+    trigger: state
+  actions:
+  - variables:
+      pct: '{{ states(''input_number.all_speakers_volume'') | float(0) }}'
+      zones:
+      - e: media_player.tx_rz50
+        min: 0.1
+        max: 1
+      - e: media_player.tx_rz50_zone_2
+        min: 0.05
+        max: 1
+      - e: media_player.denon_office_hallway
+        min: 0.05
+        max: 1
+      - e: media_player.denon_office_hallway_2
+        min: 0.05
+        max: 1
+      - e: media_player.tx_nr6100
+        min: 0.08
+        max: 1
+      - e: media_player.tx_nr6100_zone_2
+        min: 0.05
+        max: 1
+  - repeat:
+      for_each: '{{ zones }}'
+      sequence:
+      - variables:
+          lvl: '{{ ((pct / 100) * (repeat.item.max - repeat.item.min) + repeat.item.min)
+            | float }}'
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_state(repeat.item.e, ''on'') }}'
+          sequence:
+          - target:
+              entity_id: '{{ repeat.item.e }}'
+            data:
+              volume_level: '{{ [ [ lvl, 1.0 ] | min, 0.0 ] | max }}'
+            action: media_player.volume_set
+  mode: restart
+- id: '1755193775949'
+  alias: 'Livingroom: TV On → Ensure RZ50 + Fire TV'
+  description: Ensure RZ50 and Fire TV are powered when Livingroom TV turns on
+  triggers:
+  - trigger: state
+    entity_id: media_player.livingroom_tv
+    to: 'on'
+  conditions: []
+  actions:
+  - action: script.audio_rz50_main_ensure_power_and_source
+    data: {}
+  - choose:
+    - conditions:
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: media_player.livingroom_fire_tv
+          state: playing
+      sequence:
+      - action: media_player.turn_on
+        target:
+          entity_id: media_player.livingroom_fire_tv
+        data: {}
+  mode: single
+- id: '1755194060163'
+  alias: 'Livingroom: TV Off → Power Down RZ50 + Fire TV'
+  description: Turn off RZ50 and Fire TV 15 seconds after Livingroom TV turns off
+  triggers:
+  - trigger: state
+    entity_id: media_player.livingroom_tv
+    to: 'off'
+  conditions: []
+  actions:
+  - delay: 00:00:15
+  - action: media_player.turn_off
+    target:
+      entity_id: media_player.livingroom_fire_tv
+    data: {}
+  - action: script.audio_rz50_main_power_off
+    data: {}
+  mode: single
+- id: '1755194342958'
+  alias: 'Bedroom: TV On → Ensure NR6100 + Fire TV'
+  description: Ensure NR6100 and Fire TV are powered when Bedroom TV turns on
+  triggers:
+  - trigger: state
+    entity_id: media_player.bedroom_primary_tv
+    to: 'on'
+  conditions: []
+  actions:
+  - action: script.audio_nr6100_main_ensure_power_and_source
+    data: {}
+  - choose:
+    - conditions:
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: media_player.fire_tv_192_168_50_163
+          state: playing
+      sequence:
+      - action: media_player.turn_on
+        target:
+          entity_id: media_player.fire_tv_192_168_50_163
+        data: {}
+  mode: single
+- id: '1755194365036'
+  alias: 'Bedroom: TV Off → Power Down NR6100 + Fire TV'
+  description: Turn off NR6100 and Fire TV 15 seconds after Bedroom TV turns off
+  triggers:
+  - trigger: state
+    entity_id: media_player.bedroom_primary_tv
+    to: 'off'
+  conditions: []
+  actions:
+  - delay: 00:00:15
+  - action: media_player.turn_off
+    target:
+      entity_id: media_player.fire_tv_192_168_50_163
+    data: {}
+  - action: script.audio_nr6100_power_off
+    data: {}
+  mode: single
