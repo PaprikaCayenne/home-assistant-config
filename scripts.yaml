@@ -333,11 +333,11 @@ reset_kitchen_livingroom_motion:
     '
   mode: single
   sequence:
-  - target:
+  - action: input_boolean.turn_off
+    target:
       entity_id:
       - input_boolean.kitchen_lights_manual_override
       - input_boolean.livingroom_lights_manual_override
-    action: input_boolean.turn_off
     data: {}
 global_clear_all_overrides:
   alias: 'Global: Clear All Overrides | Script'

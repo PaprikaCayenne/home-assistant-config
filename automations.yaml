@@ -880,6 +880,12 @@
   actions:
   - action: script.kitchen_light_control_script
     data: {}
+    enabled: false
+  - action: script.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: script.kitchen_light_control_script
   mode: single
 - id: '1744569217413'
   alias: 'Kitchen: Motion Not Detected – Turn Off Lights'
@@ -1246,8 +1252,15 @@
       - light.kitchen_above_cabinet_lightstrip
   - delay:
       seconds: 30
+    enabled: false
   - action: script.reset_kitchen_livingroom_motion
     data: {}
+    enabled: false
+  - action: script.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: script.reset_kitchen_livingroom_motion
   mode: single
 - id: '1744572436937'
   alias: 'Livingroom: Button 4 Long Press – All Off & Reset Motion'
@@ -1274,8 +1287,15 @@
     action: light.turn_off
   - delay:
       seconds: 30
+    enabled: false
   - action: script.reset_kitchen_livingroom_motion
     data: {}
+    enabled: false
+  - action: script.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: script.reset_kitchen_livingroom_motion
   mode: single
 - id: '1744601049270'
   alias: 'Git: Nightly Backup Push'
@@ -1633,6 +1653,12 @@
   actions:
   - action: script.livingroom_light_control_script
     data: {}
+    enabled: false
+  - action: script.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: script.livingroom_light_control_script
   mode: single
 - id: '1749922951079'
   alias: 'Livingroom: Motion Not Detected – Turn Off Lights'
