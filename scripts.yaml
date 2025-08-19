@@ -584,14 +584,14 @@ livingroom_toggle_lights_manual_override:
         entity_id: light.livingroom_hue_group_switch
         state: 'off'
       sequence:
-      - action: script.livingroom_light_control_script
-        metadata: {}
+      - action: script.turn_on
+        target:
+          entity_id: script.livingroom_light_control_script
         data: {}
       - action: input_boolean.turn_on
-        metadata: {}
-        data: {}
         target:
           entity_id: input_boolean.livingroom_lights_manual_override
+        data: {}
     - conditions:
       - condition: state
         entity_id: light.livingroom_hue_group_switch
@@ -601,10 +601,9 @@ livingroom_toggle_lights_manual_override:
         state: 'off'
       sequence:
       - action: input_boolean.turn_on
-        metadata: {}
-        data: {}
         target:
           entity_id: input_boolean.livingroom_lights_manual_override
+        data: {}
     - conditions:
       - condition: state
         entity_id: light.livingroom_hue_group_switch
@@ -614,21 +613,18 @@ livingroom_toggle_lights_manual_override:
         state: 'on'
       sequence:
       - action: light.turn_off
-        metadata: {}
         data:
           transition: 0.5
         target:
           entity_id: light.livingroom_hue_group_switch
       - action: input_boolean.turn_off
-        metadata: {}
-        data: {}
         target:
           entity_id: input_boolean.livingroom_lights_manual_override
-      - action: script.turn_on
-        metadata: {}
         data: {}
+      - action: script.turn_on
         target:
           entity_id: script.livingroom_start_motion_cooldown
+        data: {}
 hallway_reset_motion:
   alias: 'Hallway: Reset Motion | Script'
   description: 'Turns off hallway manual override and re-enables motion automation.

@@ -2006,7 +2006,10 @@
   - trigger: state
     entity_id: media_player.bedroom_primary_tv
     to: 'on'
-  conditions: []
+  conditions:
+  - condition: state
+    entity_id: input_boolean.bedroom_primary_tv_quiet_shutdown
+    state: 'off'
   actions:
   - action: script.audio_nr6100_main_ensure_power_and_source
     data: {}
@@ -2025,18 +2028,32 @@
   mode: single
 - id: '1755194365036'
   alias: 'Bedroom: TV Off → Power Down NR6100 + Fire TV'
-  description: Turn off NR6100 and Fire TV 15 seconds after Bedroom TV turns off
+  description: Turn off NR6100 and Fire TV with cooldown to prevent bounce
   triggers:
   - trigger: state
     entity_id: media_player.bedroom_primary_tv
     to: 'off'
-  conditions: []
+    for: 00:00:05
+  conditions:
+  - condition: state
+    entity_id: input_boolean.bedroom_primary_tv_quiet_shutdown
+    state: 'off'
   actions:
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.bedroom_primary_tv_quiet_shutdown
+    data: {}
   - delay: 00:00:15
+  - action: script.audio_nr6100_power_off
+    data: {}
+  - delay: 00:00:05
   - action: media_player.turn_off
     target:
       entity_id: media_player.fire_tv_192_168_50_163
     data: {}
-  - action: script.audio_nr6100_power_off
+  - delay: 00:01:30
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.bedroom_primary_tv_quiet_shutdown
     data: {}
   mode: single
