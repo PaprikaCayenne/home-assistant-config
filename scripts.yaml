@@ -334,11 +334,12 @@ reset_kitchen_livingroom_motion:
   mode: single
   sequence:
   - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
     target:
       entity_id:
       - input_boolean.kitchen_lights_manual_override
       - input_boolean.livingroom_lights_manual_override
-    data: {}
 global_clear_all_overrides:
   alias: 'Global: Clear All Overrides | Script'
   description: 'Turns off all manual lighting overrides and global mode booleans that
@@ -3002,3 +3003,52 @@ audio_verify_multiroom:
           title: Audio Verify
           message: All zones are on and sources match.
         action: persistent_notification.create
+bedroom_primary_nightstand_red_flicker_restore:
+  alias: 'Bedroom Primary: Nightstand Red Flicker Restore'
+  description: Flashes the nightstand lamp red briefly and restores its original state
+    for visual feedback.
+  mode: single
+  sequence:
+  - action: scene.create
+    metadata: {}
+    data:
+      scene_id: bedroom_primary_nightstand_snapshot
+      snapshot_entities:
+      - light.bedroom_primary_nightstand_lamp
+  - action: light.turn_on
+    metadata: {}
+    data:
+      rgb_color:
+      - 255
+      - 0
+      - 0
+      brightness_pct: 100
+    target:
+      entity_id: light.bedroom_primary_nightstand_lamp
+  - delay: '00:00:00.20'
+  - action: light.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: light.bedroom_primary_nightstand_lamp
+  - delay: '00:00:00.20'
+  - action: light.turn_on
+    metadata: {}
+    data:
+      rgb_color:
+      - 255
+      - 0
+      - 0
+      brightness_pct: 100
+    target:
+      entity_id: light.bedroom_primary_nightstand_lamp
+  - delay: '00:00:00.20'
+  - action: scene.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: scene.bedroom_primary_nightstand_snapshot
+  - action: scene.delete
+    metadata: {}
+    data:
+      scene_id: bedroom_primary_nightstand_snapshot

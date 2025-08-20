@@ -1580,63 +1580,6 @@
           brightness_pct: 1
         action: light.turn_on
   mode: restart
-- id: '1749879690322'
-  alias: 'Bedroom Primary: Dial Switch Button 1 Short Press – Resume Lighting'
-  description: 'When the Hue dimmer switch button 1 is short-pressed: - If the bedroom
-    lights are off, run the standard light control script. - Always enable the manual
-    override to disable motion-based automation.
-
-    '
-  triggers:
-  - entity_id:
-    - event.hue_tap_dial_switch_bedroom_primary_button_1
-    to: short_release
-    trigger: state
-    attribute: event_type
-  conditions: []
-  actions:
-  - choose:
-    - conditions:
-      - condition: state
-        entity_id: light.bedroom_primary_hue_group_switch
-        state: 'off'
-      sequence:
-      - action: script.bedroom_primary_light_control_script
-        data: {}
-  - target:
-      entity_id: input_boolean.bedroom_primary_lights_manual_override
-    action: input_boolean.turn_on
-    data: {}
-  mode: single
-- id: '1749879901338'
-  alias: 'Bedroom Primary: Dial Switch Button 4 Short Press – Power Off'
-  description: 'Turns off bedroom lights and resets motion automation after 1 minute.
-
-    '
-  triggers:
-  - entity_id:
-    - event.hue_tap_dial_switch_bedroom_primary_button_4
-    to: short_release
-    trigger: state
-    attribute: event_type
-  conditions: []
-  actions:
-  - target:
-      entity_id: light.bedroom_primary_hue_group_switch
-    data:
-      transition: 0.5
-    action: light.turn_off
-  - delay:
-      minutes: 1
-  - target:
-      entity_id: input_boolean.bedroom_primary_lights_manual_override
-    action: input_boolean.turn_off
-    data: {}
-  - target:
-      entity_id: input_boolean.bedroom_primary_motion_enabled
-    action: input_boolean.turn_on
-    data: {}
-  mode: single
 - id: '1749909190648'
   alias: 'Livingroom: Motion Detected – Turn On Lights [Run Light Control Script]'
   description: Turns on livingroom lights when motion is detected and automation is
@@ -2057,3 +2000,254 @@
       entity_id: input_boolean.bedroom_primary_tv_quiet_shutdown
     data: {}
   mode: single
+- id: '1755628552249'
+  alias: 'Bedroom Primary: Button 1 Short Press – Toggle Override + Red Flicker'
+  description: Toggles manual override on short press of Button 1 and triggers red
+    flicker feedback.
+  triggers:
+  - entity_id: event.hue_tap_dial_switch_bedroom_primary_button_1
+    attribute: event_type
+    to: short_release
+    trigger: state
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.bedroom_primary_lights_manual_override
+        state: 'off'
+      sequence:
+      - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.bedroom_primary_lights_manual_override
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.bedroom_primary_lights_manual_override
+        state: 'on'
+      sequence:
+      - action: input_boolean.turn_off
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.bedroom_primary_lights_manual_override
+  - action: script.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: script.bedroom_primary_nightstand_red_flicker_restore
+  mode: single
+- id: '1755628592084'
+  alias: 'Bedroom Primary: Button 2 Short Press – Private Time + Scene + Red Flicker'
+  description: Toggles private time and manual override, activates Nebula scene at
+    15%, and gives red flicker feedback.
+  triggers:
+  - entity_id: event.hue_tap_dial_switch_bedroom_primary_button_2
+    attribute: event_type
+    to: short_release
+    trigger: state
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.private_time
+        state: 'off'
+      sequence:
+      - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.private_time
+      - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.bedroom_primary_lights_manual_override
+      - action: scene.turn_on
+        metadata: {}
+        data:
+          entity_id: scene.bedroom_primary_hue_group_nebula
+      - action: light.turn_on
+        metadata: {}
+        data:
+          brightness_pct: 15
+        target:
+          entity_id: light.bedroom_primary_hue_group_switch
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.private_time
+        state: 'on'
+      sequence:
+      - action: input_boolean.turn_off
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.private_time
+      - action: input_boolean.turn_off
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.bedroom_primary_lights_manual_override
+      - action: light.turn_off
+        metadata: {}
+        data: {}
+        target:
+          entity_id: light.bedroom_primary_hue_group_switch
+  - action: script.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: script.bedroom_primary_nightstand_red_flicker_restore
+  mode: single
+- id: '1755628771313'
+  alias: 'Bedroom Primary: Dial Rotate – 5% Step + Override Logic'
+  description: Rotary clockwise increases brightness by 5%, counter-clockwise decreases
+    by 5%. Any turn enables manual override. At zero, lights turn off and override
+    clears.
+  triggers:
+  - entity_id: event.hue_tap_dial_switch_bedroom_primary_rotary
+    attribute: event_type
+    to: clock_wise
+    trigger: state
+  - entity_id: event.hue_tap_dial_switch_bedroom_primary_rotary
+    attribute: event_type
+    to: counter_clock_wise
+    trigger: state
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.to_state and trigger.to_state.state == ''clock_wise''
+          }}'
+      sequence:
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: light.bedroom_primary_hue_group_switch
+            state: 'off'
+          sequence:
+          - action: light.turn_on
+            metadata: {}
+            data:
+              brightness_pct: 5
+            target:
+              entity_id: light.bedroom_primary_hue_group_switch
+        - conditions: []
+          sequence:
+          - action: light.turn_on
+            metadata: {}
+            data:
+              brightness_step_pct: 5
+            target:
+              entity_id: light.bedroom_primary_hue_group_switch
+      - action: input_boolean.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: input_boolean.bedroom_primary_lights_manual_override
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.to_state and trigger.to_state.state == ''counter_clock_wise''
+          }}'
+      sequence:
+      - variables:
+          cur_pct: '{{ ((state_attr(''light.bedroom_primary_hue_group_switch'',''brightness'')|int(0)
+            / 255) * 100) | round(0) }}'
+      - choose:
+        - conditions:
+          - condition: or
+            conditions:
+            - condition: state
+              entity_id: light.bedroom_primary_hue_group_switch
+              state: 'off'
+            - condition: template
+              value_template: '{{ cur_pct|int <= 5 }}'
+          sequence:
+          - action: light.turn_off
+            metadata: {}
+            data: {}
+            target:
+              entity_id: light.bedroom_primary_hue_group_switch
+          - action: input_boolean.turn_off
+            metadata: {}
+            data: {}
+            target:
+              entity_id: input_boolean.bedroom_primary_lights_manual_override
+        - conditions: []
+          sequence:
+          - action: light.turn_on
+            metadata: {}
+            data:
+              brightness_step_pct: -5
+            target:
+              entity_id: light.bedroom_primary_hue_group_switch
+          - action: input_boolean.turn_on
+            metadata: {}
+            data: {}
+            target:
+              entity_id: input_boolean.bedroom_primary_lights_manual_override
+  mode: single
+- id: '1755628921339'
+  alias: 'Bedroom Primary: Sync Private Time to Camera Privacy'
+  description: Keeps camera privacy mode in sync with the Private Time boolean.
+  triggers:
+  - entity_id: input_boolean.private_time
+    trigger: state
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.private_time
+        state: 'on'
+      sequence:
+      - action: switch.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: switch.camera_bedroom_primary_privacy_mode
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.private_time
+        state: 'off'
+      sequence:
+      - action: switch.turn_off
+        metadata: {}
+        data: {}
+        target:
+          entity_id: switch.camera_bedroom_primary_privacy_mode
+  mode: restart
+- id: '1755629114060'
+  alias: 'Bedroom Primary: Private Time Sync'
+  description: 'Keeps camera privacy mode synced with private time.  When private_time
+    is true, privacy mode is enabled.  When private_time is false, privacy mode is
+    disabled.
+
+    '
+  triggers:
+  - trigger: state
+    entity_id: input_boolean.private_time
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.private_time
+        state: 'on'
+      sequence:
+      - action: switch.turn_on
+        target:
+          entity_id: switch.camera_bedroom_primary_privacy_mode
+        data: {}
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.private_time
+        state: 'off'
+      sequence:
+      - action: switch.turn_off
+        target:
+          entity_id: switch.camera_bedroom_primary_privacy_mode
+        data: {}
+  mode: restart
