@@ -2001,7 +2001,7 @@
     data: {}
   mode: single
 - id: '1755628552249'
-  alias: 'Bedroom Primary: Button 1 Short Press – Toggle Override + Red Flicker'
+  alias: 'Bedroom Primary: Dial Button 1 Short Press – Toggle Override + Red Flicker'
   description: Toggles manual override on short press of Button 1 and triggers red
     flicker feedback.
   triggers:
@@ -2032,6 +2032,12 @@
         data: {}
         target:
           entity_id: input_boolean.bedroom_primary_lights_manual_override
+      - action: light.turn_off
+        metadata: {}
+        data:
+          transition: 1
+        target:
+          entity_id: light.bathroom_primary_all_lights_group
   - action: script.turn_on
     metadata: {}
     data: {}
@@ -2039,7 +2045,8 @@
       entity_id: script.bedroom_primary_nightstand_red_flicker_restore
   mode: single
 - id: '1755628592084'
-  alias: 'Bedroom Primary: Button 2 Short Press – Private Time + Scene + Red Flicker'
+  alias: 'Bedroom Primary: Dial Button 2 Short Press – Private Time + Scene + Red
+    Flicker'
   description: Toggles private time and manual override, activates Nebula scene at
     15%, and gives red flicker feedback.
   triggers:
@@ -2092,7 +2099,8 @@
           entity_id: input_boolean.bedroom_primary_lights_manual_override
       - action: light.turn_off
         metadata: {}
-        data: {}
+        data:
+          transition: 1
         target:
           entity_id: light.bedroom_primary_hue_group_switch
   - action: script.turn_on
