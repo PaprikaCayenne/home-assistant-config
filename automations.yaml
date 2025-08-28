@@ -198,54 +198,9 @@
     entity_id: binary_sensor.motion_hallway_allowed
     state: 'on'
   actions:
-  - choose:
-    - conditions:
-      - condition: time
-        after: 06:00:00
-        before: 08:00:00
-      sequence:
-      - data:
-          brightness_pct: 40
-          transition: 0.5
-        target:
-          area_id: hallway
-        action: light.turn_on
-    - conditions:
-      - condition: time
-        after: '18:00:00'
-        before: '23:00:00'
-      sequence:
-      - data:
-          brightness_pct: 100
-          transition: 0.5
-        target:
-          area_id: hallway
-        action: light.turn_on
-    - conditions:
-      - condition: time
-        after: 08:00:00
-        before: '18:00:00'
-      sequence:
-      - data:
-          brightness_pct: 80
-          transition: 0.5
-        target:
-          area_id: hallway
-        action: light.turn_on
-    - conditions:
-      - condition: time
-        after: '23:00:00'
-        before: 06:00:00
-      sequence:
-      - data:
-          brightness_pct: 10
-          transition: 0.5
-        target:
-          area_id: hallway
-        action: light.turn_on
-    enabled: false
-  - action: script.hallway_lighting_control_script
-    metadata: {}
+  - action: script.turn_on
+    target:
+      entity_id: script.hallway_lighting_control_script
     data: {}
   mode: single
 - id: '1739928051409'
@@ -413,24 +368,26 @@
   mode: single
 - id: '1742262183606'
   alias: 'Hallway: Pico Remote – Manual Override On'
-  description: 'Enables manual override for hallway lights when the Pico "on" button
-    is pressed.
-
-    '
+  description: Enables manual override for hallway lights and runs hallway lighting
+    control
   triggers:
   - entity_id: button.unassigned_unnamed_pico_remote_1_on
     trigger: state
   conditions: []
   actions:
-  - target:
+  - action: input_boolean.turn_on
+    target:
       entity_id: input_boolean.hallway_lights_manual_override
-    action: input_boolean.turn_on
+    data: {}
+  - action: script.turn_on
+    target:
+      entity_id: script.hallway_lighting_control_script
     data: {}
   mode: single
 - id: '1742262256554'
-  alias: 'Hallway: Pico Remote – Manual Override Off + Suppress Motion'
-  description: 'Turns off manual override for hallway lights and temporarily disables
-    motion automation for 1 minute to prevent immediate re-triggering.
+  alias: 'Hallway: Pico Remote – Manual Override Off + Suppress Motion (Boolean)'
+  description: 'Turns off manual override for hallway lights and suppresses hallway
+    motion via helper boolean for 1 minute.
 
     '
   triggers:
@@ -438,20 +395,19 @@
     trigger: state
   conditions: []
   actions:
-  - target:
-      entity_id: input_boolean.hallway_lights_manual_override
-    action: input_boolean.turn_off
-    data: {}
-  - data:
-      stop_actions: true
+  - action: input_boolean.turn_off
     target:
-      entity_id: automation.hallway_motion_sensed
-    action: automation.turn_off
+      entity_id: input_boolean.hallway_lights_manual_override
+    data: {}
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.hallway_motion_enabled
+    data: {}
   - delay:
       minutes: 1
-  - target:
-      entity_id: automation.hallway_motion_sensed
-    action: automation.turn_on
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.hallway_motion_enabled
     data: {}
   mode: single
 - id: '1742362888667'
@@ -491,8 +447,8 @@
   mode: single
 - id: '1742396296105'
   alias: 'Bathroom Guest: Motion Detected | Turn On Lights'
-  description: Turns on guest bathroom lights when motion is detected and automation
-    is allowed.
+  description: Turns on guest bathroom lights via control script when motion is detected
+    and automation is allowed
   triggers:
   - trigger: state
     entity_id:
@@ -507,15 +463,9 @@
     entity_id: binary_sensor.motion_bathroom_guest_allowed
     state: 'on'
   actions:
-  - data:
-      transition: 0.5
-      brightness_pct: 75
+  - action: script.turn_on
     target:
-      area_id: bathroom_guest
-    action: light.turn_on
-    enabled: false
-  - action: script.bathroom_guest_lighting_control_script
-    metadata: {}
+      entity_id: script.bathroom_guest_lighting_control_script
     data: {}
   mode: single
 - id: '1742396391798'
@@ -1041,35 +991,6 @@
     action: input_boolean.turn_on
     data: {}
   mode: single
-- id: '1744570486701'
-  alias: 'Kitchen: Button 2 Short Press – Dim Down'
-  description: 'Decreases Kitchen light brightness by 20% if lights are on. Enables
-    manual override to prevent motion-based automation.
-
-    '
-  triggers:
-  - entity_id:
-    - event.kitchen_hue_switch_button_2
-    to: short_release
-    trigger: state
-    attribute: event_type
-  conditions: []
-  actions:
-  - if:
-    - condition: state
-      entity_id: light.kitchen_hue_group_switch
-      state: 'on'
-    then:
-    - target:
-        entity_id: light.kitchen_hue_group_switch
-      data:
-        brightness_step_pct: -20
-      action: light.turn_on
-  - target:
-      entity_id: input_boolean.kitchen_lights_manual_override
-    action: input_boolean.turn_on
-    data: {}
-  mode: single
 - id: '1744570504251'
   alias: 'Kitchen: Button 4 Long Press – Turn Off Both, Restore Motion'
   description: 'Turns off Kitchen and Livingroom lights, then calls reset script to
@@ -1159,7 +1080,8 @@
     attribute: event_type
   conditions: []
   actions:
-  - target:
+  - action: light.turn_on
+    target:
       entity_id:
       - light.kitchen_hue_group_switch
       - light.livingroom_hue_group_switch
@@ -1167,12 +1089,11 @@
       brightness_pct: 100
       color_temp_kelvin: 3500
       transition: 0.5
-    action: light.turn_on
-  - target:
+  - action: input_boolean.turn_on
+    target:
       entity_id:
       - input_boolean.kitchen_lights_manual_override
       - input_boolean.livingroom_lights_manual_override
-    action: input_boolean.turn_on
     data: {}
   mode: single
 - id: '1744572385925'
@@ -1231,7 +1152,7 @@
   mode: single
 - id: '1744572419902'
   alias: 'Kitchen: Button 4 Short Press – Area Off & Reset Motion'
-  description: 'Turns off Livingroom lights, then calls reset script to clear Kitchen
+  description: 'Turns off Kitchen lights, then calls reset script to clear Kitchen
     and Livingroom overrides and re-enable motion automation after 30 seconds.
 
     '
@@ -1243,24 +1164,17 @@
     attribute: event_type
   conditions: []
   actions:
-  - data:
-      transition: 0.5
-    action: light.turn_off
+  - action: light.turn_off
     target:
       entity_id:
       - light.kitchen_hue_group_switch
       - light.kitchen_above_cabinet_lightstrip
-  - delay:
-      seconds: 30
-    enabled: false
-  - action: script.reset_kitchen_livingroom_motion
-    data: {}
-    enabled: false
+    data:
+      transition: 0.5
   - action: script.turn_on
-    metadata: {}
-    data: {}
     target:
       entity_id: script.reset_kitchen_livingroom_motion
+    data: {}
   mode: single
 - id: '1744572436937'
   alias: 'Livingroom: Button 4 Long Press – All Off & Reset Motion'
@@ -1276,7 +1190,8 @@
     attribute: event_type
   conditions: []
   actions:
-  - target:
+  - action: light.turn_off
+    target:
       entity_id:
       - light.kitchen_hue_group_switch
       - light.livingroom_hue_group_switch
@@ -1284,18 +1199,10 @@
       - light.livingroom_couch_lightstrip
     data:
       transition: 0.5
-    action: light.turn_off
-  - delay:
-      seconds: 30
-    enabled: false
-  - action: script.reset_kitchen_livingroom_motion
-    data: {}
-    enabled: false
   - action: script.turn_on
-    metadata: {}
-    data: {}
     target:
       entity_id: script.reset_kitchen_livingroom_motion
+    data: {}
   mode: single
 - id: '1744601049270'
   alias: 'Git: Nightly Backup Push'
@@ -1467,7 +1374,7 @@
     metadata: {}
     data: {}
     target:
-      entity_id: input_boolean.movie_mode
+      entity_id: input_boolean.movie
   mode: single
 - id: '1749854614158'
   alias: 'Livingroom: Button 1 Long Press – Activate Concentrate Mode'
@@ -1699,44 +1606,57 @@
   mode: single
 - id: '1753475079383'
   alias: 'Bedroom Guest: Motion Detected – Turn On Lights'
-  description: ''
+  description: Turn on Guest Bedroom lights when motion is detected and automation
+    is allowed
   triggers:
   - trigger: state
     entity_id:
     - binary_sensor.office_motion
     to: 'on'
-  conditions: []
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.motion_bedroom_guest_allowed
+    state: 'on'
   actions:
   - action: light.turn_on
-    metadata: {}
+    target:
+      entity_id: light.bedroom_guest_main_lights
     data:
       brightness_pct: 100
       transition: 0.5
+  - action: input_boolean.turn_off
     target:
-      entity_id:
-      - light.bedroom_guest_main_lights
+      entity_id: input_boolean.bedroom_guest_lights_manual_override
+    data: {}
   mode: single
 - id: '1753475189498'
   alias: 'Bedroom Guest: Motion Not Detected – Turn Off Lights'
-  description: ''
+  description: Turn off Guest Bedroom lights after no motion and clear manual override
   triggers:
   - trigger: state
     entity_id:
     - binary_sensor.office_motion
     to: 'off'
     for:
-      hours: 0
-      minutes: 2
-      seconds: 0
-  conditions: []
+      minutes: 1
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.motion_bedroom_guest_allowed
+    state: 'on'
   actions:
   - action: light.turn_off
-    metadata: {}
+    target:
+      entity_id: light.bedroom_guest_main_lights
     data:
       transition: 0.5
+  - action: input_boolean.turn_off
     target:
-      entity_id:
-      - light.bedroom_guest_main_lights
+      entity_id: input_boolean.bedroom_guest_lights_manual_override
+    data: {}
+  - action: script.turn_on
+    target:
+      entity_id: script.guest_bedroom_start_motion_cooldown
+    data: {}
   mode: single
 - id: '1754591416762'
   alias: 'Guest Bathroom: Manual Override via Hue Dial Buttons'
