@@ -1880,7 +1880,7 @@ hallway_lighting_control_script:
       - action: light.turn_on
         metadata: {}
         data:
-          transition: 0.5
+          transition: 1
           brightness_pct: 40
         target:
           area_id: hallway
@@ -1892,7 +1892,7 @@ hallway_lighting_control_script:
       - action: light.turn_on
         metadata: {}
         data:
-          transition: 0.5
+          transition: 1
           brightness_pct: 80
         target:
           area_id: hallway
@@ -1904,7 +1904,7 @@ hallway_lighting_control_script:
       - action: light.turn_on
         metadata: {}
         data:
-          transition: 0.5
+          transition: 1
           brightness_pct: 100
         target:
           area_id: hallway
@@ -1916,7 +1916,7 @@ hallway_lighting_control_script:
       - action: light.turn_on
         metadata: {}
         data:
-          transition: 0.5
+          transition: 1
           brightness_pct: 10
         target:
           area_id: hallway
