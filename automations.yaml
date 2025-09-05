@@ -249,8 +249,9 @@
   alias: 'Misc: Primary bathroom fan humidity control'
   description: Controls fan based on humidity and time of day
   triggers:
-  - entity_id: sensor.meter_4e38_humidity
-    above: 45
+  - entity_id:
+    - sensor.meter_4e38_humidity
+    above: 63
     id: humidity_high
     trigger: numeric_state
   - at: '23:01:00'
@@ -309,7 +310,7 @@
   triggers:
   - entity_id:
     - sensor.meter_4e38_humidity
-    below: 40
+    below: 55
     trigger: numeric_state
   conditions:
   - condition: state
