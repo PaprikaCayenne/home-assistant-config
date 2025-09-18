@@ -158,6 +158,27 @@ class XTDeviceSourcePriority(IntEnum):
     TUYA_SHARED     = 20
     TUYA_IOT        = 30
 
+@dataclass
+class XTIRRemoteKeysInformation:
+    key: str
+    key_id: int
+    key_name: str
+    standard_key: bool
+
+@dataclass
+class XTIRRemoteInformation:
+    brand_id: int
+    brand_name: str
+    category_id: int
+    remote_id: str
+    remote_index: int
+    remote_name: str
+    keys: list[XTIRRemoteKeysInformation]
+
+@dataclass
+class XTIRHubInformation:
+    device_id: str
+    remote_ids: list[XTIRRemoteInformation]
 
 @dataclass
 class DescriptionVirtualState:
@@ -592,6 +613,7 @@ class XTDPCode(StrEnum):
     C_F_ = "C_F_"  # Temperature unit switching
     CALIBRATION = "calibration"
     CAPACITY_CALIBRATION = "capacity_calibration"
+    CAPACITY_UNIT = "capacity_unit"
     CAT_WEIGHT = "cat_weight"
     CDS = "cds"
     # Channel data points for multi-sensor devices
@@ -620,6 +642,7 @@ class XTDPCode(StrEnum):
     CLEANING_NUM = "cleaning_num"
     CLEAR_ENERGY = "clear_energy"
     CLOSED_OPENED = "closed_opened"
+    CLOSE_TIME = "close_time"
     CLCT_TIME = "clct_time"
     COLOR = "Color"
     CONNECTION_STATE = "connection_state"
@@ -633,9 +656,12 @@ class XTDPCode(StrEnum):
     CURRENT_A = "current_a"
     CURRENT_B = "current_b"
     CURRENT_YD = "current_yd"
+    CUR_CAP = "cur_cap"
+    CYC_NUM = "cyc_num"
     C_CURRENT = "C_Current"
     C_VOLTAGE = "C_Voltage"
     DELAY_CLEAN_TIME = "delay_clean_time"
+    DELAY_TASK = "delay_task"
     DEODORIZATION = "deodorization"
     DEODORIZATION_NUM = "deodorization_num"
     DEO_START_TIME = "deo_start_time"
@@ -695,6 +721,7 @@ class XTDPCode(StrEnum):
     LOCK_MOTOR_STATE = "lock_motor_state"
     LOCK_RECORD = "lock_record"
     MAGNETNUM = "magnetNum"
+    MALFUNCTION = "malfunction"
     MANUAL_CLEAN = "manual_clean"
     MANUAL_LOCK = "manual_lock"
     MAXHUM_SET = "maxhum_set"
@@ -725,6 +752,7 @@ class XTDPCode(StrEnum):
     OFF_BED = "off_bed"
     OFF_BED_TIME = "off_bed_time"
     ONLINE_STATE = "online_state"
+    OPEN_CLOSE = "open_close"
     PEDAL_ANGLE = "pedal_angle"
     PHASEFLAG = "PhaseFlag"
     PHOTO_AGAIN = "photo_again"
@@ -776,6 +804,7 @@ class XTDPCode(StrEnum):
     REVERSE_ENERGY_T = "reverse_energy_t"
     RFID = "RFID"
     RTC_TIME = "rtc_time"
+    RUN_TASK_STA = "run_task_sta"
     SAND_SURFACE_CALIBRATION = "sand_surface_calibration"
     SETDELAYTIME = "SetDelayTime"
     SETDEFINETIME = "SetDefineTime"
@@ -799,6 +828,7 @@ class XTDPCode(StrEnum):
     SPECIAL_FUNCTION = "special_function"
     STANDBY_BRIGHT = "standby_bright"
     STANDBY_TIME = "standby_time"
+    START_TIME = "start_time"
     STORE_FULL_NOTIFY = "store_full_notify"
     SWITCH_ENABLED = "switch_enabled"
     SWITCH_ON = "switch_on"
@@ -820,6 +850,7 @@ class XTDPCode(StrEnum):
     TEMP_SENSITIVITY = "temp_sensitivity"
     TEMP_SET_1 = "temp_set_1"  # Set the warm temperature in °C
     TEMP_TOP = "temp_top"
+    TEMP_UNIT = "temp_unit"
     TIME = "time"
     TOILET_NOTICE = "toilet_notice"
     TIME_GET_IN_BED = "time_get_in_bed"
@@ -854,6 +885,7 @@ class XTDPCode(StrEnum):
     UV_START_TIME = "uv_start_time"
     UV_END_TIME = "uv_end_time"
     UV_LIGHT = "uv_light"
+    VBAT_STATE = "vbat_state"
     VOL_YD = "vol_yd"
     VOLTAGEA = "VoltageA"
     VOLTAGEB = "VoltageB"

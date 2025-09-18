@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import cast
+from typing import cast, Callable
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
 )
@@ -10,6 +10,7 @@ from homeassistant.const import EntityCategory, Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+#from homeassistant.helpers.typing import UndefinedType
 from .util import (
     restrict_descriptor_category,
 )
@@ -28,19 +29,23 @@ from .const import (
 from .ha_tuya_integration.tuya_integration_imports import (
     TuyaBinarySensorEntity,
     TuyaBinarySensorEntityDescription,
+    TuyaDPType,
+    get_bitmap_bit_mask_tuya_binary_sensor,
 )
 from .entity import (
     XTEntity,
     XTEntityDescriptorManager,
 )
 
+COMPOUND_KEY: list[str] = ["key", "subkey"]
 
 @dataclass(frozen=True)
 class XTBinarySensorEntityDescription(TuyaBinarySensorEntityDescription):
     """Describes an XT binary sensor."""
 
-    # This DPCode represent the online status of a device
-    device_online: bool = False
+    device_online: bool = False  # This DPCode represent the online status of a device
+    subkey: str | None = None  # Subkey to create multiple entities with the same key/dpcode
+    is_on: Callable | None = None  # Custom is_on function
 
     def get_entity_instance(
         self,
@@ -144,6 +149,71 @@ BINARY_SENSORS: dict[str, tuple[XTBinarySensorEntityDescription, ...]] = {
             entity_registry_enabled_default=False,
         ),
     ),
+    # QT-08W Solar Intelligent Water Valve
+    "sfkzq": (
+        XTBinarySensorEntityDescription(
+            key=XTDPCode.VBAT_STATE,
+            translation_key="battery_charging",
+            device_class=BinarySensorDeviceClass.BATTERY_CHARGING,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            is_on=lambda x: x > 127,
+        ),
+        XTBinarySensorEntityDescription(
+            key=XTDPCode.MALFUNCTION,
+            translation_key="error",
+            device_class=BinarySensorDeviceClass.PROBLEM,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            is_on=lambda x: x != 0,
+        ),
+        XTBinarySensorEntityDescription(
+            key=XTDPCode.MALFUNCTION,
+            subkey="0",
+            translation_key="error_flow_meter",
+            device_class=BinarySensorDeviceClass.PROBLEM,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            is_on=lambda x: (x >> 0) & 1,
+        ),
+        XTBinarySensorEntityDescription(
+            key=XTDPCode.MALFUNCTION,
+            subkey="1",
+            translation_key="error_valve_low_battery",
+            device_class=BinarySensorDeviceClass.BATTERY,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            is_on=lambda x: (x >> 1) & 1,
+        ),
+        XTBinarySensorEntityDescription(
+            key=XTDPCode.MALFUNCTION,
+            subkey="2",
+            translation_key="error_sensor_low_battery",
+            device_class=BinarySensorDeviceClass.BATTERY,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            is_on=lambda x: (x >> 2) & 1,
+        ),
+        XTBinarySensorEntityDescription(
+            key=XTDPCode.MALFUNCTION,
+            subkey="3",
+            translation_key="error_sensor_offline",
+            device_class=BinarySensorDeviceClass.PROBLEM,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            is_on=lambda x: (x >> 3) & 1,
+        ),
+        XTBinarySensorEntityDescription(
+            key=XTDPCode.MALFUNCTION,
+            subkey="4",
+            translation_key="error_water_shortage",
+            device_class=BinarySensorDeviceClass.PROBLEM,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            is_on=lambda x: (x >> 4) & 1,
+        ),
+        XTBinarySensorEntityDescription(
+            key=XTDPCode.MALFUNCTION,
+            subkey="5",
+            translation_key="error_other",
+            device_class=BinarySensorDeviceClass.PROBLEM,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            is_on=lambda x: (x >> 5) & 1,
+        ),
+    ),
     "smd": (
         XTBinarySensorEntityDescription(
             key=XTDPCode.OFF_BED,
@@ -183,7 +253,7 @@ async def async_setup_entry(
             dict[str, tuple[XTBinarySensorEntityDescription, ...]],
         ],
         XTEntityDescriptorManager.get_platform_descriptors(
-            BINARY_SENSORS, entry.runtime_data.multi_manager, this_platform
+            BINARY_SENSORS, entry.runtime_data.multi_manager, this_platform, COMPOUND_KEY
         ),
     )
 
@@ -199,17 +269,34 @@ async def async_setup_entry(
                     device, this_platform
                 )
                 for dpcode in generic_dpcodes:
-                    descriptor = XTBinarySensorEntityDescription(
-                        key=dpcode,
-                        translation_key="xt_generic_binary_sensor",
-                        translation_placeholders={"name": XTEntity.get_human_name_from_generic_dpcode(dpcode)},
-                        entity_registry_enabled_default=False,
-                        entity_registry_visible_default=False,
-                    )
-                    entities.append(
-                        XTBinarySensorEntity.get_entity_instance(
-                            descriptor, device, hass_data.manager
-                        ))
+                    if dpcode_information := device.get_dpcode_information(dpcode=dpcode):
+                        if dpcode_information.dptype is TuyaDPType.BITMAP and len(dpcode_information.label) > 0:
+                            for label_value in dpcode_information.label:
+                                descriptor = XTBinarySensorEntityDescription(
+                                    key=dpcode,
+                                    subkey=label_value,
+                                    bitmap_key=label_value,
+                                    translation_key="xt_generic_binary_sensor",
+                                    translation_placeholders={"name": f"{dpcode_information.human_name}: {XTEntity.get_human_name(label_value)}"},
+                                    entity_registry_enabled_default=False,
+                                    entity_registry_visible_default=False,
+                                )
+                                entities.append(
+                                    XTBinarySensorEntity.get_entity_instance(
+                                        descriptor, device, hass_data.manager
+                                    ))
+                        else:
+                            descriptor = XTBinarySensorEntityDescription(
+                                key=dpcode,
+                                translation_key="xt_generic_binary_sensor",
+                                translation_placeholders={"name": dpcode_information.human_name},
+                                entity_registry_enabled_default=False,
+                                entity_registry_visible_default=False,
+                            )
+                            entities.append(
+                                XTBinarySensorEntity.get_entity_instance(
+                                    descriptor, device, hass_data.manager
+                                ))
         async_add_entities(entities)
 
     @callback
@@ -247,6 +334,7 @@ async def async_setup_entry(
                             description,
                             True,
                             externally_managed_dpcodes,
+                            COMPOUND_KEY
                         )
                     )
                     entities.extend(
@@ -260,6 +348,7 @@ async def async_setup_entry(
                             description,
                             False,
                             externally_managed_dpcodes,
+                            COMPOUND_KEY
                         )
                     )
         async_add_entities(entities)
@@ -292,14 +381,21 @@ class XTBinarySensorEntity(XTEntity, TuyaBinarySensorEntity):
     ) -> None:
         """Init Tuya binary sensor."""
         super(XTBinarySensorEntity, self).__init__(device, device_manager, description)
-        super(XTEntity, self).__init__(device, device_manager, description)  # type: ignore
+        super(XTEntity, self).__init__(device, device_manager, description, get_bitmap_bit_mask_tuya_binary_sensor(device, description.dpcode or description.key, description.bitmap_key))  # type: ignore
         self.device = device
         self.device_manager = device_manager
         self._entity_description = description
-
+        # Append subkey to unique ID
+        if description.subkey is not None and self._attr_unique_id is not None:
+            self._attr_unique_id += f"{description.subkey}"
+            
     @property
     def is_on(self) -> bool:
-        is_on = super().is_on
+        # Use custom is_on function
+        if self._entity_description.is_on is not None:
+            is_on = self._entity_description.is_on(self.device.status[self.entity_description.key])
+        else:
+            is_on = super().is_on
         if self._entity_description.device_online:
             dpcode = self.entity_description.dpcode or self.entity_description.key
             self.device.online_states[dpcode] = is_on
@@ -310,6 +406,22 @@ class XTBinarySensorEntity(XTEntity, TuyaBinarySensorEntity):
         """Call when entity about to be added to hass."""
         await super().async_added_to_hass()
         self.is_on  # Update the online status if needed
+    
+    #def _name_internal(
+    #    self,
+    #    device_class_name: str | None,
+    #    platform_translations: dict[str, str],
+    #) -> str | UndefinedType | None:
+    #    name = super()._name_internal(device_class_name=device_class_name, platform_translations=platform_translations)
+    #    if self.entity_description.translation_key != "xt_generic_binary_sensor":
+    #        LOGGER.warning(f"Returning name for {self.device.name}=>{self.entity_description.key}: '{name}'")
+    #    return name
+
+    #@property
+    #def _name_translation_key(self) -> str | None:
+    #    name = super()._name_translation_key
+    #    LOGGER.warning(f"Returning name TK for {self.device.name}=>{self.entity_description.key}: '{name}'")
+    #    return name
 
     @staticmethod
     def get_entity_instance(

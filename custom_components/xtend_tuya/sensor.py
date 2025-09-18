@@ -1,10 +1,10 @@
 """Support for Tuya sensors."""
 
 from __future__ import annotations
-from typing import cast
-import datetime
+from typing import cast, Callable
 from dataclasses import dataclass, field
 from .const import LOGGER  # noqa: F401
+from datetime import datetime
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorStateClass,
@@ -35,9 +35,13 @@ from homeassistant.helpers.event import (
     async_call_later,
     async_track_state_change_event,
 )
+from homeassistant.helpers.typing import (
+    StateType,
+)
 from .util import (
     get_default_value,
     restrict_descriptor_category,
+    b64todatetime,
 )
 from .multi_manager.multi_manager import (
     XTConfigEntry,
@@ -65,6 +69,7 @@ from .ha_tuya_integration.tuya_integration_imports import (
     TuyaDPType,
 )
 
+COMPOUND_KEY: list[str] = ["key", "subkey"]
 
 @dataclass(frozen=True)
 class XTSensorEntityDescription(TuyaSensorEntityDescription, frozen=True):
@@ -85,6 +90,8 @@ class XTSensorEntityDescription(TuyaSensorEntityDescription, frozen=True):
         100  # Maximum percentage that the sensor can display (default = 100%)
     )
 
+    native_value: Callable | None = None  # Custom native_value function
+
     def get_entity_instance(
         self,
         device: XTDevice,
@@ -96,7 +103,6 @@ class XTSensorEntityDescription(TuyaSensorEntityDescription, frozen=True):
             device_manager=device_manager,
             description=XTSensorEntityDescription(**description.__dict__),
         )
-
 
 # Commonly used battery sensors, that are re-used in the sensors down below.
 BATTERY_SENSORS: tuple[XTSensorEntityDescription, ...] = (
@@ -449,21 +455,25 @@ TEMPERATURE_SENSORS: tuple[XTSensorEntityDescription, ...] = (
     XTSensorEntityDescription(
         key=XTDPCode.TEMPERATURE,
         translation_key="temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
     ),
     XTSensorEntityDescription(
         key=XTDPCode.TEMPERATURE2,
         translation_key="temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
     ),
     XTSensorEntityDescription(
         key=XTDPCode.TEMP2,
         translation_key="temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
     ),
     XTSensorEntityDescription(
         key=XTDPCode.TEMP_CURRENT,
         translation_key="temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
     ),
     XTSensorEntityDescription(
@@ -475,28 +485,34 @@ TEMPERATURE_SENSORS: tuple[XTSensorEntityDescription, ...] = (
     XTSensorEntityDescription(
         key=XTDPCode.TEMP_VALUE,
         translation_key="temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
     ),
     XTSensorEntityDescription(
         key=XTDPCode.TEMP_TOP,
         translation_key="temp_top",
+        device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
     ),
     XTSensorEntityDescription(
         key=XTDPCode.TEMP_BOTTOM,
         translation_key="temp_bottom",
+        device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
     ),
     XTSensorEntityDescription(
         key=XTDPCode.DEVICETEMP,
+        device_class=SensorDeviceClass.TEMPERATURE,
         translation_key="device_temperature",
     ),
     XTSensorEntityDescription(
         key=XTDPCode.DEVICETEMP2,
+        device_class=SensorDeviceClass.TEMPERATURE,
         translation_key="device_temperature2",
     ),
     XTSensorEntityDescription(
         key=XTDPCode.TEMPSHOW,
+        device_class=SensorDeviceClass.TEMPERATURE,
         translation_key="temp_show",
     ),
     XTSensorEntityDescription(
@@ -509,18 +525,21 @@ HUMIDITY_SENSORS: tuple[XTSensorEntityDescription, ...] = (
     XTSensorEntityDescription(
         key=XTDPCode.HUMIDITY,
         translation_key="humidity",
+        device_class=SensorDeviceClass.HUMIDITY,
         state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=True,
     ),
     XTSensorEntityDescription(
         key=XTDPCode.HUMIDITY1,
         translation_key="humidity",
+        device_class=SensorDeviceClass.HUMIDITY,
         state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=True,
     ),
     XTSensorEntityDescription(
         key=XTDPCode.HUMIDITY_VALUE,
         translation_key="humidity",
+        device_class=SensorDeviceClass.HUMIDITY,
         state_class=SensorStateClass.MEASUREMENT,
         entity_registry_enabled_default=True,
     ),
@@ -948,6 +967,7 @@ SENSORS: dict[str, tuple[XTSensorEntityDescription, ...]] = {
             key=XTDPCode.ALARM_LOCK,
             translation_key="jtmspro_alarm_lock",
             entity_registry_enabled_default=False,
+            reset_after_x_seconds=2,
         ),
         *LOCK_SENSORS,
         *ELECTRICITY_SENSORS,
@@ -1006,56 +1026,26 @@ SENSORS: dict[str, tuple[XTSensorEntityDescription, ...]] = {
             translation_key="air_quality",
             entity_registry_enabled_default=True,
         ),
-        # XTSensorEntityDescription(
-        #     key=XTDPCode.PM25_VALUE,
-        #     translation_key="pm25",
-        #     device_class=SensorDeviceClass.PM25,
-        #     state_class=SensorStateClass.MEASUREMENT,
-        #     entity_registry_enabled_default=True,
-        # ),
-        # XTSensorEntityDescription(
-        #     key=XTDPCode.CO2_VALUE,
-        #     translation_key="carbon_dioxide",
-        #     device_class=SensorDeviceClass.CO2,
-        #     state_class=SensorStateClass.MEASUREMENT,
-        #     entity_registry_enabled_default=True,
-        # ),
+        XTSensorEntityDescription(
+            key=XTDPCode.PM25_VALUE,
+            translation_key="pm25",
+            device_class=SensorDeviceClass.PM25,
+            state_class=SensorStateClass.MEASUREMENT,
+            entity_registry_enabled_default=True,
+        ),
+        XTSensorEntityDescription(
+            key=XTDPCode.CO2_VALUE,
+            translation_key="carbon_dioxide",
+            device_class=SensorDeviceClass.CO2,
+            state_class=SensorStateClass.MEASUREMENT,
+            entity_registry_enabled_default=True,
+        ),
         XTSensorEntityDescription(
             key=XTDPCode.PM10,
             translation_key="pm10",
             device_class=SensorDeviceClass.PM10,
             state_class=SensorStateClass.MEASUREMENT,
             entity_registry_enabled_default=True,
-        ),
-        XTSensorEntityDescription(
-            key=XTDPCode.TEMP_UNIT_CONVERT,
-            translation_key="temp_unit_convert",
-            entity_registry_enabled_default=True,
-            entity_registry_visible_default=False,
-        ),
-        XTSensorEntityDescription(
-            key=XTDPCode.ECO,
-            translation_key="eco_mode",
-            entity_registry_enabled_default=True,
-            entity_registry_visible_default=False,
-        ),
-        XTSensorEntityDescription(
-            key=XTDPCode.SWITCH_ALARM_SOUND,
-            translation_key="switch_alarm_sound",
-            entity_registry_enabled_default=True,
-            entity_registry_visible_default=False,
-        ),
-        XTSensorEntityDescription(
-            key=XTDPCode.TIME,
-            translation_key="time",
-            entity_registry_enabled_default=True,
-            entity_registry_visible_default=False,
-        ),
-        XTSensorEntityDescription(
-            key=XTDPCode.BACKLIGHT_SWITCH,
-            translation_key="backlight_switch",
-            entity_registry_enabled_default=True,
-            entity_registry_visible_default=False,
         ),
     ),
     # Automatic cat litter box
@@ -1298,6 +1288,7 @@ SENSORS: dict[str, tuple[XTSensorEntityDescription, ...]] = {
         *ELECTRICITY_SENSORS,
         *TIMER_SENSORS,
     ),
+    # QT-08W Solar Intelligent Water Valve
     "sfkzq": (
         XTSensorEntityDescription(
             key=XTDPCode.WATER_ONCE,
@@ -1310,6 +1301,47 @@ SENSORS: dict[str, tuple[XTSensorEntityDescription, ...]] = {
             translation_key="water_total",
             state_class=SensorStateClass.TOTAL_INCREASING,
             entity_registry_enabled_default=True,
+        ),
+        XTSensorEntityDescription(
+            key=XTDPCode.VBAT_STATE,
+            translation_key="battery_level",
+            device_class=SensorDeviceClass.BATTERY,
+            state_class=SensorStateClass.MEASUREMENT,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            native_value=lambda x: int(x) & 0x7F,
+        ),
+        XTSensorEntityDescription(
+            key=XTDPCode.CUR_CAP,
+            translation_key="watering_volume",
+            device_class=SensorDeviceClass.WATER,
+            native_unit_of_measurement="L",
+            suggested_display_precision = 0,
+        ),
+        XTSensorEntityDescription(
+            key=XTDPCode.CYC_NUM,
+            translation_key="watering_cycle",
+            native_unit_of_measurement="",
+            native_value=lambda x: int(x),
+        ),
+        XTSensorEntityDescription(
+            key=XTDPCode.START_TIME,
+            translation_key="start_time",
+            device_class=SensorDeviceClass.TIMESTAMP,
+            native_unit_of_measurement="",
+            native_value=b64todatetime,
+        ),
+        XTSensorEntityDescription(
+            key=XTDPCode.CLOSE_TIME,
+            translation_key="end_time",
+            device_class=SensorDeviceClass.TIMESTAMP,
+            native_unit_of_measurement="",
+            native_value=b64todatetime,
+        ),
+        XTSensorEntityDescription(
+            key=XTDPCode.RUN_TASK_STA,
+            translation_key="watering_task",
+            native_unit_of_measurement="",
+            native_value=lambda x: str(x),
         ),
     ),
     "slj": (
@@ -1427,14 +1459,25 @@ SENSORS: dict[str, tuple[XTSensorEntityDescription, ...]] = {
         XTSensorEntityDescription(
             key=XTDPCode.LIQUID_DEPTH,
             translation_key="liquid_depth",
+            device_class=SensorDeviceClass.DISTANCE,
+            state_class=SensorStateClass.MEASUREMENT,
             entity_registry_enabled_default=True,
         ),
         XTSensorEntityDescription(
             key=XTDPCode.LIQUID_LEVEL_PERCENT,
             translation_key="liquid_level_percent",
+            state_class=SensorStateClass.MEASUREMENT,
             entity_registry_enabled_default=True,
             recalculate_scale_for_percentage=True,
-            recalculate_scale_for_percentage_threshold=1000,
+            recalculate_scale_for_percentage_threshold=100,
+        ),
+        XTSensorEntityDescription(
+            key=XTDPCode.BATTERY_PERCENTAGE,
+            translation_key="voltage",
+            device_class=SensorDeviceClass.VOLTAGE,
+            state_class=SensorStateClass.MEASUREMENT,
+            entity_category=EntityCategory.DIAGNOSTIC,
+            suggested_display_precision = 1,
         ),
     ),
     # ZNRB devices don't send correct cloud data, for these devices use https://github.com/make-all/tuya-local instead
@@ -1479,7 +1522,7 @@ async def async_setup_entry(
             dict[str, tuple[XTSensorEntityDescription, ...]],
         ],
         XTEntityDescriptorManager.get_platform_descriptors(
-            SENSORS, entry.runtime_data.multi_manager, this_platform
+            SENSORS, entry.runtime_data.multi_manager, this_platform, COMPOUND_KEY
         ),
     )
 
@@ -1498,10 +1541,12 @@ async def async_setup_entry(
                     descriptor = XTSensorEntityDescription(
                         key=dpcode,
                         translation_key="xt_generic_sensor",
-                        translation_placeholders={"name": XTEntity.get_human_name_from_generic_dpcode(dpcode)},
+                        translation_placeholders={"name": XTEntity.get_human_name(dpcode)},
                         entity_registry_enabled_default=False,
                         entity_registry_visible_default=False,
                     )
+                    if descriptor.device_class is not None:
+                        LOGGER.warning(f"Adding generic entity {dpcode} with device class {descriptor.device_class}")
                     entities.append(
                         XTSensorEntity.get_entity_instance(
                             descriptor, device, hass_data.manager
@@ -1544,6 +1589,7 @@ async def async_setup_entry(
                             description,
                             True,
                             externally_managed_dpcodes,
+                            COMPOUND_KEY
                         )
                     )
                     entities.extend(
@@ -1557,6 +1603,7 @@ async def async_setup_entry(
                             description,
                             False,
                             externally_managed_dpcodes,
+                            COMPOUND_KEY
                         )
                     )
         async_add_entities(entities)
@@ -1676,7 +1723,7 @@ class XTSensorEntity(XTEntity, TuyaSensorEntity, RestoreSensor):  # type: ignore
         self.cancel_reset_after_x_seconds = None
 
     def reset_value(
-        self, _: datetime.datetime | None, manual_call: bool = False
+        self, _: datetime | None, manual_call: bool = False
     ) -> None:
         if manual_call and self.cancel_reset_after_x_seconds:
             self.cancel_reset_after_x_seconds()
@@ -1692,7 +1739,7 @@ class XTSensorEntity(XTEntity, TuyaSensorEntity, RestoreSensor):  # type: ignore
         """Call when entity about to be added to hass."""
         await super().async_added_to_hass()
 
-        async def reset_status_daily(now: datetime.datetime) -> None:
+        async def reset_status_daily(now: datetime) -> None:
             should_reset = False
             if self.entity_description.reset_daily:
                 should_reset = True
@@ -1775,3 +1822,13 @@ class XTSensorEntity(XTEntity, TuyaSensorEntity, RestoreSensor):  # type: ignore
         return XTSensorEntity(
             device, device_manager, XTSensorEntityDescription(**description.__dict__)
         )
+
+    # Use custom native_value function
+    @property
+    def native_value(self) -> StateType: # type: ignore
+        if self.entity_description.native_value is not None:
+            value = self.device.status.get(self.entity_description.key)
+            value = self.entity_description.native_value(value)
+        else:
+            value = super().native_value
+        return value

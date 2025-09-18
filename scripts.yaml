@@ -227,9 +227,6 @@ livingroom_light_control_script:
           entity_id: light.livingroom_hue_group_switch
       - action: light.turn_on
         metadata: {}
-        data: {}
-      - action: light.turn_on
-        metadata: {}
         data:
           brightness_pct: 100
           transition: 0.5
@@ -248,6 +245,13 @@ livingroom_light_control_script:
           transition: 0.5
         target:
           entity_id: light.livingroom_hue_group_switch
+      - action: light.turn_on
+        metadata: {}
+        data:
+          brightness_pct: 100
+          transition: 0.5
+        target:
+          entity_id: light.livingroom_couch_lightstrip
     default:
     - action: light.turn_on
       metadata: {}

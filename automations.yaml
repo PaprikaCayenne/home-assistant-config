@@ -79,7 +79,7 @@
       area_id: bathroom_primary
   mode: single
 - id: '1735100274017'
-  alias: 'Primary Bathroom: Lights On'
+  alias: 'Bathroom Primary: Lights On'
   description: Primary Bathroom on between 5:00 am to 11:00 PM
   triggers:
   - type: occupied
