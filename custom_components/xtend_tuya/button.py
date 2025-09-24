@@ -24,6 +24,8 @@ from .const import (
     XTIRHubInformation,
     XTIRRemoteInformation,
     XTIRRemoteKeysInformation,
+    XTMultiManagerProperties,
+    LOGGER,
 )
 from .ha_tuya_integration.tuya_integration_imports import (
     TuyaButtonEntity,
@@ -146,10 +148,44 @@ async def async_setup_entry(
                     )
                     if hub_information is None:
                         continue
+
+                    descriptor = XTButtonEntityDescription(
+                        key="xt_add_device",
+                        translation_key="xt_add_ir_device",
+                        is_ir_key=True,
+                        ir_hub_information=hub_information,
+                        ir_remote_information=None,
+                        ir_key_information=None,
+                        entity_category=EntityCategory.CONFIG,
+                        entity_registry_enabled_default=True,
+                        entity_registry_visible_default=True,
+                    )
+                    entities.append(
+                        XTButtonEntity.get_entity_instance(
+                            descriptor, hub_device, hass_data.manager
+                        )
+                    )
+
                     for remote_information in hub_information.remote_ids:
                         if remote_device := hass_data.manager.device_map.get(
                             remote_information.remote_id
                         ):
+                            descriptor = XTButtonEntityDescription(
+                                key="xt_add_device",
+                                translation_key="xt_add_ir_device_key",
+                                is_ir_key=True,
+                                ir_hub_information=hub_information,
+                                ir_remote_information=remote_information,
+                                ir_key_information=None,
+                                entity_category=EntityCategory.CONFIG,
+                                entity_registry_enabled_default=True,
+                                entity_registry_visible_default=True,
+                            )
+                            entities.append(
+                                XTButtonEntity.get_entity_instance(
+                                    descriptor, remote_device, hass_data.manager
+                                )
+                            )
                             for remote_key in remote_information.keys:
                                 descriptor = XTButtonEntityDescription(
                                     key=remote_key.key,
@@ -180,6 +216,10 @@ async def async_setup_entry(
         device_ids = [*device_map]
         for device_id in device_ids:
             if device := hass_data.manager.device_map.get(device_id):
+                if device.category in IR_HUB_CATEGORY_LIST:
+                    hass_data.manager.set_general_property(
+                        XTMultiManagerProperties.IR_DEVICE_ID, device.id
+                    )
                 if category_descriptions := XTEntityDescriptorManager.get_category_descriptors(
                     supported_descriptors, device.category
                 ):
@@ -297,5 +337,16 @@ class XTButtonEntity(XTEntity, TuyaButtonEntity):
                 self._entity_description.ir_remote_information,
                 self._entity_description.ir_hub_information,
             )
+        elif (
+            self._entity_description.is_ir_key
+            and self._entity_description.ir_remote_information is not None
+            and self._entity_description.ir_hub_information is not None
+        ):
+            LOGGER.warning(f"Add IR key on {self.device.name} was pressed but is not implemented yet, I'm waiting for my RF hub delivery...")
+        elif (
+            self._entity_description.is_ir_key
+            and self._entity_description.ir_hub_information is not None
+        ):
+            LOGGER.warning(f"Add device on {self.device.name} was pressed but is not implemented yet, I'm waiting for my RF hub delivery...")
         else:
             super().press()

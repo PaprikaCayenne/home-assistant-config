@@ -262,6 +262,12 @@
             "xt_generic_button": {
                 "name": "{name}"
             },
+            "xt_add_ir_device": {
+                "name": "Add IR device"
+            },
+            "xt_add_ir_device_key": {
+                "name": "Register new IR key"
+            },
             "filter_reset": {
                 "name": "Filter reset"
             },
@@ -2688,6 +2694,17 @@
                     "confirm": {
                         "description": "The integration \"{name}\" (`{config_entry_id}`) Does not have a Tuya OpenAPI account that is subscribed to the IoT Video Live Stream service\n\nWithout this, cameras will not function properly.\n\nTo fix this warning please follow the guide at [this URL](https://github.com/azerty9971/xtend_tuya/blob/main/docs/configure_cameras.md), then restart Home Assistant.",
                         "title": "Tuya OpenAPI account badly configured (camera)"
+                    }
+                }
+            }
+        },
+        "tuya_iot_ir_not_subscribed": {
+            "title": "Tuya OpenAPI account badly configured (IR)",
+            "fix_flow": {
+                "step": {
+                    "confirm": {
+                        "description": "The integration \"{name}\" (`{config_entry_id}`) Does not have a Tuya OpenAPI account that is subscribed to the IR Control Hub Open Service service\n\nWithout this, IR devices will not function properly.\n\nTo fix this warning please follow the guide at [this URL](https://github.com/azerty9971/xtend_tuya/blob/main/docs/configure_ir.md), then restart Home Assistant.",
+                        "title": "Tuya OpenAPI account badly configured (IR)"
                     }
                 }
             }
