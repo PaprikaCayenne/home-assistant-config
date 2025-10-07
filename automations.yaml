@@ -2180,3 +2180,30 @@
           entity_id: switch.camera_bedroom_primary_privacy_mode
         data: {}
   mode: restart
+- id: '1759757695586'
+  alias: 'Bathroom Guest: Hue Button: Fan (15) Minutes'
+  description: Short Press turns on bathroom fan for 15 minutes
+  triggers:
+  - trigger: state
+    entity_id:
+    - event.hue_smart_button_1_button_1
+    attribute: event_type
+    to: short_release
+  conditions: []
+  actions:
+  - action: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.bathroom_guest_fan_outlet_switch_0
+  - delay:
+      hours: 0
+      minutes: 15
+      seconds: 0
+      milliseconds: 0
+  - action: switch.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.bathroom_guest_fan_outlet_switch_0
+  mode: single
