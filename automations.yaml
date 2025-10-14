@@ -251,7 +251,7 @@
   triggers:
   - entity_id:
     - sensor.meter_4e38_humidity
-    above: 63
+    above: 65
     id: humidity_high
     trigger: numeric_state
   - at: '23:01:00'
@@ -310,7 +310,7 @@
   triggers:
   - entity_id:
     - sensor.meter_4e38_humidity
-    below: 55
+    below: 60
     trigger: numeric_state
   conditions:
   - condition: state
