@@ -3418,20 +3418,3 @@ bathroom_primary_toggle_lights_manual_override_script:
       - action: script.turn_on
         target:
           entity_id: script.bathroom_primary_start_motion_cooldown
-party_compat_toggle_mode:
-  alias: Party (compat) Toggle Mode
-  description: Wrapper for old name - forwards to party_toggle_mode
-  mode: single
-  icon: mdi:party-popper
-  sequence:
-  - action: script.party_toggle_mode
-    metadata: {}
-    data: {}
-cleaning_compat_toggle_mode:
-  alias: Cleaning (compat) Toggle Mode
-  description: Wrapper for old name - forwards to cleaning_toggle_mode
-  mode: single
-  icon: mdi:broom
-  sequence:
-  - action: script.cleaning_toggle_mode
-    data: {}
