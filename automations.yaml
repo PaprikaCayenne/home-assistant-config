@@ -1317,21 +1317,17 @@
       area_id: bathroom_guest
   mode: single
 - id: '1749509387699'
-  alias: 'Livingroom: Movie Mode – Activate Scene Only'
-  description: 'Activates the movie scene when movie mode is turned on. No longer
-    disables motion — FP2 handles presence natively.
-
-    '
+  alias: 'Movie: On - Power On + Scene'
+  description: When Movie turns ON, wake Livingroom Fire TV + TV, ensure RZ50 main
+    on Multiroom - Firestick, then activate the Movie scene via the script. No lighting
+    changes beyond the scene; no motion overrides.
   triggers:
   - entity_id: input_boolean.movie
     to: 'on'
     trigger: state
   conditions: []
   actions:
-  - target:
-      entity_id: scene.downstairs_inside_movie_tokyo
-    action: scene.turn_on
-    data: {}
+  - action: script.audio_movie_mode_power_on_scene
   mode: single
 - id: '1749747243302'
   alias: 'Hallway: Reset Motion Streak Count'
@@ -2200,4 +2196,26 @@
       - action: remote.turn_off
         target:
           entity_id: remote.bedroom_primary_tv
+  mode: single
+- id: '1760852805209'
+  alias: 'Watch TV - Livingroom: On (No Scene)'
+  description: When Watch TV turns ON, run the preset script (Fire TV + TV + ensure
+    RZ50 main). No lighting/volume changes.
+  triggers:
+  - entity_id: input_boolean.livingroom_watch_tv_boolean
+    to: 'on'
+    trigger: state
+  actions:
+  - action: script.audio_watch_tv_livingroom_no_scene
+  mode: single
+- id: '1760852850174'
+  alias: 'Watch TV - Livingroom: Off'
+  description: When Watch TV turns OFF, run the power-off script for TV → Fire TV
+    → RZ50 main.
+  triggers:
+  - entity_id: input_boolean.livingroom_watch_tv_boolean
+    to: 'off'
+    trigger: state
+  actions:
+  - action: script.audio_watch_tv_livingroom_power_off
   mode: single

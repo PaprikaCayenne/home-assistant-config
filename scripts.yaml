@@ -3284,7 +3284,7 @@ audio_listen_livingroom_kitchen_z3:
       - media_player.tx_rz50
       - media_player.tx_rz50_zone_2
 audio_watch_tv_livingroom_no_scene:
-  alias: 'Audio: Watch TV — Livingroom (No Scene)'
+  alias: 'Audio: Watch TV - Livingroom (No Scene)'
   description: Powers on Livingroom Fire TV + TV, then ensures RZ50 main uses Multiroom
     - Firestick. No lighting or volume changes.
   icon: mdi:television-speaker
@@ -3309,3 +3309,34 @@ audio_watch_tv_livingroom_no_scene:
         target:
           entity_id: remote.livingroom_tv
       - delay: 00:00:02
+audio_watch_tv_livingroom_power_off:
+  alias: 'Audio: Watch TV — Livingroom (Power Off)'
+  description: 'Safely power down the Livingroom chain in order: TV → Fire TV → RZ50
+    main (uses your RZ50 power-off script with retry/verify).
+
+    '
+  icon: mdi:television-off
+  mode: single
+  sequence:
+  - action: remote.turn_off
+    target:
+      entity_id: remote.livingroom_tv
+  - delay:
+      seconds: 2
+  - action: media_player.turn_off
+    target:
+      entity_id: media_player.livingroom_fire_tv
+  - delay:
+      seconds: 2
+  - action: script.audio_rz50_main_power_off
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: media_player.livingroom_tv
+        state: 'on'
+      sequence:
+      - delay:
+          seconds: 2
+      - action: remote.turn_off
+        target:
+          entity_id: remote.livingroom_tv
