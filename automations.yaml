@@ -2285,3 +2285,101 @@
       - input_boolean.bedroom_guest_lights_manual_override
     action: input_boolean.turn_off
   mode: single
+- id: '1760886433731'
+  alias: 'Listen: On - Whole House Music'
+  description: When Listen turns ON, start the whole-house soft preset.
+  triggers:
+  - entity_id: input_boolean.listen_whole_house_soft_boolean
+    to: 'on'
+    trigger: state
+  actions:
+  - action: script.audio_listen_whole_house_soft
+  mode: single
+- id: '1760886519831'
+  alias: 'Listen: Off - All Speakers Off'
+  description: When Listen turns OFF, shut down all audio zones.
+  triggers:
+  - entity_id: input_boolean.listen_whole_house
+    to: 'off'
+    trigger: state
+  actions:
+  - action: script.audio_all_speakers_off_full_parallel
+  mode: single
+- id: '1760886565352'
+  alias: 'Listen Mode: Nudge Up - Livingroom'
+  description: While Listen is ON, bump LR to Start when FP2 sees presence.
+  triggers:
+  - entity_id: binary_sensor.presence_sensor_fp2_whole_downstairs
+    to: 'on'
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.listen_whole_house
+    state: 'on'
+  actions:
+  - data:
+      target_mode: start
+      respect_caps: true
+      players:
+      - media_player.tx_rz50
+    action: script.audio_batch_volume_engine
+  mode: restart
+- id: '1760886606627'
+  alias: 'Listen Mode: Nudge Down - Livingroom'
+  description: While Listen is ON, drift LR toward Min after 3 minutes idle.
+  triggers:
+  - entity_id: binary_sensor.presence_sensor_fp2_whole_downstairs
+    to: 'off'
+    for: 00:03:00
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.listen_whole_house
+    state: 'on'
+  actions:
+  - data:
+      target_mode: min
+      respect_caps: true
+      players:
+      - media_player.tx_rz50
+    action: script.audio_batch_volume_engine
+  mode: restart
+- id: '1760886639724'
+  alias: 'Listen Mode: Nudge Up - Kitchen'
+  description: While Listen is ON, bump Kitchen to Start when cooking area has presence.
+  triggers:
+  - entity_id: binary_sensor.presence_sensor_fp2_cooking_area
+    to: 'on'
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.listen_whole_house
+    state: 'on'
+  actions:
+  - data:
+      target_mode: start
+      respect_caps: true
+      players:
+      - media_player.tx_rz50_zone_2
+    action: script.audio_batch_volume_engine
+  mode: restart
+- id: '1760886919596'
+  alias: 'Listen Mode: Nudge Down - Kitchen'
+  description: While Listen is ON, drift Kitchen toward Min after 3 minutes idle.
+  triggers:
+  - entity_id: binary_sensor.presence_sensor_fp2_cooking_area
+    to: 'off'
+    for: 00:03:00
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.listen_whole_house
+    state: 'on'
+  actions:
+  - data:
+      target_mode: min
+      respect_caps: true
+      players:
+      - media_player.tx_rz50_zone_2
+    action: script.audio_batch_volume_engine
+  mode: restart

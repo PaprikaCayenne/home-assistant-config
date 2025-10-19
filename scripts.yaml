@@ -3340,3 +3340,26 @@ audio_watch_tv_livingroom_power_off:
       - action: remote.turn_off
         target:
           entity_id: remote.livingroom_tv
+audio_listen_whole_house_soft:
+  alias: 'Audio: Listen — Whole House (Soft)'
+  description: 'Wake Livingroom Fire TV + TV (spine), assert RZ50 main source, then
+    bring all speakers online and apply Start volumes (caps).
+
+    '
+  icon: mdi:music
+  mode: single
+  sequence:
+  - parallel:
+    - action: media_player.turn_on
+      target:
+        entity_id: media_player.livingroom_fire_tv
+    - action: remote.turn_on
+      target:
+        entity_id: remote.livingroom_tv
+  - delay: 00:00:02
+  - action: script.audio_rz50_main_ensure_power_and_source
+  - action: script.audio_all_speakers_on_full_parallel
+  - action: script.audio_batch_volume_engine
+    data:
+      target_mode: start
+      respect_caps: true
