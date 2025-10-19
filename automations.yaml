@@ -306,7 +306,7 @@
   mode: single
 - id: '1741453831029'
   alias: 'Misc: Primary bathroom fan humidity off'
-  description: Turns off bathroom fan when humidity drops below 40%
+  description: Turns off bathroom fan when humidity drops below 60%
   triggers:
   - entity_id:
     - sensor.meter_4e38_humidity
@@ -829,9 +829,6 @@
     entity_id: binary_sensor.motion_kitchen_allowed
     state: 'on'
   actions:
-  - action: script.kitchen_light_control_script
-    data: {}
-    enabled: false
   - action: script.turn_on
     metadata: {}
     data: {}
@@ -1398,7 +1395,7 @@
     metadata: {}
     data: {}
     target:
-      entity_id: input_boolean.movie_mode
+      entity_id: input_boolean.movie
   mode: single
 - id: '1749875600345'
   alias: 'Movie Mode: Auto Reset After TV Off'
@@ -1450,43 +1447,59 @@
   mode: restart
 - id: '1749876129118'
   alias: 'Movie Mode: Smooth Kitchen Brighten on Presence'
-  description: 'While movie mode is active, brightens kitchen lights by 20% when FP2
-    detects presence in the cooking area. Fades them back down by 20% when presence
-    is gone.
+  description: 'While movie mode is active, gently brighten the Kitchen when the FP2
+    detects presence in the cooking area; when you leave, restore the previous (movie)
+    level.
 
     '
   triggers:
-  - entity_id:
-    - binary_sensor.presence_sensor_fp2_cooking_area
+  - entity_id: binary_sensor.presence_sensor_fp2_cooking_area
     trigger: state
   conditions:
   - condition: state
     entity_id: input_boolean.movie
     state: 'on'
+  - condition: state
+    entity_id: input_boolean.kitchen_lights_manual_override
+    state: 'off'
   actions:
   - choose:
     - conditions:
       - condition: state
         entity_id: binary_sensor.presence_sensor_fp2_cooking_area
         state: 'on'
+      - condition: state
+        entity_id: input_boolean.kitchen_movie_nudge_active_boolean
+        state: 'off'
       sequence:
+      - data:
+          scene_id: kitchen_movie_snapshot
+          snapshot_entities:
+          - light.kitchen_hue_group_switch
+        action: scene.create
       - target:
           entity_id: light.kitchen_hue_group_switch
         data:
-          brightness_step_pct: 50
+          brightness_step_pct: 20
           transition: 1
         action: light.turn_on
+      - target:
+          entity_id: input_boolean.kitchen_movie_nudge_active_boolean
+        action: input_boolean.turn_on
     - conditions:
       - condition: state
         entity_id: binary_sensor.presence_sensor_fp2_cooking_area
         state: 'off'
+      - condition: state
+        entity_id: input_boolean.kitchen_movie_nudge_active_boolean
+        state: 'on'
       sequence:
       - target:
-          entity_id: light.kitchen_hue_group_switch
-        data:
-          transition: 1
-          brightness_pct: 1
-        action: light.turn_on
+          entity_id: scene.kitchen_movie_snapshot
+        action: scene.turn_on
+      - target:
+          entity_id: input_boolean.kitchen_movie_nudge_active_boolean
+        action: input_boolean.turn_off
   mode: restart
 - id: '1749909190648'
   alias: 'Livingroom: Motion Detected – Turn On Lights [Run Light Control Script]'
@@ -1502,9 +1515,6 @@
     entity_id: binary_sensor.motion_livingroom_allowed
     state: 'on'
   actions:
-  - action: script.livingroom_light_control_script
-    data: {}
-    enabled: false
   - action: script.turn_on
     metadata: {}
     data: {}
@@ -2119,37 +2129,6 @@
         data: {}
         target:
           entity_id: switch.camera_bedroom_primary_privacy_mode
-  mode: restart
-- id: '1755629114060'
-  alias: 'Bedroom Primary: Private Time Sync'
-  description: 'Keeps camera privacy mode synced with private time.  When private_time
-    is true, privacy mode is enabled.  When private_time is false, privacy mode is
-    disabled.
-
-    '
-  triggers:
-  - trigger: state
-    entity_id: input_boolean.private_time
-  actions:
-  - choose:
-    - conditions:
-      - condition: state
-        entity_id: input_boolean.private_time
-        state: 'on'
-      sequence:
-      - action: switch.turn_on
-        target:
-          entity_id: switch.camera_bedroom_primary_privacy_mode
-        data: {}
-    - conditions:
-      - condition: state
-        entity_id: input_boolean.private_time
-        state: 'off'
-      sequence:
-      - action: switch.turn_off
-        target:
-          entity_id: switch.camera_bedroom_primary_privacy_mode
-        data: {}
   mode: restart
 - id: '1759757695586'
   alias: 'Bathroom Guest: Hue Button: Fan (15) Minutes'

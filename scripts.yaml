@@ -3200,3 +3200,221 @@ audio_batch_volume_engine:
             data:
               volume_level: '{{ vol_level }}'
         default: []
+audio_rz50_main_power_off:
+  alias: 'Audio: RZ50 Main Power Off'
+  description: Turns off RZ50 main with retry and verify.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: media_player.tx_rz50
+            state: 'on'
+          sequence:
+          - action: media_player.turn_off
+            target:
+              entity_id: media_player.tx_rz50
+          - wait_template: '{{ is_state(''media_player.tx_rz50'',''off'') }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: media_player.tx_rz50
+            state: 'off'
+          sequence:
+          - stop: RZ50 main is off
+      - delay: 00:00:02
+audio_rz50_zone_2_power_off:
+  alias: 'Audio: RZ50 Zone 2 Power Off'
+  description: Turns off RZ50 zone 2 with retry and verify.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: media_player.tx_rz50_zone_2
+            state: 'on'
+          sequence:
+          - action: media_player.turn_off
+            target:
+              entity_id: media_player.tx_rz50_zone_2
+          - wait_template: '{{ is_state(''media_player.tx_rz50_zone_2'',''off'') }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: media_player.tx_rz50_zone_2
+            state: 'off'
+          sequence:
+          - stop: RZ50 zone 2 is off
+      - delay: 00:00:02
+audio_rz50_zone_3_power_off:
+  alias: 'Audio: RZ50 Zone 3 Power Off'
+  description: Turns off RZ50 zone 3 with retry and verify.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: media_player.tx_rz50_zone_3
+            state: 'on'
+          sequence:
+          - action: media_player.turn_off
+            target:
+              entity_id: media_player.tx_rz50_zone_3
+          - wait_template: '{{ is_state(''media_player.tx_rz50_zone_3'',''off'') }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: media_player.tx_rz50_zone_3
+            state: 'off'
+          sequence:
+          - stop: RZ50 zone 3 is off
+      - delay: 00:00:02
+audio_nr6100_main_power_off:
+  alias: 'Audio: NR6100 Main Power Off'
+  description: Turns off NR6100 main with retry and verify.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: media_player.tx_nr6100
+            state: 'on'
+          sequence:
+          - action: media_player.turn_off
+            target:
+              entity_id: media_player.tx_nr6100
+          - wait_template: '{{ is_state(''media_player.tx_nr6100'',''off'') }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: media_player.tx_nr6100
+            state: 'off'
+          sequence:
+          - stop: NR6100 main is off
+      - delay: 00:00:02
+audio_nr6100_zone_2_power_off:
+  alias: 'Audio: NR6100 Zone 2 Power Off'
+  description: Turns off NR6100 zone 2 with retry and verify.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: media_player.tx_nr6100_zone_2
+            state: 'on'
+          sequence:
+          - action: media_player.turn_off
+            target:
+              entity_id: media_player.tx_nr6100_zone_2
+          - wait_template: '{{ is_state(''media_player.tx_nr6100_zone_2'',''off'')
+              }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: media_player.tx_nr6100_zone_2
+            state: 'off'
+          sequence:
+          - stop: NR6100 zone 2 is off
+      - delay: 00:00:02
+audio_denon_office_and_guest_bedroom_power_off:
+  alias: 'Audio: Denon Office and Guest Bedroom Power Off'
+  description: Turns off Denon Office Hallway 2 with retry and verify.
+  mode: restart
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: media_player.denon_office_hallway_2
+            state: 'on'
+          sequence:
+          - action: media_player.turn_off
+            target:
+              entity_id: media_player.denon_office_hallway_2
+          - wait_template: '{{ is_state(''media_player.denon_office_hallway_2'',''off'')
+              }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: media_player.denon_office_hallway_2
+            state: 'off'
+          sequence:
+          - stop: Denon Office Hallway 2 is off
+      - delay: 00:00:02
+audio_nr6100_power_off:
+  alias: 'Audio: NR6100 Power Off'
+  mode: single
+  sequence:
+  - action: script.audio_nr6100_main_power_off
+  description: ''
+audio_rz50_main_power_on:
+  alias: 'Audio: RZ50 Main Power On'
+  mode: single
+  sequence:
+  - action: script.audio_rz50_main_ensure_power_and_source
+  description: ''
+audio_rz50_zone_2_power_on:
+  alias: 'Audio: RZ50 Zone 2 Power On'
+  mode: single
+  sequence:
+  - action: script.audio_rz50_zone_2_ensure_power_and_source
+  description: ''
+audio_rz50_zone_3_power_on:
+  alias: 'Audio: RZ50 Zone 3 Power On'
+  mode: single
+  sequence:
+  - action: script.audio_rz50_zone_3_ensure_power_and_source
+  description: ''
+audio_nr6100_main_power_on:
+  alias: 'Audio: NR6100 Main Power On'
+  mode: single
+  sequence:
+  - action: script.audio_nr6100_main_ensure_power_and_source
+  description: ''
+audio_nr6100_zone_2_power_on:
+  alias: 'Audio: NR6100 Zone 2 Power On'
+  mode: single
+  sequence:
+  - action: script.audio_nr6100_zone_2_ensure_power_and_source
+  description: ''
+audio_denon_hallway_and_bathroom_guest_power_on:
+  alias: 'Audio: Denon Hallway and Bathroom Guest Power On'
+  mode: single
+  sequence:
+  - action: script.audio_denon_office_hallway_ensure_power_and_source
+  description: ''
+audio_denon_office_and_bedroom_guest_power_on:
+  alias: 'Audio: Denon Office and Bedroom Guest Power On'
+  mode: single
+  sequence:
+  - action: script.audio_denon_office_hallway_2_ensure_power_and_source
+  description: ''
