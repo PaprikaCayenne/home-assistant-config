@@ -749,7 +749,7 @@ bathroom_primary_reset_motion:
       entity_id: input_boolean.bathroom_primary_motion_enabled
     action: input_boolean.turn_on
     data: {}
-bathroom_primary_toggle_lights_manual_override:
+script.bedroom_primary_toggle_lights_manual_override:
   alias: 'Bedroom Primary: Toggle Lights & Manual Override | Script'
   description: 'Toggles lights and override based on current state: - If lights are
     OFF, turn ON and enable override. - If lights are ON and override is OFF, enable
@@ -1508,7 +1508,7 @@ reset_all_active_overrides:
         metadata: {}
         data: {}
         target:
-          entity_id: script.bathroom_primary_toggle_lights_manual_override
+          entity_id: script.bathroom_primary_toggle_lights_manual_override_script
   - choose:
     - conditions:
       - condition: state
@@ -3363,3 +3363,58 @@ audio_listen_whole_house_soft:
     data:
       target_mode: start
       respect_caps: true
+bathroom_primary_toggle_lights_manual_override_script:
+  alias: 'Bathroom Primary: Toggle Lights & Manual Override | Script'
+  description: 'Toggles lights and override based on current state: - If lights are
+    OFF, turn ON and enable override. - If lights are ON and override is OFF, enable
+    override (keep lights ON). - If lights are ON and override is ON, turn OFF and
+    disable override (and start cooldown).
+
+    '
+  mode: restart
+  sequence:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: light.bathroom_primary_all_lights_group
+        state: 'off'
+      sequence:
+      - action: light.turn_on
+        data:
+          transition: 0.5
+          brightness_pct: 100
+        target:
+          entity_id: light.bathroom_primary_all_lights_group
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.bathroom_primary_lights_manual_override
+    - conditions:
+      - condition: state
+        entity_id: light.bathroom_primary_all_lights_group
+        state: 'on'
+      - condition: state
+        entity_id: input_boolean.bathroom_primary_lights_manual_override
+        state: 'off'
+      sequence:
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.bathroom_primary_lights_manual_override
+    - conditions:
+      - condition: state
+        entity_id: light.bathroom_primary_all_lights_group
+        state: 'on'
+      - condition: state
+        entity_id: input_boolean.bathroom_primary_lights_manual_override
+        state: 'on'
+      sequence:
+      - action: light.turn_off
+        data:
+          transition: 0.5
+        target:
+          entity_id: light.bathroom_primary_all_lights_group
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.bathroom_primary_lights_manual_override
+      - action: script.turn_on
+        target:
+          entity_id: script.bathroom_primary_start_motion_cooldown
