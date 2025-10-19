@@ -749,7 +749,7 @@ bathroom_primary_reset_motion:
       entity_id: input_boolean.bathroom_primary_motion_enabled
     action: input_boolean.turn_on
     data: {}
-script.bedroom_primary_toggle_lights_manual_override:
+bedroom_primary_toggle_lights_manual_override:
   alias: 'Bedroom Primary: Toggle Lights & Manual Override | Script'
   description: 'Toggles lights and override based on current state: - If lights are
     OFF, turn ON and enable override. - If lights are ON and override is OFF, enable
@@ -1541,7 +1541,7 @@ reset_all_active_overrides:
         metadata: {}
         data: {}
         target:
-          entity_id: script.cleaning_mode_toggle_and_lights
+          entity_id: script.cleaning_toggle_mode
   - choose:
     - conditions:
       - condition: state
@@ -1552,7 +1552,7 @@ reset_all_active_overrides:
         metadata: {}
         data: {}
         target:
-          entity_id: script.party_mode_toggle_and_lights
+          entity_id: script.party_toggle_mode
   - choose:
     - conditions:
       - condition: state
@@ -1563,7 +1563,7 @@ reset_all_active_overrides:
         metadata: {}
         data: {}
         target:
-          entity_id: script.movie_mode_toggle_and_lights
+          entity_id: script.movie_mode_turn_off_and_reset_devices
 movie_mode_power_on_devices_set_scene_enable_overrides:
   alias: 'Audio: Movie Mode - Power On + Scene'
   description: Turns on Livingroom Fire TV + TV, ensures RZ50 main uses Multiroom
@@ -3418,3 +3418,20 @@ bathroom_primary_toggle_lights_manual_override_script:
       - action: script.turn_on
         target:
           entity_id: script.bathroom_primary_start_motion_cooldown
+party_compat_toggle_mode:
+  alias: Party (compat) Toggle Mode
+  description: Wrapper for old name - forwards to party_toggle_mode
+  mode: single
+  icon: mdi:party-popper
+  sequence:
+  - action: script.party_toggle_mode
+    metadata: {}
+    data: {}
+cleaning_compat_toggle_mode:
+  alias: Cleaning (compat) Toggle Mode
+  description: Wrapper for old name - forwards to cleaning_toggle_mode
+  mode: single
+  icon: mdi:broom
+  sequence:
+  - action: script.cleaning_toggle_mode
+    data: {}
