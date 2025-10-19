@@ -1398,52 +1398,32 @@
       entity_id: input_boolean.movie
   mode: single
 - id: '1749875600345'
-  alias: 'Movie Mode: Auto Reset After TV Off'
-  description: 'If the Livingroom TV is turned off and movie mode is still active,
-    waits 5 minutes and then disables movie mode. This allows FP2 presence to take
-    back control. Includes a persistent notification for visibility.
-
-    '
+  alias: 'Movie Mode: Auto Reset After TV Off (5 min)'
+  description: Disables Movie mode 5 minutes after the Livingroom TV turns off, posts
+    a notification, and clears kitchen/livingroom overrides.
   triggers:
   - entity_id: media_player.livingroom_tv
     to: 'off'
+    for: 00:05:00
     trigger: state
   conditions:
   - condition: state
     entity_id: input_boolean.movie
     state: 'on'
   actions:
-  - delay: 00:05:00
-  - condition: state
-    entity_id: input_boolean.movie
-    state: 'on'
   - target:
       entity_id: input_boolean.movie
     action: input_boolean.turn_off
-    data: {}
   - data:
       title: Movie Mode Auto Reset
-      message: 'Movie mode was automatically turned off 5 minutes after the Livingroom
+      message: Movie mode was automatically turned off 5 minutes after the Livingroom
         TV was turned off.
-
-        '
     action: persistent_notification.create
-  - condition: state
-    entity_id: input_boolean.kitchen_lights_manual_override
-    state: 'on'
-  - action: input_boolean.turn_off
-    metadata: {}
-    data: {}
-    target:
-      entity_id: input_boolean.kitchen_lights_manual_override
-  - condition: state
-    entity_id: input_boolean.livingroom_lights_manual_override
-    state: 'on'
-  - action: input_boolean.turn_off
-    metadata: {}
-    data: {}
-    target:
-      entity_id: input_boolean.livingroom_lights_manual_override
+  - target:
+      entity_id:
+      - input_boolean.kitchen_lights_manual_override
+      - input_boolean.livingroom_lights_manual_override
+    action: input_boolean.turn_off
   mode: restart
 - id: '1749876129118'
   alias: 'Movie Mode: Smooth Kitchen Brighten on Presence'
@@ -2167,4 +2147,57 @@
   actions:
   - action: script.audio_reset_audio_baseline
     data: {}
+  mode: single
+- id: '1760851856356'
+  alias: 'Party: On - Whole Condo Audio'
+  description: When Party is turned on, run the audio preset (Livingroom spine → All-ON
+    → Start volumes).
+  triggers:
+  - trigger: state
+    entity_id: input_boolean.party
+    to: 'on'
+  actions:
+  - action: script.audio_party_whole_condo
+  mode: single
+- id: '1760851877047'
+  alias: 'Party: Off - Turn Off Condo Audio + TVs'
+  description: When Party turns off, power down all audio zones and ensure both TVs
+    are off.
+  triggers:
+  - trigger: state
+    entity_id: input_boolean.party
+    to: 'off'
+  actions:
+  - action: script.audio_all_speakers_off_full_parallel
+  - delay: 00:00:02
+  - parallel:
+    - action: remote.turn_off
+      target:
+        entity_id: remote.livingroom_tv
+    - action: remote.turn_off
+      target:
+        entity_id: remote.bedroom_primary_tv
+  - choose:
+    - conditions:
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: media_player.livingroom_tv
+          state: 'off'
+      sequence:
+      - delay: 00:00:02
+      - action: remote.turn_off
+        target:
+          entity_id: remote.livingroom_tv
+    - conditions:
+      - condition: not
+        conditions:
+        - condition: state
+          entity_id: media_player.bedroom_primary_tv
+          state: 'off'
+      sequence:
+      - delay: 00:00:02
+      - action: remote.turn_off
+        target:
+          entity_id: remote.bedroom_primary_tv
   mode: single

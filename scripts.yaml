@@ -1565,192 +1565,34 @@ reset_all_active_overrides:
         target:
           entity_id: script.movie_mode_toggle_and_lights
 movie_mode_power_on_devices_set_scene_enable_overrides:
-  alias: 'Movie Mode: Power On Devices, Set Scene, Enable Overrides | Script'
-  description: 'When Movie Mode is off, this script powers on the TV and receiver,
-    sets the receiver to the correct input, enables override booleans, and activates
-    the movie lighting scene. It does not handle "off" logic — that is managed separately
-    via the auto-reset automation.
-
-    '
+  alias: 'Audio: Movie Mode - Power On + Scene'
+  description: Turns on Livingroom Fire TV + TV, ensures RZ50 main uses Multiroom
+    - Firestick, then activates the Movie scene. No shutdown or motion changes here.
   icon: mdi:movie-open
   mode: single
   sequence:
-  - condition: state
-    entity_id: input_boolean.movie
-    state: 'off'
   - action: input_boolean.turn_on
-    metadata: {}
-    data: {}
     target:
-      entity_id:
-      - input_boolean.kitchen_lights_manual_override
-      - input_boolean.livingroom_lights_manual_override
-      - input_boolean.movie
+      entity_id: input_boolean.movie
   - parallel:
-    - choose:
-      - conditions:
-        - condition: state
-          entity_id: media_player.livingroom_fire_tv
-          state: 'off'
-        sequence:
-        - action: media_player.turn_on
-          metadata: {}
-          data: {}
-          target:
-            entity_id: media_player.livingroom_fire_tv
-        - delay:
-            hours: 0
-            minutes: 0
-            seconds: 3
-            milliseconds: 0
-        - if:
-          - condition: state
-            entity_id: media_player.tx_rz50
-            state: 'off'
-          then:
-          - action: media_player.turn_on
-            metadata: {}
-            data: {}
-            target:
-              entity_id: media_player.tx_rz50
-          - delay:
-              hours: 0
-              minutes: 0
-              seconds: 2
-              milliseconds: 0
-          - action: media_player.select_source
-            metadata: {}
-            data:
-              source: Multiroom - Firestick
-            target:
-              entity_id: media_player.tx_rz50
-          - if:
-            - condition: state
-              entity_id: media_player.livingroom_tv
-              state: 'off'
-            then:
-            - action: media_player.turn_on
-              metadata: {}
-              data: {}
-              target:
-                entity_id: media_player.bedroom_primary_tv
-            - delay:
-                hours: 0
-                minutes: 0
-                seconds: 3
-                milliseconds: 0
-              enabled: false
-            - action: media_player.select_source
-              metadata: {}
-              data:
-                source: HDMI
-              target:
-                entity_id: media_player.livingroom_tv
-              enabled: false
-      - conditions:
-        - condition: state
-          entity_id: media_player.livingroom_fire_tv
-          state: 'on'
-        - condition: state
-          entity_id: media_player.tx_rz50
-          state: 'off'
-        sequence:
-        - action: media_player.turn_on
-          metadata: {}
-          data: {}
-          target:
-            entity_id: media_player.tx_rz50
-        - delay:
-            hours: 0
-            minutes: 0
-            seconds: 2
-            milliseconds: 0
-        - action: media_player.select_source
-          metadata: {}
-          data:
-            source: Multiroom - Firestick
-          target:
-            entity_id: media_player.tx_rz50
-        - if:
-          - condition: state
-            entity_id: media_player.livingroom_tv
-            state: 'off'
-          then:
-          - action: media_player.turn_on
-            metadata: {}
-            data: {}
-            target:
-              entity_id: media_player.livingroom_tv
-          - delay:
-              hours: 0
-              minutes: 0
-              seconds: 3
-              milliseconds: 0
-            enabled: false
-          - action: media_player.select_source
-            metadata: {}
-            data:
-              source: HDMI
-            target:
-              entity_id: media_player.livingroom_tv
-            enabled: false
-          else:
-          - action: media_player.select_source
-            metadata: {}
-            data:
-              source: HDMI
-            target:
-              entity_id: media_player.livingroom_tv
-            enabled: false
-      - conditions:
-        - condition: state
-          entity_id: media_player.livingroom_tv
-          state: 'off'
-        - condition: state
-          entity_id: media_player.livingroom_fire_tv
-          state: 'on'
-        - condition: state
-          entity_id: media_player.tx_rz50
-          state: 'on'
-        sequence:
-        - action: media_player.turn_on
-          metadata: {}
-          data: {}
-          target:
-            entity_id: media_player.livingroom_tv
-        - action: media_player.select_source
-          metadata: {}
-          data:
-            source: Multiroom - Firestick
-          target:
-            entity_id: media_player.tx_rz50
-        - delay:
-            hours: 0
-            minutes: 0
-            seconds: 3
-            milliseconds: 0
-          enabled: false
-        - action: media_player.select_source
-          metadata: {}
-          data:
-            source: HDMI
-          target:
-            entity_id: media_player.livingroom_tv
-          enabled: false
+    - action: media_player.turn_on
+      target:
+        entity_id: media_player.livingroom_fire_tv
+    - action: remote.turn_on
+      target:
+        entity_id: remote.livingroom_tv
+  - delay: 00:00:02
+  - action: script.audio_rz50_main_ensure_power_and_source
   - action: scene.turn_on
-    metadata: {}
-    data: {}
     target:
       entity_id: scene.downstairs_inside_movie_tokyo
   - action: light.turn_on
-    metadata: {}
     data:
       transition: 0.5
       brightness_pct: 10
     target:
       entity_id: light.kitchen_above_cabinet_lightstrip
   - action: light.turn_on
-    metadata: {}
     data:
       transition: 0.5
       brightness_pct: 10
@@ -2436,7 +2278,7 @@ audio_denon_office_hallway_2_ensure_power_and_source:
               ''Livingroom'' }}'
           sequence:
 audio_denon_office_hallway_power_off:
-  alias: 'Audio: Denon Office Hallway Power Off'
+  alias: 'Audio: Denon Hallway and Bathroom Guest Power Off'
   description: Retry power off with waits and verification.
   mode: restart
   sequence:
@@ -2580,23 +2422,31 @@ audio_all_speakers_off:
   - parallel:
     - sequence:
       - action: script.audio_rz50_zone_2_power_off
+        data: {}
     - sequence:
       - action: script.audio_rz50_zone_3_power_off
+        data: {}
     - sequence:
       - action: script.audio_denon_office_hallway_power_off
+        data: {}
     - sequence:
-      - action: script.audio_denon_office_hallway_2_power_off
+      - action: script.audio_denon_office_and_guest_bedroom_power_off
+        data: {}
     - sequence:
       - action: script.audio_nr6100_zone_2_power_off
+        data: {}
     - sequence:
-      - action: script.audio_nr6100_power_off
+      - action: script.audio_nr6100_main_power_off
+        data: {}
     - sequence:
       - action: script.audio_rz50_main_power_off
-  - target:
+        data: {}
+  - action: media_player.turn_off
+    target:
       entity_id:
       - media_player.livingroom_tv
       - media_player.bedroom_primary_tv
-    action: media_player.turn_off
+    data: {}
 audio_verify_multiroom:
   alias: 'Audio: Verify Multiroom'
   description: Checks power and expected source on all zones; reports mismatches.
@@ -2949,7 +2799,7 @@ audio_ensure_denon_guest_office:
     action: script.audio_ensure_power_source_generic
   description: ''
 audio_ensure_denon_hallway_guest_bath:
-  alias: 'Audio: Ensure Denon Hallway+Guest Bath'
+  alias: 'Audio: Ensure Denon Hallway and Guest Bath'
   mode: single
   sequence:
   - data:
@@ -3345,3 +3195,117 @@ audio_denon_office_and_bedroom_guest_power_on:
   sequence:
   - action: script.audio_denon_office_hallway_2_ensure_power_and_source
   description: ''
+audio_verify_multiroom_2:
+  alias: 'Audio: Verify Multiroom'
+  description: Checks each zone's current source vs the expected multiroom source
+    and reports mismatches; does not change anything.
+  icon: mdi:playlist-check
+  mode: single
+  sequence:
+  - variables:
+      expected_map:
+        media_player.tx_rz50: Multiroom - Firestick
+        media_player.tx_rz50_zone_2: Main Zone Audio
+        media_player.tx_rz50_zone_3: Main Zone Audio
+        media_player.tx_nr6100: Multiroom - Firestick
+        media_player.tx_nr6100_zone_2: Main Zone Audio
+        media_player.denon_office_hallway_2: Livingroom
+        media_player.denon_office_hallway: Livingroom
+      title: 'Audio: Verify Multiroom'
+      body: "{% set ns = namespace(mismatches=[], skipped=[]) %} {% for ent, exp in
+        expected_map.items() %}\n  {% set st = states(ent) %}\n  {% if st in ['off','unavailable','unknown']
+        %}\n    {% set ns.skipped = ns.skipped + [ ent ~ ' (' ~ st ~ ')' ] %}\n  {%
+        else %}\n    {% set cur = (state_attr(ent, 'source') | string | trim) %}\n
+        \   {% if cur | lower != (exp | string | trim | lower) %}\n      {% set ns.mismatches
+        = ns.mismatches + [ ent ~ ': expected \"' ~ exp ~ '\", got \"' ~ cur ~ '\"'
+        ] %}\n    {% endif %}\n  {% endif %}\n{% endfor %} {% if ns.mismatches | length
+        == 0 %}\n  ✅ All zones OK. {% if ns.skipped|length>0 %}Skipped {{ ns.skipped|length
+        }} (off/unavailable): {{ ns.skipped | join(', ') }}.{% endif %}\n{% else %}\n
+        \ ❗ Mismatches ({{ ns.mismatches | length }}):\n  - {{ ns.mismatches | join('\\n-
+        ') }}\n  {% if ns.skipped|length>0 %}Skipped {{ ns.skipped|length }} (off/unavailable):
+        {{ ns.skipped | join(', ') }}.{% endif %}\n{% endif %}"
+  - action: persistent_notification.create
+    data:
+      title: '{{ title }}'
+      message: '{{ body }}'
+audio_party_whole_condo:
+  alias: 'Audio: Party (Whole Condo)'
+  description: Powers on Livingroom Fire TV + TV, runs All-ON for receivers, then
+    applies Start volumes (caps respected).
+  icon: mdi:party-popper
+  mode: single
+  sequence:
+  - parallel:
+    - action: media_player.turn_on
+      target:
+        entity_id: media_player.livingroom_fire_tv
+    - action: remote.turn_on
+      target:
+        entity_id: remote.livingroom_tv
+  - delay: 00:00:02
+  - action: script.audio_all_speakers_on_full_parallel
+  - action: script.audio_batch_volume_engine
+    data:
+      target_mode: start
+      respect_caps: true
+audio_listen_livingroom_kitchen_z3:
+  alias: 'Audio: Listen - Livingroom + Kitchen (+ TV)'
+  description: Powers on Livingroom Fire TV + TV, ensures RZ50 main/Z2 sources, then
+    applies Start volumes to those two zones (caps respected). Z3 is not used.
+  icon: mdi:television-speaker
+  mode: single
+  sequence:
+  - parallel:
+    - action: media_player.turn_on
+      target:
+        entity_id: media_player.livingroom_fire_tv
+    - action: remote.turn_on
+      target:
+        entity_id: remote.livingroom_tv
+  - delay: 00:00:02
+  - action: script.audio_rz50_main_ensure_power_and_source
+  - action: script.audio_rz50_zone_2_ensure_power_and_source
+    data: {}
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: media_player.livingroom_tv
+        state: 'off'
+      sequence:
+      - action: remote.turn_on
+        target:
+          entity_id: remote.livingroom_tv
+      - delay: 00:00:02
+  - action: script.audio_batch_volume_engine
+    data:
+      target_mode: start
+      respect_caps: true
+      players:
+      - media_player.tx_rz50
+      - media_player.tx_rz50_zone_2
+audio_watch_tv_livingroom_no_scene:
+  alias: 'Audio: Watch TV — Livingroom (No Scene)'
+  description: Powers on Livingroom Fire TV + TV, then ensures RZ50 main uses Multiroom
+    - Firestick. No lighting or volume changes.
+  icon: mdi:television-speaker
+  mode: single
+  sequence:
+  - parallel:
+    - action: media_player.turn_on
+      target:
+        entity_id: media_player.livingroom_fire_tv
+    - action: remote.turn_on
+      target:
+        entity_id: remote.livingroom_tv
+  - delay: 00:00:02
+  - action: script.audio_rz50_main_ensure_power_and_source
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: media_player.livingroom_tv
+        state: 'off'
+      sequence:
+      - action: remote.turn_on
+        target:
+          entity_id: remote.livingroom_tv
+      - delay: 00:00:02
