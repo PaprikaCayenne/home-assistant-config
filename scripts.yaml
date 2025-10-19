@@ -2560,36 +2560,18 @@ audio_all_speakers_on:
   - parallel:
     - sequence:
       - action: script.audio_rz50_main_ensure_power_and_source
-        data: {}
     - sequence:
       - action: script.audio_rz50_zone_2_ensure_power_and_source
-        data: {}
     - sequence:
       - action: script.audio_rz50_zone_3_ensure_power_and_source
-        data: {}
     - sequence:
-      - action: script.audio_denon_office_hallway_ensure_power_and_source
-        data: {}
+      - action: script.audio_ensure_denon_guest_office
     - sequence:
-      - action: script.audio_denon_office_hallway_2_ensure_power_and_source
-        data: {}
+      - action: script.audio_ensure_denon_hallway_guest_bath
     - sequence:
       - action: script.audio_nr6100_main_ensure_power_and_source
-        data: {}
     - sequence:
       - action: script.audio_nr6100_zone_2_ensure_power_and_source
-        data: {}
-    - sequence:
-      - action: media_player.turn_on
-        metadata: {}
-        data: {}
-        target:
-          entity_id: media_player.bedroom_primary_tv
-      - action: media_player.turn_on
-        metadata: {}
-        data: {}
-        target:
-          entity_id: media_player.livingroom_tv
 audio_all_speakers_off:
   alias: 'Audio: All Speakers OFF (Full Parallel)'
   description: Turn off all receivers in parallel.
@@ -2598,36 +2580,23 @@ audio_all_speakers_off:
   - parallel:
     - sequence:
       - action: script.audio_rz50_zone_2_power_off
-        data: {}
     - sequence:
       - action: script.audio_rz50_zone_3_power_off
-        data: {}
     - sequence:
       - action: script.audio_denon_office_hallway_power_off
-        data: {}
     - sequence:
       - action: script.audio_denon_office_hallway_2_power_off
-        data: {}
     - sequence:
       - action: script.audio_nr6100_zone_2_power_off
-        data: {}
     - sequence:
       - action: script.audio_nr6100_power_off
-        data: {}
     - sequence:
       - action: script.audio_rz50_main_power_off
-        data: {}
-    - sequence:
-      - action: media_player.turn_off
-        metadata: {}
-        data: {}
-        target:
-          entity_id: media_player.livingroom_tv
-      - action: media_player.turn_off
-        metadata: {}
-        data: {}
-        target:
-          entity_id: media_player.bedroom_primary_tv
+  - target:
+      entity_id:
+      - media_player.livingroom_tv
+      - media_player.bedroom_primary_tv
+    action: media_player.turn_off
 audio_verify_multiroom:
   alias: 'Audio: Verify Multiroom'
   description: Checks power and expected source on all zones; reports mismatches.
