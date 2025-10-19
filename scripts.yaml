@@ -372,7 +372,7 @@ global_clear_all_overrides:
       - input_boolean.stairs_lights_manual_override
     action: input_boolean.turn_off
     data: {}
-kitchen_toggle_manual_override_2:
+kitchen_toggle_manual_override:
   alias: 'Kitchen: Toggle Manual Override | Script'
   description: 'Toggles the kitchen manual override boolean and turns the lights on
     if enabling override, or off if disabling it.
@@ -1210,7 +1210,7 @@ stairs_toggle_lights_manual_override:
 downstairs_toggle_lights_manual_override:
   alias: 'Downstairs: Toggle Lights & Manual Override | Script'
   sequence:
-  - action: script.kitchen_toggle_manual_override_2
+  - action: script.kitchen_toggle_manual_override
     metadata: {}
     data: {}
   - action: script.livingroom_toggle_lights_manual_override
@@ -2551,48 +2551,6 @@ livingroom_fire_tv_power_off:
               }}'
           sequence:
           - stop: Fire TV is off
-      - delay: 00:00:02
-livingroom_fire_tv_ensure_power_2:
-  alias: 'Livingroom: Fire TV Ensure Power'
-  description: Turn on Fire TV with retry. Uses ADB WAKEUP + HOME as fallback.
-  mode: restart
-  sequence:
-  - repeat:
-      count: 4
-      sequence:
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ states(''media_player.livingroom_fire_tv'') in [''off'',''standby'',''unavailable'',''unknown'']
-              }}
-
-              '
-          sequence:
-          - target:
-              entity_id: media_player.livingroom_fire_tv
-            action: media_player.turn_on
-          - delay: 00:00:02
-          - target:
-              entity_id: media_player.livingroom_fire_tv
-            data:
-              command: WAKEUP
-            action: androidtv.adb_command
-          - delay: 00:00:01
-          - target:
-              entity_id: media_player.livingroom_fire_tv
-            data:
-              command: HOME
-            action: androidtv.adb_command
-          - delay: 00:00:02
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ states(''media_player.livingroom_fire_tv'') not in
-              [''off'',''standby'',''unavailable'',''unknown''] }}
-
-              '
-          sequence:
-          - stop: Fire TV is on
       - delay: 00:00:02
 audio_all_speakers_on:
   alias: 'Audio: All Speakers ON (Full Parallel)'

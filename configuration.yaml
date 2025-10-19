@@ -50,13 +50,6 @@ alexa:
         name: "Patio Lights"
 
 # ================================
-# Browser Mod Integration
-# ================================
-
-browser_mod:
-  prefix: browser_
-
-# ================================
 # Authentication & File Access
 # ================================
 
@@ -96,5 +89,6 @@ logger:
 # ================================
 
 shell_command:
-  nightly_git_backup: bash /config/git-nightly.sh
+  nightly_git_backup: /bin/bash /config/git-nightly.sh
+
 

@@ -2157,3 +2157,14 @@
     target:
       entity_id: switch.bathroom_guest_fan_outlet_switch_0
   mode: single
+- id: '1760846412452'
+  alias: 'Audio: Nightly Baseline Reset (03:05)'
+  description: Heals power/source and applies Start volumes (caps respected) every
+    night at 03:05.
+  triggers:
+  - at: 03:05:00
+    trigger: time
+  actions:
+  - action: script.audio_reset_audio_baseline
+    data: {}
+  mode: single
