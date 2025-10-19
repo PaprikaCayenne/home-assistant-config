@@ -1580,7 +1580,7 @@
       entity_id: light.stairs_downstairs_switch
   mode: single
 - id: '1753320650160'
-  alias: 'Livongroom: Button 4 Short Press – Area Off & Reset Motion'
+  alias: 'Livingroom: Button 4 Short Press – Area Off & Reset Motion'
   description: 'Turns off Livingroom lights, then calls reset script to clear Kitchen
     and Livingroom overrides and re-enable motion automation after 30 seconds.
 
@@ -1780,47 +1780,18 @@
   mode: single
 - id: '1755184304934'
   alias: 'Audio: All Speakers Volume'
+  description: 'Sets each zone volume from input_number.all_speakers_volume (0–100),
+    clamped per-room via the Batch Volume Engine.
+
+    '
   triggers:
   - entity_id: input_number.all_speakers_volume
     trigger: state
   actions:
-  - variables:
-      pct: '{{ states(''input_number.all_speakers_volume'') | float(0) }}'
-      zones:
-      - e: media_player.tx_rz50
-        min: 0.1
-        max: 1
-      - e: media_player.tx_rz50_zone_2
-        min: 0.05
-        max: 1
-      - e: media_player.denon_office_hallway
-        min: 0.05
-        max: 1
-      - e: media_player.denon_office_hallway_2
-        min: 0.05
-        max: 1
-      - e: media_player.tx_nr6100
-        min: 0.08
-        max: 1
-      - e: media_player.tx_nr6100_zone_2
-        min: 0.05
-        max: 1
-  - repeat:
-      for_each: '{{ zones }}'
-      sequence:
-      - variables:
-          lvl: '{{ ((pct / 100) * (repeat.item.max - repeat.item.min) + repeat.item.min)
-            | float }}'
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ is_state(repeat.item.e, ''on'') }}'
-          sequence:
-          - target:
-              entity_id: '{{ repeat.item.e }}'
-            data:
-              volume_level: '{{ [ [ lvl, 1.0 ] | min, 0.0 ] | max }}'
-            action: media_player.volume_set
+  - action: script.audio_batch_volume_engine
+    data:
+      target_mode: ''
+      respect_caps: true
   mode: restart
 - id: '1755193775949'
   alias: 'Livingroom: TV On → Ensure RZ50 + Fire TV'
@@ -1860,7 +1831,7 @@
     target:
       entity_id: media_player.livingroom_fire_tv
     data: {}
-  - action: script.audio_rz50_main_power_off
+  - action: script.livingroom_tv_power_off
     data: {}
   mode: single
 - id: '1755194342958'

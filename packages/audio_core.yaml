@@ -1,0 +1,11 @@
+group:
+  audio_speakers_all:
+    name: Audio Speakers All
+    entities:
+      - media_player.tx_rz50
+      - media_player.tx_rz50_zone_2
+      - media_player.tx_rz50_zone_3
+      - media_player.denon_office_hallway
+      - media_player.denon_office_hallway_2
+      - media_player.tx_nr6100
+      - media_player.tx_nr6100_zone_2

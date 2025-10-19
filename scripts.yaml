@@ -2043,55 +2043,83 @@ bathroom_guest_lighting_control_script:
           entity_id:
           - light.bathroom_guest_vanity_lights
 audio_rz50_main_ensure_power_and_source:
-  alias: 'Audio: RZ50 Main Ensure Power And Source'
-  description: Retry power on, then set source to Multiroom - Firestick with waits
+  alias: 'Audio: RZ50 Main Ensure Power & Source'
+  description: 'Retry power on, then set source to "Multiroom - Firestick" with waits
     and verification.
+
+    '
+  icon: mdi:check-decagram
   mode: restart
   sequence:
+  - variables:
+      ent: media_player.tx_rz50
+      expected_source: Multiroom - Firestick
+      tries: 4
   - repeat:
-      count: 4
+      count: '{{ tries }}'
       sequence:
       - choose:
         - conditions:
           - condition: template
-            value_template: '{{ not is_state(''media_player.tx_rz50'',''on'') }}'
+            value_template: '{{ not is_state(ent, ''on'') }}'
           sequence:
           - target:
-              entity_id: media_player.tx_rz50
+              entity_id: '{{ ent }}'
             action: media_player.turn_on
-            data: {}
-          - wait_template: '{{ is_state(''media_player.tx_rz50'',''on'') }}'
-            timeout: 00:00:05
+          - wait_template: '{{ is_state(ent, ''on'') }}'
+            timeout: 00:00:25
             continue_on_timeout: true
-          - delay: 00:00:04
+          - delay: 00:00:02
       - choose:
         - conditions:
           - condition: template
-            value_template: '{{ ''Multiroom - Firestick'' in state_attr(''media_player.tx_rz50'',''source_list'')
-              | default([]) }}'
+            value_template: '{{ expected_source in (state_attr(ent, ''source_list'')
+              or []) }}
+
+              '
           - condition: template
-            value_template: '{{ state_attr(''media_player.tx_rz50'',''source'') !=
-              ''Multiroom - Firestick'' }}'
+            value_template: '{{ state_attr(ent, ''source'') != expected_source }}
+
+              '
           sequence:
           - target:
-              entity_id: media_player.tx_rz50
+              entity_id: '{{ ent }}'
             data:
-              source: Multiroom - Firestick
+              source: '{{ expected_source }}'
             action: media_player.select_source
-          - wait_template: '{{ state_attr(''media_player.tx_rz50'',''source'') ==
-              ''Multiroom - Firestick'' }}'
+          - wait_template: '{{ state_attr(ent, ''source'') == expected_source }}
+
+              '
             timeout: 00:00:05
             continue_on_timeout: true
+          - delay: 00:00:02
       - choose:
         - conditions:
           - condition: template
-            value_template: '{{ is_state(''media_player.tx_rz50'',''on'') and state_attr(''media_player.tx_rz50'',''source'')
-              == ''Multiroom - Firestick'' }}'
+            value_template: '{{ is_state(ent, ''on'') and state_attr(ent, ''source'')
+              == expected_source }}
+
+              '
           sequence:
           - stop: RZ50 power and source confirmed
-      - delay: 00:00:02
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ repeat.index < tries }}'
+          sequence:
+          - delay:
+              seconds: '{{ [2, repeat.index] | max }}'
+  - data:
+      title: Audio ensure failed
+      message: '{{ ent }} did not reach source ''{{ expected_source }}'' after {{
+        tries }} attempt(s). Current: state=''{{ states(ent) }}'', source=''{{ state_attr(ent,
+        ''source'') }}''.
+
+        '
+      notification_id: audio_ensure_{{ ent | replace('.', '_') }}
+    action: persistent_notification.create
 audio_rz50_zone_2_ensure_power_and_source:
-  alias: 'Audio: RZ50 Zone 2 Ensure Power And Source'
+  alias: 'Audio: Ensure RZ50 Zone 2 Power And Source'
   description: Retry power on, then set source to Main Zone Audio with waits and verification.
   mode: restart
   sequence:
@@ -2140,7 +2168,7 @@ audio_rz50_zone_2_ensure_power_and_source:
           - stop: RZ50 Zone 2 power and source confirmed
       - delay: 00:00:02
 audio_rz50_zone_3_ensure_power_and_source:
-  alias: 'Audio: RZ50 Zone 3 Ensure Power And Source'
+  alias: 'Audio: Ensure RZ50 Zone 3 Power And Source'
   description: Retry power on, set source to Main Zone Audio, and force volume to
     100%.
   mode: restart
@@ -2215,7 +2243,7 @@ audio_rz50_zone_3_ensure_power_and_source:
           - stop: RZ50 Zone 3 power, source, and volume confirmed
       - delay: 00:00:02
 audio_denon_office_hallway_ensure_power_and_source:
-  alias: 'Audio: Denon Office Hallway Ensure Power And Source'
+  alias: 'Audio: Ensure Denon Office Hallway Power And Source'
   description: Retry power on, then set source to Livingroom with waits and verification.
   mode: restart
   sequence:
@@ -2264,7 +2292,7 @@ audio_denon_office_hallway_ensure_power_and_source:
           - stop: Denon Office Hallway power and source confirmed
       - delay: 00:00:02
 audio_nr6100_main_ensure_power_and_source:
-  alias: 'Audio: NR6100 Main Ensure Power And Source'
+  alias: 'Audio: Ensure NR6100 Main Power And Source'
   description: Retry power on, then set source to Multiroom - Firestick with waits
     and verification.
   mode: restart
@@ -2311,7 +2339,7 @@ audio_nr6100_main_ensure_power_and_source:
           - stop: NR6100 power and source confirmed
       - delay: 00:00:02
 audio_nr6100_zone_2_ensure_power_and_source:
-  alias: 'Audio: NR6100 Zone 2 Ensure Power And Source'
+  alias: 'Audio: Ensure NR6100 Zone 2 Power And Source'
   description: Retry power on, then set source to Main Zone Audio with waits and verification.
   mode: restart
   sequence:
@@ -2360,7 +2388,7 @@ audio_nr6100_zone_2_ensure_power_and_source:
           - stop: NR6100 Zone 2 power and source confirmed
       - delay: 00:00:02
 audio_denon_office_hallway_2_ensure_power_and_source:
-  alias: 'Audio: Denon Office Hallway 2 Ensure Power And Source'
+  alias: 'Audio: Ensure Denon Office and Hallway Power And Source'
   description: Retry power on, then set source to Livingroom with waits and verification.
   mode: restart
   sequence:
@@ -2407,90 +2435,6 @@ audio_denon_office_hallway_2_ensure_power_and_source:
               and state_attr(''media_player.denon_office_hallway_2'',''source'') ==
               ''Livingroom'' }}'
           sequence:
-audio_rz50_main_power_off:
-  alias: 'Audio: RZ50 Main Power Off'
-  description: Retry power off with waits and verification.
-  mode: restart
-  sequence:
-  - repeat:
-      count: 4
-      sequence:
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ is_state(''media_player.tx_rz50'',''on'') }}'
-          sequence:
-          - target:
-              entity_id: media_player.tx_rz50
-            action: media_player.turn_off
-            data: {}
-          - wait_template: '{{ not is_state(''media_player.tx_rz50'',''on'') }}'
-            timeout: 00:00:05
-            continue_on_timeout: true
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ not is_state(''media_player.tx_rz50'',''on'') }}'
-          sequence:
-          - stop: RZ50 is off
-      - delay: 00:00:02
-audio_rz50_zone_2_power_off:
-  alias: 'Audio: RZ50 Zone 2 Power Off'
-  description: Retry power off with waits and verification.
-  mode: restart
-  sequence:
-  - repeat:
-      count: 4
-      sequence:
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ is_state(''media_player.tx_rz50_zone_2'',''on'') }}'
-          sequence:
-          - target:
-              entity_id: media_player.tx_rz50_zone_2
-            action: media_player.turn_off
-          - wait_template: '{{ not is_state(''media_player.tx_rz50_zone_2'',''on'')
-              }}'
-            timeout: 00:00:05
-            continue_on_timeout: true
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ not is_state(''media_player.tx_rz50_zone_2'',''on'')
-              }}'
-          sequence:
-          - stop: RZ50 Zone 2 is off
-      - delay: 00:00:02
-audio_rz50_zone_3_power_off:
-  alias: 'Audio: RZ50 Zone 3 Power Off'
-  description: Retry power off with waits and verification.
-  mode: restart
-  sequence:
-  - repeat:
-      count: 4
-      sequence:
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ is_state(''media_player.tx_rz50_zone_3'',''on'') }}'
-          sequence:
-          - target:
-              entity_id: media_player.tx_rz50_zone_3
-            action: media_player.turn_off
-            data: {}
-          - wait_template: '{{ not is_state(''media_player.tx_rz50_zone_3'',''on'')
-              }}'
-            timeout: 00:00:05
-            continue_on_timeout: true
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ not is_state(''media_player.tx_rz50_zone_3'',''on'')
-              }}'
-          sequence:
-          - stop: RZ50 Zone 3 is off
-      - delay: 00:00:02
 audio_denon_office_hallway_power_off:
   alias: 'Audio: Denon Office Hallway Power Off'
   description: Retry power off with waits and verification.
@@ -2520,119 +2464,6 @@ audio_denon_office_hallway_power_off:
               }}'
           sequence:
           - stop: Denon Office Hallway is off
-      - delay: 00:00:02
-audio_denon_office_hallway_2_power_off:
-  alias: 'Audio: Denon Office Hallway 2 Power Off'
-  description: Retry power off with waits and verification.
-  mode: restart
-  sequence:
-  - repeat:
-      count: 4
-      sequence:
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ is_state(''media_player.denon_office_hallway_2'',''on'')
-              }}'
-          sequence:
-          - target:
-              entity_id: media_player.denon_office_hallway_2
-            action: media_player.turn_off
-          - wait_template: '{{ not is_state(''media_player.denon_office_hallway_2'',''on'')
-              }}'
-            timeout: 00:00:05
-            continue_on_timeout: true
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ not is_state(''media_player.denon_office_hallway_2'',''on'')
-              }}'
-          sequence:
-          - stop: Denon Office Hallway 2 is off
-      - delay: 00:00:02
-audio_nr6100_power_off:
-  alias: 'Audio: NR6100 Power Off'
-  description: Retry power off with waits and verification.
-  mode: restart
-  sequence:
-  - repeat:
-      count: 4
-      sequence:
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ is_state(''media_player.tx_nr6100'',''on'') }}'
-          sequence:
-          - target:
-              entity_id: media_player.tx_nr6100
-            action: media_player.turn_off
-          - wait_template: '{{ not is_state(''media_player.tx_nr6100'',''on'') }}'
-            timeout: 00:00:05
-            continue_on_timeout: true
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ not is_state(''media_player.tx_nr6100'',''on'') }}'
-          sequence:
-          - stop: NR6100 is off
-      - delay: 00:00:02
-audio_nr6100_zone_2_power_off:
-  alias: 'Audio: NR6100 Zone 2 Power Off'
-  description: Retry power off with waits and verification.
-  mode: restart
-  sequence:
-  - repeat:
-      count: 4
-      sequence:
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ is_state(''media_player.tx_nr6100_zone_2'',''on'')
-              }}'
-          sequence:
-          - target:
-              entity_id: media_player.tx_nr6100_zone_2
-            action: media_player.turn_off
-          - wait_template: '{{ not is_state(''media_player.tx_nr6100_zone_2'',''on'')
-              }}'
-            timeout: 00:00:05
-            continue_on_timeout: true
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ not is_state(''media_player.tx_nr6100_zone_2'',''on'')
-              }}'
-          sequence:
-          - stop: NR6100 Zone 2 is off
-      - delay: 00:00:02
-livingroom_tv_ensure_power:
-  alias: 'Livingroom: TV Ensure Power'
-  description: Retry power on with waits and verification. Does not change source.
-  mode: restart
-  sequence:
-  - repeat:
-      count: 4
-      sequence:
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ states(''media_player.livingroom_tv'') in [''off'',''standby'',''unavailable'',''unknown'']
-              }}'
-          sequence:
-          - target:
-              entity_id: media_player.livingroom_tv
-            action: media_player.turn_on
-          - wait_template: '{{ states(''media_player.livingroom_tv'') not in [''off'',''standby'',''unavailable'',''unknown'']
-              }}'
-            timeout: 00:00:05
-            continue_on_timeout: true
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ states(''media_player.livingroom_tv'') not in [''off'',''standby'',''unavailable'',''unknown'']
-              }}'
-          sequence:
-          - stop: Livingroom TV is on
       - delay: 00:00:02
 livingroom_tv_power_off:
   alias: 'Livingroom: TV Power Off'
@@ -2763,89 +2594,6 @@ livingroom_fire_tv_ensure_power_2:
           sequence:
           - stop: Fire TV is on
       - delay: 00:00:02
-livingroom_fire_tv_power_off_2:
-  alias: 'Livingroom: Fire TV Power Off'
-  description: Turn off Fire TV with retry. Uses ADB SLEEP as fallback.
-  mode: restart
-  sequence:
-  - repeat:
-      count: 4
-      sequence:
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ states(''media_player.livingroom_fire_tv'') not in
-              [''off'',''standby'',''unavailable'',''unknown''] }}
-
-              '
-          sequence:
-          - target:
-              entity_id: media_player.livingroom_fire_tv
-            action: media_player.turn_off
-          - delay: 00:00:02
-          - target:
-              entity_id: media_player.livingroom_fire_tv
-            data:
-              command: SLEEP
-            action: androidtv.adb_command
-          - delay: 00:00:02
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ states(''media_player.livingroom_fire_tv'') in [''off'',''standby'',''unavailable'',''unknown'']
-              }}
-
-              '
-          sequence:
-          - stop: Fire TV is off
-      - delay: 00:00:02
-audio_rz50_main_ensure_power_and_source_2:
-  alias: 'Audio: RZ50 Main Ensure Power And Source'
-  description: Retry power on, then set source to Multiroom - Firestick with waits
-    and verification.
-  mode: restart
-  sequence:
-  - repeat:
-      count: 4
-      sequence:
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ not is_state(''media_player.tx_rz50'',''on'') }}'
-          sequence:
-          - target:
-              entity_id: media_player.tx_rz50
-            action: media_player.turn_on
-          - wait_template: '{{ is_state(''media_player.tx_rz50'',''on'') }}'
-            timeout: 00:00:05
-            continue_on_timeout: true
-          - delay: 00:00:04
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ ''Multiroom - Firestick'' in state_attr(''media_player.tx_rz50'',''source_list'')
-              | default([]) }}'
-          - condition: template
-            value_template: '{{ state_attr(''media_player.tx_rz50'',''source'') !=
-              ''Multiroom - Firestick'' }}'
-          sequence:
-          - target:
-              entity_id: media_player.tx_rz50
-            data:
-              source: Multiroom - Firestick
-            action: media_player.select_source
-          - wait_template: '{{ state_attr(''media_player.tx_rz50'',''source'') ==
-              ''Multiroom - Firestick'' }}'
-            timeout: 00:00:05
-            continue_on_timeout: true
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ is_state(''media_player.tx_rz50'',''on'') and state_attr(''media_player.tx_rz50'',''source'')
-              == ''Multiroom - Firestick'' }}'
-          sequence:
-          - stop: RZ50 power and source confirmed
-      - delay: 00:00:02
 audio_all_speakers_on:
   alias: 'Audio: All Speakers ON (Full Parallel)'
   description: Turn on all receivers and set multiroom sources in parallel.
@@ -2884,7 +2632,7 @@ audio_all_speakers_on:
         data: {}
         target:
           entity_id: media_player.livingroom_tv
-'1755179931505':
+audio_all_speakers_off:
   alias: 'Audio: All Speakers OFF (Full Parallel)'
   description: Turn off all receivers in parallel.
   mode: restart
@@ -3105,3 +2853,350 @@ bedroom_primary_nightstand_red_flicker_restore:
         target:
           entity_id: light.bedroom_primary_nightstand_lamp
   - delay: '00:00:00.30'
+audio_ensure_power_source_generic:
+  alias: 'Audio: Ensure Power & Source (Generic)'
+  mode: parallel
+  icon: mdi:check-decagram
+  fields:
+    entity_id:
+      name: Media Player
+      description: The media_player to ensure.
+      required: true
+      selector:
+        entity:
+          domain: media_player
+    expected_source:
+      name: Expected Source
+      description: Exact source text as shown in the entity's source attribute.
+      required: true
+      selector:
+        text:
+    retries:
+      name: Retries
+      description: How many times to try (power, wait, set source, verify).
+      default: 4
+      selector:
+        number:
+          min: 1
+          max: 6
+          step: 1
+    wait_timeout:
+      name: Power Wait Timeout (sec)
+      default: 25
+      selector:
+        number:
+          min: 5
+          max: 60
+          step: 1
+    settle_delay:
+      name: Settle Delay After Source Set (sec)
+      default: 2
+      selector:
+        number:
+          min: 0
+          max: 10
+          step: 1
+  sequence:
+  - variables:
+      ent: '{{ entity_id }}'
+      need_source: '{{ expected_source }}'
+      tries: '{{ retries | int(4) }}'
+      timeout: '{{ wait_timeout | int(25) }}'
+      settle: '{{ settle_delay | int(2) }}'
+  - repeat:
+      count: '{{ tries }}'
+      sequence:
+      - target:
+          entity_id: '{{ ent }}'
+        action: media_player.turn_on
+      - wait_template: '{{ is_state(ent, ''on'') }}'
+        timeout: 00:00:{{ timeout }}
+        continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ need_source | length > 0 }}'
+          sequence:
+          - target:
+              entity_id: '{{ ent }}'
+            data:
+              source: '{{ need_source }}'
+            action: media_player.select_source
+          - delay: 00:00:{{ settle }}
+        default: []
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{% set ok_on = is_state(ent, 'on') %} {% if need_source
+              | length > 0 %}\n  {{ ok_on and (state_attr(ent, 'source') == need_source)
+              }}\n{% else %}\n  {{ ok_on }}\n{% endif %}\n"
+          sequence:
+          - stop: 'OK: {{ ent }} ready with source ''{{ need_source }}'''
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ repeat.index < tries }}'
+          sequence:
+          - delay:
+              seconds: '{{ [2, repeat.index] | max }}'
+  - data:
+      title: Audio ensure failed
+      message: '{{ ent }} did not reach the expected state/source after {{ tries }}
+        attempt(s). Current: state=''{{ states(ent) }}'' source=''{{ state_attr(ent,
+        ''source'') }}''.
+
+        '
+      notification_id: audio_ensure_{{ ent | replace('.', '_') }}
+    action: persistent_notification.create
+  description: ''
+audio_ensure_rz50_main:
+  alias: 'Audio: Ensure RZ50 Main'
+  mode: single
+  sequence:
+  - data:
+      entity_id: media_player.tx_rz50
+      expected_source: Multiroom - Firestick
+      retries: 4
+      wait_timeout: 25
+      settle_delay: 2
+    action: script.audio_ensure_power_source_generic
+  description: ''
+audio_ensure_rz50_zone_2:
+  alias: 'Audio: Ensure RZ50 Zone 2'
+  mode: single
+  sequence:
+  - data:
+      entity_id: media_player.tx_rz50_zone_2
+      expected_source: Main Zone Audio
+      retries: 4
+      wait_timeout: 25
+      settle_delay: 2
+    action: script.audio_ensure_power_source_generic
+  description: ''
+audio_ensure_rz50_zone_3:
+  alias: 'Audio: Ensure RZ50 Zone 3'
+  mode: single
+  sequence:
+  - data:
+      entity_id: media_player.tx_rz50_zone_3
+      expected_source: Main Zone Audio
+      retries: 4
+      wait_timeout: 25
+      settle_delay: 2
+    action: script.audio_ensure_power_source_generic
+  description: ''
+audio_ensure_nr6100_main:
+  alias: 'Audio: Ensure NR6100 Main'
+  mode: single
+  sequence:
+  - data:
+      entity_id: media_player.tx_nr6100
+      expected_source: Multiroom - Firestick
+      retries: 4
+      wait_timeout: 25
+      settle_delay: 2
+    action: script.audio_ensure_power_source_generic
+  description: ''
+audio_ensure_nr6100_zone_2:
+  alias: 'Audio: Ensure NR6100 Zone 2'
+  mode: single
+  sequence:
+  - data:
+      entity_id: media_player.tx_nr6100_zone_2
+      expected_source: Main Zone Audio
+      retries: 4
+      wait_timeout: 25
+      settle_delay: 2
+    action: script.audio_ensure_power_source_generic
+  description: ''
+audio_ensure_denon_guest_office:
+  alias: 'Audio: Ensure Denon Guest + Office'
+  mode: single
+  sequence:
+  - data:
+      entity_id: media_player.denon_office_hallway_2
+      expected_source: Livingroom
+      retries: 4
+      wait_timeout: 25
+      settle_delay: 2
+    action: script.audio_ensure_power_source_generic
+  description: ''
+audio_ensure_denon_hallway_guest_bath:
+  alias: 'Audio: Ensure Denon Hallway+Guest Bath'
+  mode: single
+  sequence:
+  - data:
+      entity_id: media_player.denon_office_hallway
+      expected_source: Livingroom
+      retries: 4
+      wait_timeout: 25
+      settle_delay: 2
+    action: script.audio_ensure_power_source_generic
+  description: ''
+audio_reset_audio_baseline:
+  alias: 'Audio: Reset Audio Baseline'
+  description: Power + source-heal all zones, then set each to its Start volume respecting
+    caps.
+  icon: mdi:backup-restore
+  mode: single
+  sequence:
+  - action: script.audio_rz50_main_ensure_power_and_source
+  - action: script.audio_rz50_zone_2_ensure_power_and_source
+  - action: script.audio_rz50_zone_3_ensure_power_and_source
+  - action: script.audio_nr6100_main_ensure_power_and_source
+  - action: script.audio_nr6100_zone_2_ensure_power_and_source
+  - action: script.audio_denon_guest_office_ensure_power_and_source
+  - action: script.audio_denon_hallway_guest_ensure_power_and_source
+  - data:
+      target_mode: start
+      respect_caps: true
+    action: script.audio_batch_volume_engine
+bedroom_primary_tv_power_off_duplicate:
+  sequence:
+  - repeat:
+      count: 4
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ states(''media_player.bedroom_primary_tv'') not in
+              [''off'',''standby'',''unavailable'',''unknown''] }}'
+          sequence:
+          - action: media_player.turn_off
+            data: {}
+            target:
+              entity_id: media_player.bedroom_primary_tv
+          - wait_template: '{{ states(''media_player.bedroom_primary_tv'') in [''off'',''standby'',''unavailable'',''unknown'']
+              }}'
+            timeout: 00:00:05
+            continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ states(''media_player.bedroom_primary_tv'') in [''off'',''standby'',''unavailable'',''unknown'']
+              }}'
+          sequence:
+          - stop: Bedroom Primary TV is off
+      - delay: 00:00:02
+  alias: 'Bedroom Primary: TV Power Off'
+  description: Retry power off with waits and verification.
+  mode: restart
+audio_batch_volume_engine:
+  alias: 'Audio: Batch Volume Engine'
+  mode: queued
+  icon: mdi:volume-source
+  fields:
+    target_mode:
+      name: Target Mode
+      description: Choose Min/Start/Max (falls back to Start unless a percent is provided)
+      selector:
+        select:
+          options:
+          - min
+          - start
+          - max
+      default: ''
+    percent:
+      name: Percent (0–100)
+      description: Optional explicit volume; clamped to Min/Max
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 1
+    players:
+      name: Players (optional)
+      description: 'Limit to these players; empty = all controllable (excludes passthrough
+        Zone 3)
+
+        '
+      selector:
+        entity:
+          domain: media_player
+          multiple: true
+    respect_caps:
+      name: Respect Min/Max caps
+      selector:
+        boolean: {}
+      default: true
+  variables:
+    vol_profile:
+      media_player.denon_office_hallway_2:
+        min: 47
+        start: 58
+        max: 73
+      media_player.denon_office_hallway:
+        min: 48
+        start: 59
+        max: 74
+      media_player.tx_nr6100:
+        min: 56
+        start: 60
+        max: 70
+      media_player.tx_nr6100_zone_2:
+        min: 56
+        start: 60
+        max: 70
+      media_player.tx_rz50:
+        min: 54
+        start: 60
+        max: 76
+      media_player.tx_rz50_zone_2:
+        min: 52
+        start: 60
+        max: 70
+    zone3_entity: media_player.tx_rz50_zone_3
+    controllable_players:
+    - media_player.denon_office_hallway_2
+    - media_player.denon_office_hallway
+    - media_player.tx_nr6100
+    - media_player.tx_nr6100_zone_2
+    - media_player.tx_rz50
+    - media_player.tx_rz50_zone_2
+    chosen_players: '{% set sel = players | default([]) %} {{ sel if sel | length
+      > 0 else controllable_players }}
+
+      '
+    use_percent: '{{ percent is defined and percent is not none }}'
+    chosen_mode: '{{ (target_mode|lower) if target_mode is string else '''' }}'
+    default_profile:
+      min: 0
+      start: 50
+      max: 100
+    tolerance: 0.01
+  sequence:
+  - repeat:
+      for_each: '{{ chosen_players }}'
+      sequence:
+      - variables:
+          ent: '{{ repeat.item }}'
+          prof: '{{ vol_profile.get(ent, default_profile) }}'
+          minp: '{{ prof.min | float(0) }}'
+          startp: '{{ prof.start | float(50) }}'
+          maxp: '{{ prof.max | float(100) }}'
+          desired_raw: "{% if chosen_mode in ['min','start','max'] %}\n  {{ prof[chosen_mode]
+            }}\n{% elif use_percent %}\n  {{ percent }}\n{% else %}\n  {{ startp }}\n{%
+            endif %}\n"
+          desired_clamped: "{% if respect_caps %}\n  {{ [maxp, [minp, desired_raw|float(0)]|max]|min
+            }}\n{% else %}\n  {{ desired_raw|float(0) }}\n{% endif %}\n"
+          vol_level: '{{ (desired_clamped | float(0)) / 100 }}'
+          current_level: '{{ state_attr(ent, ''volume_level'') | float(0) }}'
+          should_set: '{{ (vol_level - current_level) | abs > tolerance }}'
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ ent == zone3_entity }}'
+          sequence: []
+        - conditions:
+          - condition: template
+            value_template: '{{ states(ent) not in [''off'',''unavailable'',''unknown'']
+              }}'
+          - condition: template
+            value_template: '{{ should_set }}'
+          sequence:
+          - action: media_player.volume_set
+            target:
+              entity_id: '{{ ent }}'
+            data:
+              volume_level: '{{ vol_level }}'
+        default: []

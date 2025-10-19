@@ -1,0 +1,28 @@
+- binary_sensor:
+    - name: speakers_all_on
+      unique_id: speakers_all_on
+      state: >
+        {% set ids = [
+          'media_player.tx_rz50',
+          'media_player.tx_rz50_zone_2',
+          'media_player.tx_rz50_zone_3',
+          'media_player.denon_office_hallway',
+          'media_player.denon_office_hallway_2',
+          'media_player.tx_nr6100',
+          'media_player.tx_nr6100_zone_2'
+        ] %}
+        {% set g = expand(ids) %}
+        {{ (g | selectattr('state','eq','on') | list | length) == (g | list | length) }}
+
+    - name: speakers_any_on
+      unique_id: speakers_any_on
+      state: >
+        {{ expand([
+          'media_player.tx_rz50',
+          'media_player.tx_rz50_zone_2',
+          'media_player.tx_rz50_zone_3',
+          'media_player.denon_office_hallway',
+          'media_player.denon_office_hallway_2',
+          'media_player.tx_nr6100',
+          'media_player.tx_nr6100_zone_2'
+        ]) | selectattr('state','eq','on') | list | length > 0 }}
