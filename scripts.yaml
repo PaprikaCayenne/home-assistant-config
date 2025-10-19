@@ -2085,7 +2085,7 @@ audio_rz50_zone_3_ensure_power_and_source:
           - stop: RZ50 Zone 3 power, source, and volume confirmed
       - delay: 00:00:02
 audio_denon_office_hallway_ensure_power_and_source:
-  alias: 'Audio: Ensure Denon Office Hallway Power And Source'
+  alias: 'Audio: Denon Bedroom Guest + Office Power Off'
   description: Retry power on, then set source to Livingroom with waits and verification.
   mode: restart
   sequence:
@@ -2230,7 +2230,7 @@ audio_nr6100_zone_2_ensure_power_and_source:
           - stop: NR6100 Zone 2 power and source confirmed
       - delay: 00:00:02
 audio_denon_office_hallway_2_ensure_power_and_source:
-  alias: 'Audio: Ensure Denon Office and Hallway Power And Source'
+  alias: 'Audio: Denon Hallway + Bath Guest Power Off'
   description: Retry power on, then set source to Livingroom with waits and verification.
   mode: restart
   sequence:
@@ -2787,7 +2787,7 @@ audio_ensure_nr6100_zone_2:
     action: script.audio_ensure_power_source_generic
   description: ''
 audio_ensure_denon_guest_office:
-  alias: 'Audio: Ensure Denon Guest + Office'
+  alias: 'Audio: Ensure Denon Bedrrom Guest + Office'
   mode: single
   sequence:
   - data:
@@ -2799,7 +2799,7 @@ audio_ensure_denon_guest_office:
     action: script.audio_ensure_power_source_generic
   description: ''
 audio_ensure_denon_hallway_guest_bath:
-  alias: 'Audio: Ensure Denon Hallway and Guest Bath'
+  alias: 'Audio: Ensure Denon Hallway + Bath Guest'
   mode: single
   sequence:
   - data:
