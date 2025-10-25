@@ -2082,7 +2082,7 @@ audio_rz50_zone_3_ensure_power_and_source:
           - stop: RZ50 Zone 3 power, source, and volume confirmed
       - delay: 00:00:02
 audio_denon_office_hallway_ensure_power_and_source:
-  alias: 'Audio: Denon Bedroom Guest + Office Power Off'
+  alias: 'Audio: Ensure Denon Office + Hallway Power & Source'
   description: Retry power on, then set source to Livingroom with waits and verification.
   mode: restart
   sequence:
@@ -2227,7 +2227,7 @@ audio_nr6100_zone_2_ensure_power_and_source:
           - stop: NR6100 Zone 2 power and source confirmed
       - delay: 00:00:02
 audio_denon_office_hallway_2_ensure_power_and_source:
-  alias: 'Audio: Denon Hallway + Bath Guest Power Off'
+  alias: 'Audio: Ensure Denon Hallway + Guest Bath Power & Source'
   description: Retry power on, then set source to Livingroom with waits and verification.
   mode: restart
   sequence:
