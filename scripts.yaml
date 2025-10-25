@@ -303,7 +303,7 @@ global_enable_motion_automation:
       - input_boolean.bedroom_primary_motion_enabled
       - input_boolean.hallway_motion_enabled
       - input_boolean.bathroom_guest_motion_enabled
-      - input_booleqn.bathroom_primary_motion_enabled
+      - input_boolean.bathroom_primary_motion_enabled
       - input_boolean.stairs_motion_enabled
     action: input_boolean.turn_on
     data: {}
@@ -2825,7 +2825,7 @@ audio_reset_audio_baseline:
       target_mode: start
       respect_caps: true
     action: script.audio_batch_volume_engine
-bedroom_primary_tv_power_off_duplicate:
+bedroom_primary_tv_power_off:
   sequence:
   - repeat:
       count: 4
@@ -3116,8 +3116,8 @@ audio_nr6100_zone_2_power_off:
           - stop: NR6100 zone 2 is off
       - delay: 00:00:02
 audio_denon_office_and_guest_bedroom_power_off:
-  alias: 'Audio: Ensure Denon Office + Bedroom Guest Power & Source'
-  description: Retry power on, then set source to Livingroom with waits and verification.
+  alias: 'Audio: Denon Bedroom Guest + Office Power Off'
+  description: Retry power off with waits and verification.
   mode: restart
   sequence:
   - repeat:
@@ -3125,47 +3125,26 @@ audio_denon_office_and_guest_bedroom_power_off:
       sequence:
       - choose:
         - conditions:
-          - condition: template
-            value_template: '{{ not is_state(''media_player.denon_office_hallway_2'',''on'')
-              }}'
+          - condition: state
+            entity_id: media_player.denon_office_hallway_2
+            state: 'on'
           sequence:
-          - action: media_player.turn_on
+          - action: media_player.turn_off
             target:
               entity_id: media_player.denon_office_hallway_2
-          - wait_template: '{{ is_state(''media_player.denon_office_hallway_2'',''on'')
+          - wait_template: '{{ is_state(''media_player.denon_office_hallway_2'',''off'')
               }}'
             timeout: 00:00:05
             continue_on_timeout: true
-          - delay: 00:00:03
+        default: []
       - choose:
         - conditions:
           - condition: state
             entity_id: media_player.denon_office_hallway_2
-            state: 'on'
-          - condition: template
-            value_template: '{{ ''Livingroom'' in (state_attr(''media_player.denon_office_hallway_2'',''source_list'')
-              | default([])) }}'
-          - condition: template
-            value_template: '{{ state_attr(''media_player.denon_office_hallway_2'',''source'')
-              != ''Livingroom'' }}'
+            state: 'off'
           sequence:
-          - action: media_player.select_source
-            target:
-              entity_id: media_player.denon_office_hallway_2
-            data:
-              source: Livingroom
-          - wait_template: '{{ state_attr(''media_player.denon_office_hallway_2'',''source'')
-              == ''Livingroom'' }}'
-            timeout: 00:00:05
-            continue_on_timeout: true
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: "{{ is_state('media_player.denon_office_hallway_2','on')\n
-              \  and state_attr('media_player.denon_office_hallway_2','source') ==
-              'Livingroom' }}"
-          sequence:
-          - stop: Denon Office Hallway 2 power and source confirmed
+          - stop: Denon Bedroom Guest + Office is off
+        default: []
       - delay: 00:00:02
 audio_nr6100_power_off:
   alias: 'Audio: NR6100 Power Off'
