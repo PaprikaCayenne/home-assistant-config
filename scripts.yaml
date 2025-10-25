@@ -2081,55 +2081,6 @@ audio_rz50_zone_3_ensure_power_and_source:
           sequence:
           - stop: RZ50 Zone 3 power, source, and volume confirmed
       - delay: 00:00:02
-audio_denon_office_hallway_ensure_power_and_source:
-  alias: 'Audio: Ensure Denon Office + Hallway Power & Source'
-  description: Retry power on, then set source to Livingroom with waits and verification.
-  mode: restart
-  sequence:
-  - repeat:
-      count: 4
-      sequence:
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ not is_state(''media_player.denon_office_hallway'',''on'')
-              }}'
-          sequence:
-          - target:
-              entity_id: media_player.denon_office_hallway
-            action: media_player.turn_on
-          - wait_template: '{{ is_state(''media_player.denon_office_hallway'',''on'')
-              }}'
-            timeout: 00:00:05
-            continue_on_timeout: true
-          - delay: 00:00:03
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ ''Livingroom'' in state_attr(''media_player.denon_office_hallway'',''source_list'')
-              | default([]) }}'
-          - condition: template
-            value_template: '{{ state_attr(''media_player.denon_office_hallway'',''source'')
-              != ''Livingroom'' }}'
-          sequence:
-          - target:
-              entity_id: media_player.denon_office_hallway
-            data:
-              source: Livingroom
-            action: media_player.select_source
-          - wait_template: '{{ state_attr(''media_player.denon_office_hallway'',''source'')
-              == ''Livingroom'' }}'
-            timeout: 00:00:05
-            continue_on_timeout: true
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ is_state(''media_player.denon_office_hallway'',''on'')
-              and state_attr(''media_player.denon_office_hallway'',''source'') ==
-              ''Livingroom'' }}'
-          sequence:
-          - stop: Denon Office Hallway power and source confirmed
-      - delay: 00:00:02
 audio_nr6100_main_ensure_power_and_source:
   alias: 'Audio: Ensure NR6100 Main Power And Source'
   description: Retry power on, then set source to Multiroom - Firestick with waits
@@ -2226,54 +2177,6 @@ audio_nr6100_zone_2_ensure_power_and_source:
           sequence:
           - stop: NR6100 Zone 2 power and source confirmed
       - delay: 00:00:02
-audio_denon_office_hallway_2_ensure_power_and_source:
-  alias: 'Audio: Ensure Denon Hallway + Guest Bath Power & Source'
-  description: Retry power on, then set source to Livingroom with waits and verification.
-  mode: restart
-  sequence:
-  - repeat:
-      count: 4
-      sequence:
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ not is_state(''media_player.denon_office_hallway_2'',''on'')
-              }}'
-          sequence:
-          - target:
-              entity_id: media_player.denon_office_hallway_2
-            action: media_player.turn_on
-            data: {}
-          - wait_template: '{{ is_state(''media_player.denon_office_hallway_2'',''on'')
-              }}'
-            timeout: 00:00:05
-            continue_on_timeout: true
-          - delay: 00:00:03
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ ''Livingroom'' in state_attr(''media_player.denon_office_hallway_2'',''source_list'')
-              | default([]) }}'
-          - condition: template
-            value_template: '{{ state_attr(''media_player.denon_office_hallway_2'',''source'')
-              != ''Livingroom'' }}'
-          sequence:
-          - target:
-              entity_id: media_player.denon_office_hallway_2
-            data:
-              source: Livingroom
-            action: media_player.select_source
-          - wait_template: '{{ state_attr(''media_player.denon_office_hallway_2'',''source'')
-              == ''Livingroom'' }}'
-            timeout: 00:00:05
-            continue_on_timeout: true
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ is_state(''media_player.denon_office_hallway_2'',''on'')
-              and state_attr(''media_player.denon_office_hallway_2'',''source'') ==
-              ''Livingroom'' }}'
-          sequence:
 audio_denon_office_hallway_power_off:
   alias: 'Audio: Denon Hallway and Bathroom Guest Power Off'
   description: Retry power off with waits and verification.
@@ -2393,7 +2296,6 @@ livingroom_fire_tv_power_off:
       - delay: 00:00:02
 audio_all_speakers_on:
   alias: 'Audio: All Speakers ON (Full Parallel)'
-  description: Turn on all receivers and set multiroom sources in parallel.
   mode: restart
   sequence:
   - parallel:
@@ -2404,9 +2306,9 @@ audio_all_speakers_on:
     - sequence:
       - action: script.audio_rz50_zone_3_ensure_power_and_source
     - sequence:
-      - action: script.audio_ensure_denon_guest_office
+      - action: script.audio_denon_office_hallway_ensure_power_and_source
     - sequence:
-      - action: script.audio_ensure_denon_hallway_guest_bath
+      - action: script.audio_denon_office_hallway_2_ensure_power_and_source
     - sequence:
       - action: script.audio_nr6100_main_ensure_power_and_source
     - sequence:
@@ -2753,30 +2655,6 @@ audio_ensure_rz50_zone_3:
   sequence:
   - data:
       entity_id: media_player.tx_rz50_zone_3
-      expected_source: Main Zone Audio
-      retries: 4
-      wait_timeout: 25
-      settle_delay: 2
-    action: script.audio_ensure_power_source_generic
-  description: ''
-audio_ensure_nr6100_main:
-  alias: 'Audio: Ensure NR6100 Main'
-  mode: single
-  sequence:
-  - data:
-      entity_id: media_player.tx_nr6100
-      expected_source: Multiroom - Firestick
-      retries: 4
-      wait_timeout: 25
-      settle_delay: 2
-    action: script.audio_ensure_power_source_generic
-  description: ''
-audio_ensure_nr6100_zone_2:
-  alias: 'Audio: Ensure NR6100 Zone 2'
-  mode: single
-  sequence:
-  - data:
-      entity_id: media_player.tx_nr6100_zone_2
       expected_source: Main Zone Audio
       retries: 4
       wait_timeout: 25
