@@ -2383,3 +2383,133 @@
       - media_player.tx_rz50_zone_2
     action: script.audio_batch_volume_engine
   mode: restart
+- id: audio_baseline_heal_on_start
+  alias: 'Audio: Baseline Heal on HA Start'
+  description: ''
+  triggers:
+  - event: start
+    trigger: homeassistant
+  conditions:
+  - condition: time
+    after: 07:00:00
+    before: '23:00:00'
+  actions:
+  - action: script.audio_reset_audio_baseline
+  mode: single
+- id: audio_baseline_heal_on_start
+  alias: 'Audio: Baseline Heal on HA Start'
+  description: Run baseline heal after HA boots (7–23h).
+  triggers:
+  - event: start
+    trigger: homeassistant
+  conditions:
+  - condition: time
+    after: 07:00:00
+    before: '23:00:00'
+  actions:
+  - action: script.audio_reset_audio_baseline
+  mode: single
+- id: audio_baseline_heal_on_start
+  alias: 'Audio: Baseline Heal on HA Start'
+  triggers:
+  - event: start
+    trigger: homeassistant
+  actions:
+  - target:
+      entity_id: script.audio_reset_audio_baseline
+    action: script.turn_on
+  mode: single
+- id: '1761420807946'
+  alias: 'Audio: Heal Zone When It Turns On'
+  description: ''
+  triggers:
+  - entity_id:
+    - media_player.tx_rz50
+    - media_player.tx_rz50_zone_2
+    - media_player.tx_rz50_zone_3
+    - media_player.tx_nr6100
+    - media_player.tx_nr6100_zone_2
+    - media_player.denon_office_hallway
+    - media_player.denon_office_hallway_2
+    to: 'on'
+    trigger: state
+  actions:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.entity_id == ''media_player.tx_rz50'' }}'
+      sequence:
+      - action: script.audio_rz50_main_ensure_power_and_source
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.entity_id == ''media_player.tx_rz50_zone_2'' }}'
+      sequence:
+      - action: script.audio_rz50_zone_2_ensure_power_and_source
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.entity_id == ''media_player.tx_rz50_zone_3'' }}'
+      sequence:
+      - action: script.audio_rz50_zone_3_ensure_power_and_source
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.entity_id == ''media_player.tx_nr6100'' }}'
+      sequence:
+      - action: script.audio_nr6100_main_ensure_power_and_source
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.entity_id == ''media_player.tx_nr6100_zone_2''
+          }}'
+      sequence:
+      - action: script.audio_nr6100_zone_2_ensure_power_and_source
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.entity_id == ''media_player.denon_office_hallway''
+          }}'
+      sequence:
+      - action: script.audio_ensure_denon_hallway_guest_bath
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.entity_id == ''media_player.denon_office_hallway_2''
+          }}'
+      sequence:
+      - action: script.audio_ensure_denon_guest_office
+  mode: parallel
+  max: 10
+- id: '1761421022639'
+  alias: 'Audio: Watchdog – Verify Multiroom (every 10 min)'
+  description: ''
+  triggers:
+  - minutes: /10
+    trigger: time_pattern
+  conditions:
+  - condition: state
+    entity_id: input_boolean.movie
+    state: 'off'
+  - condition: time
+    after: 07:00:00
+    before: '23:00:00'
+  actions:
+  - target:
+      entity_id: script.audio_verify_multiroom_2
+    action: script.turn_on
+  mode: single
+- id: '1761421037298'
+  alias: 'Audio: Watchdog – Auto-Heal if Zones Active (30 min)'
+  description: ''
+  triggers:
+  - minutes: /30
+    trigger: time_pattern
+  conditions:
+  - condition: state
+    entity_id: input_boolean.movie
+    state: 'off'
+  - condition: template
+    value_template: "{{ states('media_player.tx_rz50') not in ['off','unavailable','unknown']\n
+      \  or states('media_player.tx_nr6100') not in ['off','unavailable','unknown']\n
+      \  or is_state('media_player.denon_office_hallway','on')\n   or is_state('media_player.denon_office_hallway_2','on')
+      }}\n"
+  actions:
+  - target:
+      entity_id: script.audio_reset_audio_baseline
+    action: script.turn_on
+  mode: single

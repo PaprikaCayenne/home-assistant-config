@@ -2296,6 +2296,7 @@ livingroom_fire_tv_power_off:
       - delay: 00:00:02
 audio_all_speakers_on:
   alias: 'Audio: All Speakers ON (Full Parallel)'
+  description: Turn on all receivers and set multiroom sources in parallel.
   mode: restart
   sequence:
   - parallel:
@@ -2306,9 +2307,9 @@ audio_all_speakers_on:
     - sequence:
       - action: script.audio_rz50_zone_3_ensure_power_and_source
     - sequence:
-      - action: script.audio_denon_office_hallway_ensure_power_and_source
+      - action: script.audio_ensure_denon_hallway_guest_bath
     - sequence:
-      - action: script.audio_denon_office_hallway_2_ensure_power_and_source
+      - action: script.audio_ensure_denon_guest_office
     - sequence:
       - action: script.audio_nr6100_main_ensure_power_and_source
     - sequence:
