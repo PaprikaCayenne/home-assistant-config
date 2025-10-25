@@ -303,7 +303,7 @@ global_enable_motion_automation:
       - input_boolean.bedroom_primary_motion_enabled
       - input_boolean.hallway_motion_enabled
       - input_boolean.bathroom_guest_motion_enabled
-      - input_boolean.bathroom_primary_motion_enabled
+      - input_booleqn.bathroom_primary_motion_enabled
       - input_boolean.stairs_motion_enabled
     action: input_boolean.turn_on
     data: {}
