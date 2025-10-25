@@ -2784,7 +2784,7 @@ audio_ensure_nr6100_zone_2:
     action: script.audio_ensure_power_source_generic
   description: ''
 audio_ensure_denon_guest_office:
-  alias: 'Audio: Ensure Denon Bedrrom Guest + Office'
+  alias: 'Audio: Ensure Denon Bedroom Guest + Office'
   mode: single
   sequence:
   - data:
