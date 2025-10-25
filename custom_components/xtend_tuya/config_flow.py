@@ -2,12 +2,18 @@
 
 from __future__ import annotations
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, cast
+from enum import StrEnum
 from tuya_sharing import LoginControl
 from tuya_iot import AuthType, TuyaOpenAPI
 import voluptuous as vol
 from homeassistant.core import callback
-from homeassistant.config_entries import ConfigEntry, ConfigFlow, OptionsFlow
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    OptionsFlowWithReload,
+    ConfigEntryBaseFlow,
+)
 from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.helpers import selector
 from homeassistant.helpers.typing import (
@@ -43,22 +49,41 @@ from .const import (
     TUYA_RESPONSE_PLATFORM_URL,
     XTDiscoverySource,
 )
+from .multi_manager.shared.threading import (
+    XTEventLoopProtector,
+    XTConcurrencyManager,
+)
 import custom_components.xtend_tuya.util as util
 import custom_components.xtend_tuya.multi_manager.multi_manager as mm
 import custom_components.xtend_tuya.multi_manager.shared.data_entry.shared_data_entry as data_entry
 
 
-class TuyaOptionFlow(OptionsFlow):
-    def __init__(self, config_entry: ConfigEntry) -> None:
-        """Initialize options flow."""
-        self.handler = config_entry.entry_id
-        if config_entry.options is not None:
-            self.options = config_entry.options
+class XTConfigFlows:
+
+    class XTStepResultType(StrEnum):
+        RESULT = "RESULT"
+        SHOW_FORM = "SHOW_FORM"
+
+    def __init__(
+        self, parent: ConfigEntryBaseFlow, config_entry: ConfigEntry | None = None
+    ) -> None:
+        self.config_entry = config_entry
+        if self.config_entry is not None:
+            self.options = self.config_entry.options
         else:
             self.options = {}
+        self.parent = parent
+
+    def async_create_entry(self, *args, **kwargs):
+        return self.parent.async_create_entry(*args, **kwargs)
+
+    def async_show_form(self, *args, **kwargs):
+        return self.parent.async_show_form(*args, **kwargs)
 
     @staticmethod
-    def _try_login(user_input: dict[str, Any]) -> tuple[dict[Any, Any], dict[str, Any]]:
+    def _try_login_open_api(
+        user_input: dict[str, Any],
+    ) -> tuple[dict[Any, Any], dict[str, Any]]:
         """Try login."""
         response = {}
 
@@ -112,16 +137,18 @@ class TuyaOptionFlow(OptionsFlow):
 
         return response, data
 
-    async def async_step_init(
+    async def async_step_configure(
         self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    ) -> tuple[XTConfigFlows.XTStepResultType, ConfigFlowResult | dict[str, str]]:
         """Manage the options."""
         errors = {}
         placeholders = {}
 
         if user_input is not None:
-            response, data = await self.hass.async_add_executor_job(
-                self._try_login, user_input
+            response, data = (
+                await XTEventLoopProtector.execute_out_of_event_loop_and_return(
+                    self._try_login_open_api, user_input
+                )
             )
 
             if response.get(TUYA_RESPONSE_SUCCESS, False):
@@ -132,10 +159,7 @@ class TuyaOptionFlow(OptionsFlow):
 
                 data[CONF_AUTH_TYPE] = data[CONF_AUTH_TYPE].value
 
-                return self.async_create_entry(
-                    title="",
-                    data=data,
-                )
+                return (XTConfigFlows.XTStepResultType.RESULT, data)
             errors["base"] = "login_error"
             placeholders = {
                 TUYA_RESPONSE_CODE: response.get(TUYA_RESPONSE_CODE, "0"),
@@ -161,64 +185,99 @@ class TuyaOptionFlow(OptionsFlow):
                         default_endpoint = country.endpoint
                         break
 
-        return self.async_show_form(
-            step_id="init",
-            data_schema=vol.Schema(
-                {
-                    vol.Optional(
-                        CONF_NO_OPENAPI,
-                        default=bool(
-                            user_input.get(
-                                CONF_NO_OPENAPI, self.options.get(CONF_NO_OPENAPI, "")
-                            )
+        return (
+            XTConfigFlows.XTStepResultType.SHOW_FORM,
+            self.async_show_form(
+                step_id="configure",
+                data_schema=vol.Schema(
+                    {
+                        vol.Optional(
+                            CONF_NO_OPENAPI,
+                            default=bool(
+                                user_input.get(
+                                    CONF_NO_OPENAPI,
+                                    self.options.get(CONF_NO_OPENAPI, ""),
+                                )
+                            ),
+                        ): bool,
+                        vol.Optional(
+                            CONF_COUNTRY_CODE,
+                            default=user_input.get(CONF_COUNTRY_CODE, default_country),
+                        ): vol.In(
+                            # We don't pass a dict {code:name} because country codes can be duplicate.
+                            [country.name for country in TUYA_COUNTRIES]
                         ),
-                    ): bool,
-                    vol.Optional(
-                        CONF_COUNTRY_CODE,
-                        default=user_input.get(CONF_COUNTRY_CODE, default_country),
-                    ): vol.In(
-                        # We don't pass a dict {code:name} because country codes can be duplicate.
-                        [country.name for country in TUYA_COUNTRIES]
-                    ),
-                    vol.Optional(
-                        CONF_ENDPOINT_OT,
-                        default=user_input.get(CONF_ENDPOINT_OT, default_endpoint),
-                    ): vol.In(
-                        {
-                            endpoint.value: endpoint.get_human_name(endpoint.value)
-                            for endpoint in TuyaCloudOpenAPIEndpoint
-                        }
-                    ),
-                    vol.Optional(
-                        CONF_ACCESS_ID_OT,
-                        default=user_input.get(
-                            CONF_ACCESS_ID_OT, self.options.get(CONF_ACCESS_ID_OT, "")
+                        vol.Optional(
+                            CONF_ENDPOINT_OT,
+                            default=user_input.get(CONF_ENDPOINT_OT, default_endpoint),
+                        ): vol.In(
+                            {
+                                endpoint.value: endpoint.get_human_name(endpoint.value)
+                                for endpoint in TuyaCloudOpenAPIEndpoint
+                            }
                         ),
-                    ): str,
-                    vol.Optional(
-                        CONF_ACCESS_SECRET_OT,
-                        default=user_input.get(
+                        vol.Optional(
+                            CONF_ACCESS_ID_OT,
+                            default=user_input.get(
+                                CONF_ACCESS_ID_OT,
+                                self.options.get(CONF_ACCESS_ID_OT, ""),
+                            ),
+                        ): str,
+                        vol.Optional(
                             CONF_ACCESS_SECRET_OT,
-                            self.options.get(CONF_ACCESS_SECRET_OT, ""),
-                        ),
-                    ): str,
-                    vol.Optional(
-                        CONF_USERNAME_OT,
-                        default=user_input.get(
-                            CONF_USERNAME_OT, self.options.get(CONF_USERNAME_OT, "")
-                        ),
-                    ): str,
-                    vol.Optional(
-                        CONF_PASSWORD_OT,
-                        default=user_input.get(
-                            CONF_PASSWORD_OT, self.options.get(CONF_PASSWORD_OT, "")
-                        ),
-                    ): str,
-                }
+                            default=user_input.get(
+                                CONF_ACCESS_SECRET_OT,
+                                self.options.get(CONF_ACCESS_SECRET_OT, ""),
+                            ),
+                        ): str,
+                        vol.Optional(
+                            CONF_USERNAME_OT,
+                            default=user_input.get(
+                                CONF_USERNAME_OT, self.options.get(CONF_USERNAME_OT, "")
+                            ),
+                        ): str,
+                        vol.Optional(
+                            CONF_PASSWORD_OT,
+                            default=user_input.get(
+                                CONF_PASSWORD_OT, self.options.get(CONF_PASSWORD_OT, "")
+                            ),
+                        ): str,
+                    }
+                ),
+                errors=errors,
+                description_placeholders=placeholders,
             ),
-            errors=errors,
-            description_placeholders=placeholders,
         )
+
+
+class TuyaOptionFlow(OptionsFlowWithReload):
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        """Initialize options flow."""
+        self.handler = config_entry.entry_id
+        self.xt_config_entry = config_entry
+        if config_entry.options is not None:
+            self.options = config_entry.options
+        else:
+            self.options = {}
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        result_type, data = await XTConfigFlows(
+            self, self.xt_config_entry
+        ).async_step_configure(user_input=user_input)
+        match result_type:
+            case XTConfigFlows.XTStepResultType.SHOW_FORM:
+                data = cast(ConfigFlowResult, data)
+                return data
+            case XTConfigFlows.XTStepResultType.RESULT:
+                data = cast(dict[str, str], data)
+                return self.async_create_entry(title="", data=data)
+
+    async def async_step_configure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        return await self.async_step_init(user_input=user_input)
 
 
 class TuyaConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -231,6 +290,8 @@ class TuyaConfigFlow(ConfigFlow, domain=DOMAIN):
     def __init__(self) -> None:
         """Initialize the config flow."""
         self.__login_control = LoginControl()
+        self.config_entry_data: dict[str, str] = {}
+        self.config_entry_title: str = ""
 
     def __getattr__(self, name: str):
         step_prefix: str = "async_step_"
@@ -252,23 +313,11 @@ class TuyaConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Step user."""
-        #        tuya_data = self.hass.config_entries.async_entries(DOMAIN_ORIG, False, False)
-        #        xt_tuya_data = self.hass.config_entries.async_entries(DOMAIN, True, True)
-        #        if tuya_data:
-        #            for config_entry in tuya_data:
-        #                xt_tuya_config_already_exists = False
-        #                for xt_tuya_config in xt_tuya_data:
-        #                    if xt_tuya_config.title == config_entry.title:
-        #                        xt_tuya_config_already_exists = True
-        #                        break
-        #                if not xt_tuya_config_already_exists:
-        #                    return self.async_create_entry(
-        #                        title=config_entry.title,
-        #                        data=config_entry.data,
-        #                    )
-
         errors = {}
         placeholders = {}
+
+        XTEventLoopProtector.hass = self.hass
+        XTConcurrencyManager.hass = self.hass
 
         if user_input is not None:
             success, response = await self.__async_get_qr_code(
@@ -298,6 +347,24 @@ class TuyaConfigFlow(ConfigFlow, domain=DOMAIN):
             description_placeholders=placeholders,
         )
 
+    async def async_step_configure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        result_type, data = await XTConfigFlows(
+            self, config_entry=None
+        ).async_step_configure(user_input=user_input)
+        match result_type:
+            case XTConfigFlows.XTStepResultType.SHOW_FORM:
+                data = cast(ConfigFlowResult, data)
+                return data
+            case XTConfigFlows.XTStepResultType.RESULT:
+                data = cast(dict[str, str], data)
+                return self.async_create_entry(
+                    title=self.config_entry_title,
+                    data=self.config_entry_data,
+                    options=data,
+                )
+
     async def async_step_scan(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
@@ -318,7 +385,7 @@ class TuyaConfigFlow(ConfigFlow, domain=DOMAIN):
                 ),
             )
 
-        ret, info = await self.hass.async_add_executor_job(
+        ret, info = await XTEventLoopProtector.execute_out_of_event_loop_and_return(
             self.__login_control.login_result,
             self.__qr_code,
             TUYA_CLIENT_ID,
@@ -367,10 +434,9 @@ class TuyaConfigFlow(ConfigFlow, domain=DOMAIN):
                 data=entry_data,
             )
 
-        return self.async_create_entry(
-            title=info.get("username", ""),
-            data=entry_data,
-        )
+        self.config_entry_data = entry_data
+        self.config_entry_title = info.get("username", "")
+        return await self.async_step_configure()
 
     async def async_step_reauth(self, _: Mapping[str, Any]) -> ConfigFlowResult:
         """Handle initiation of re-authentication with Tuya."""
@@ -449,7 +515,7 @@ class TuyaConfigFlow(ConfigFlow, domain=DOMAIN):
 
     async def __async_get_qr_code(self, user_code: str) -> tuple[bool, dict[str, Any]]:
         """Get the QR code."""
-        response = await self.hass.async_add_executor_job(
+        response = await XTEventLoopProtector.execute_out_of_event_loop_and_return(
             self.__login_control.qr_code,
             TUYA_CLIENT_ID,
             TUYA_SCHEMA,
