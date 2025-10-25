@@ -18,3 +18,17 @@ lutron_caseta-*.pem
 *.bak
 .shopping_list.json
 .HA_VERSION
+
+# Do not commit secrets file
+secrets.yaml
+
+# Block any dump files that captured tokens
+sh_scripts/ha_config_dump-*.txt
+sh_scripts/_old/
+
+# Extra defense for cert/key blobs (beyond your specific Lutron pem)
+*.key
+*.pem
+*.crt
+*.pfx
+*.der
