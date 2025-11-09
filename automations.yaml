@@ -1,5 +1,5 @@
 - id: '1733020601130'
-  alias: 'Pantry: Motion Detected – Turn On Lights'
+  alias: 'Pantry: Motion Detected - Turn On Lights'
   description: Turns on pantry lights when motion is detected
   triggers:
   - trigger: state
@@ -123,7 +123,7 @@
           entity_id: switch.shellyplus2pm_10061cc9d5d0_switch_1
   mode: single
 - id: '1737137813584'
-  alias: 'Pantry: Motion – Turn Off Lights'
+  alias: 'Pantry: Motion - Turn Off Lights'
   description: Turns off pantry lights 1 minute after no motion is detected.
   triggers:
   - trigger: state
@@ -177,7 +177,7 @@
     message: Derrek has arrived
   mode: single
 - id: '1739927990971'
-  alias: 'Hallway: Motion Detected – Turn On Lights'
+  alias: 'Hallway: Motion Detected - Turn On Lights'
   description: Turns on hallway lights with time-based brightness when motion is detected
     and automation is allowed
   triggers:
@@ -204,8 +204,8 @@
     data: {}
   mode: single
 - id: '1739928051409'
-  alias: 'Hallway: Motion Not Detected – Turn Off Lights'
-  description: 'Turns off hallway lights after 5–8 minutes of no motion if automation
+  alias: 'Hallway: Motion Not Detected - Turn Off Lights'
+  description: 'Turns off hallway lights after 5-8 minutes of no motion if automation
     is allowed. If manual override is active, delay shutdown by 1 hour.
 
     '
@@ -323,7 +323,7 @@
     data: {}
   mode: single
 - id: '1741813740720'
-  alias: 'Office: Motion Detected – Turn On Lights'
+  alias: 'Office: Motion Detected - Turn On Lights'
   description: Turns on office lights when motion or occupancy is detected and automation
     is allowed
   triggers:
@@ -345,7 +345,7 @@
       area_id: office
   mode: single
 - id: '1741813819294'
-  alias: 'Office: Motion Not Detected – Turn Off Lights'
+  alias: 'Office: Motion Not Detected - Turn Off Lights'
   description: Turns off office lights after inactivity if automation is allowed
   triggers:
   - trigger: state
@@ -368,7 +368,7 @@
       area_id: office
   mode: single
 - id: '1742262183606'
-  alias: 'Hallway: Pico Remote – Manual Override On'
+  alias: 'Hallway: Pico Remote - Manual Override On'
   description: Enables manual override for hallway lights and runs hallway lighting
     control
   triggers:
@@ -386,7 +386,7 @@
     data: {}
   mode: single
 - id: '1742262256554'
-  alias: 'Hallway: Pico Remote – Manual Override Off + Suppress Motion (Boolean)'
+  alias: 'Hallway: Pico Remote - Manual Override Off + Suppress Motion (Boolean)'
   description: 'Turns off manual override for hallway lights and suppresses hallway
     motion via helper boolean for 1 minute.
 
@@ -430,7 +430,7 @@
       area_id: hallway
   mode: single
 - id: '1742362975544'
-  alias: 'Hallway: Manual Override Off – Turn Lights Off'
+  alias: 'Hallway: Manual Override Off - Turn Lights Off'
   description: 'Turns off hallway lights when manual override is cleared.
 
     '
@@ -517,7 +517,7 @@
       area_id: office
   mode: single
 - id: '1742563148793'
-  alias: 'Global: Cleaning Mode – Lights On & Motion Override'
+  alias: 'Global: Cleaning Mode - Lights On & Motion Override'
   description: Turns on all lights and disables motion sensors to clean
   triggers:
   - trigger: state
@@ -621,7 +621,7 @@
     data: {}
   mode: single
 - id: '1744084082903'
-  alias: 'Bedroom Primary: Motion Detected – Turn Lights On [Run Light Control Script]'
+  alias: 'Bedroom Primary: Motion Detected - Turn Lights On [Run Light Control Script]'
   description: Triggers time-based lighting script when motion is detected and automation
     is allowed.
   triggers:
@@ -642,7 +642,7 @@
     action: script.bedroom_primary_light_control_script
   mode: single
 - id: '1744084946434'
-  alias: 'Bedroom Primary: Motion Not Detected – Turn Off Lights'
+  alias: 'Bedroom Primary: Motion Not Detected - Turn Off Lights'
   description: Turns off bedroom lights after motion clears if automation is allowed
   triggers:
   - trigger: state
@@ -673,7 +673,7 @@
     action: light.turn_off
   mode: restart
 - id: '1744085925757'
-  alias: 'Bedroom Primary: Button 1 Short Press – Resume Lighting'
+  alias: 'Bedroom Primary: Button 1 Short Press - Resume Lighting'
   description: 'When the Hue dimmer switch button 1 is short-pressed: - If the bedroom
     lights are off, run the standard light control script. - Always enable the manual
     override to disable motion-based automation.
@@ -701,7 +701,7 @@
     data: {}
   mode: single
 - id: '1744086157197'
-  alias: 'Bedroom Primary: Button 1 Long Press – Full Brightness'
+  alias: 'Bedroom Primary: Button 1 Long Press - Full Brightness'
   description: 'When the Hue dimmer switch button 1 is long-pressed and released:
     - Immediately forces the bedroom lights on at full brightness and cool white (6500K)
     - Enables manual override to prevent motion-based shutoff.
@@ -728,7 +728,7 @@
     data: {}
   mode: single
 - id: '1744087421323'
-  alias: 'Bedroom Primary: Button 2 Short Press – Dim Up'
+  alias: 'Bedroom Primary: Button 2 Short Press - Dim Up'
   description: 'When the Hue dimmer switch button 2 is short-pressed: - If the bedroom
     lights are on, increase brightness by 20%. - Enable manual override to prevent
     motion-based automation.
@@ -758,7 +758,7 @@
     data: {}
   mode: single
 - id: '1744087514411'
-  alias: 'Bedroom Primary: Button 3 Short Press – Dim Down'
+  alias: 'Bedroom Primary: Button 3 Short Press - Dim Down'
   description: 'When the Hue dimmer switch button 3 is short-pressed: - If the bedroom
     lights are on, decrease brightness by 20%. - Enable manual override to prevent
     motion-based automation.
@@ -788,7 +788,7 @@
     data: {}
   mode: single
 - id: '1744087961479'
-  alias: 'Bedroom Primary: Button 4 Short Press – Power Off'
+  alias: 'Bedroom Primary: Button 4 Short Press - Power Off'
   description: 'Turns off bedroom lights and resets motion automation after 1 minute.
 
     '
@@ -817,7 +817,7 @@
     data: {}
   mode: single
 - id: '1744568075505'
-  alias: 'Kitchen: Motion Detected – Turn On Lights [Run Light Control Script]'
+  alias: 'Kitchen: Motion Detected - Turn On Lights [Run Light Control Script]'
   description: Turns on kitchen lights when motion is detected and automation is allowed
   triggers:
   - entity_id:
@@ -836,7 +836,7 @@
       entity_id: script.kitchen_light_control_script
   mode: single
 - id: '1744569217413'
-  alias: 'Kitchen: Motion Not Detected – Turn Off Lights'
+  alias: 'Kitchen: Motion Not Detected - Turn Off Lights'
   description: 'Turns off kitchen lights 2 minutes after no motion if automation is
     allowed. If override is active, delays shutoff for 1 hour before checking again.
 
@@ -862,7 +862,7 @@
     action: light.turn_off
   mode: restart
 - id: '1744569877439'
-  alias: 'Kitchen: Button 1 Short Press – Enable Manual Override'
+  alias: 'Kitchen: Button 1 Short Press - Enable Manual Override'
   description: 'Enables manual override and disables motion for Kitchen and Livingroom
     unless movie mode is active.
 
@@ -883,7 +883,7 @@
     data: {}
   mode: single
 - id: '1744569919431'
-  alias: 'Kitchen: Button 2 Short Press – Brighten & Override'
+  alias: 'Kitchen: Button 2 Short Press - Brighten & Override'
   description: 'Increases Kitchen light brightness by 20% and enables manual override
     for both rooms.
 
@@ -909,7 +909,7 @@
     data: {}
   mode: single
 - id: '1744569937922'
-  alias: 'Kitchen: Button 2 Long Press – Brighten Both & Override'
+  alias: 'Kitchen: Button 2 Long Press - Brighten Both & Override'
   description: 'Sets Kitchen and Livingroom lights to 100% brightness at 3500K and
     enables manual override.
 
@@ -939,7 +939,7 @@
     data: {}
   mode: single
 - id: '1744570439455'
-  alias: 'Kitchen: Button 3 Short Press – Dim Kitchen & Override'
+  alias: 'Kitchen: Button 3 Short Press - Dim Kitchen & Override'
   description: Dims kitchen lights by 20% and enables override for both rooms.
   triggers:
   - trigger: state
@@ -962,7 +962,7 @@
       - input_boolean.livingroom_lights_manual_override
   mode: single
 - id: '1744570457351'
-  alias: 'Kitchen: Button 3 Long Press – Dim Both & Override'
+  alias: 'Kitchen: Button 3 Long Press - Dim Both & Override'
   description: 'Dims Kitchen and Livingroom lights by 20% and enables manual override
     for both rooms.
 
@@ -990,7 +990,7 @@
     data: {}
   mode: single
 - id: '1744570504251'
-  alias: 'Kitchen: Button 4 Long Press – Turn Off Both, Restore Motion'
+  alias: 'Kitchen: Button 4 Long Press - Turn Off Both, Restore Motion'
   description: 'Turns off Kitchen and Livingroom lights, then calls reset script to
     clear overrides and re-enable motion after 30 seconds.
 
@@ -1018,7 +1018,7 @@
     data: {}
   mode: single
 - id: '1744572277100'
-  alias: 'Livingroom: Button 1 Short Press – Enable Manual Override'
+  alias: 'Livingroom: Button 1 Short Press - Enable Manual Override'
   description: 'Enables manual override and disables motion for Kitchen and Livingroom
     unless movie mode is active.
 
@@ -1039,7 +1039,7 @@
     data: {}
   mode: single
 - id: '1744572350355'
-  alias: 'Livingroom: Button 2 Short Press – Brighten & Override'
+  alias: 'Livingroom: Button 2 Short Press - Brighten & Override'
   description: 'Increases Livingroom light brightness by 20% and enables manual override
     to prevent motion automation in both rooms.
 
@@ -1065,7 +1065,7 @@
     data: {}
   mode: single
 - id: '1744572370241'
-  alias: 'Livingroom: Button 2 Long Press – Brighten Both & Override'
+  alias: 'Livingroom: Button 2 Long Press - Brighten Both & Override'
   description: 'Sets Kitchen and Livingroom lights to 100% brightness at 3500K and
     enables manual override to prevent motion shutoff.
 
@@ -1095,7 +1095,7 @@
     data: {}
   mode: single
 - id: '1744572385925'
-  alias: 'Livingroom: Button 3 Short Press – Dim & Override'
+  alias: 'Livingroom: Button 3 Short Press - Dim & Override'
   description: 'Decreases Livingroom light brightness by 20% and enables manual override
     to prevent motion-based shutoff in both rooms.
 
@@ -1121,7 +1121,7 @@
     data: {}
   mode: single
 - id: '1744572402585'
-  alias: 'Livingroom: Button 3 Long Press – Dim Both & Override'
+  alias: 'Livingroom: Button 3 Long Press - Dim Both & Override'
   description: 'Dims Kitchen and Livingroom lights by 20% and enables manual override
     to prevent motion-based automation.
 
@@ -1149,7 +1149,7 @@
     data: {}
   mode: single
 - id: '1744572419902'
-  alias: 'Kitchen: Button 4 Short Press – Area Off & Reset Motion'
+  alias: 'Kitchen: Button 4 Short Press - Area Off & Reset Motion'
   description: 'Turns off Kitchen lights, then calls reset script to clear Kitchen
     and Livingroom overrides and re-enable motion automation after 30 seconds.
 
@@ -1175,7 +1175,7 @@
     data: {}
   mode: single
 - id: '1744572436937'
-  alias: 'Livingroom: Button 4 Long Press – All Off & Reset Motion'
+  alias: 'Livingroom: Button 4 Long Press - All Off & Reset Motion'
   description: 'Turns off Kitchen and Livingroom lights, then calls reset script to
     clear overrides and re-enable motion automation after 30 seconds.
 
@@ -1238,7 +1238,7 @@
     action: light.turn_off
   mode: single
 - id: '1745956186858'
-  alias: 'Office: Motion Detected – Hold Lights On (8 AM–5 PM)'
+  alias: 'Office: Motion Detected - Hold Lights On (8 AM-5 PM)'
   description: Keeps office lights on during business hours when motion or occupancy
     is detected and automation is allowed
   triggers:
@@ -1248,7 +1248,7 @@
     to: 'on'
   - trigger: state
     entity_id:
-    - binary_sensor.office_occupancy
+    - binary_sensor.bedroom_guest_occupancy
     to: 'on'
   conditions:
   - condition: time
@@ -1327,7 +1327,7 @@
     trigger: state
   conditions: []
   actions:
-  - action: script.audio_movie_mode_power_on_scene
+  - action: script.movie_mode_power_on_devices_set_scene_enable_overrides
   mode: single
 - id: '1749747243302'
   alias: 'Hallway: Reset Motion Streak Count'
@@ -1348,7 +1348,7 @@
     data: {}
   mode: single
 - id: '1749854379022'
-  alias: 'Kitchen: Button 1 Long Press – Activate Concentrate Mode'
+  alias: 'Kitchen: Button 1 Long Press - Activate Concentrate Mode'
   description: 'Activates Concentrate Mode across Kitchen and Livingroom, disables
     motion, enables manual override, and exits Movie Mode.
 
@@ -1371,7 +1371,7 @@
       entity_id: input_boolean.movie
   mode: single
 - id: '1749854614158'
-  alias: 'Livingroom: Button 1 Long Press – Activate Concentrate Mode'
+  alias: 'Livingroom: Button 1 Long Press - Activate Concentrate Mode'
   description: 'Activates Concentrate Mode across Kitchen and Livingroom, disables
     motion, enables manual override, and exits Movie Mode.
 
@@ -1478,7 +1478,7 @@
         action: input_boolean.turn_off
   mode: restart
 - id: '1749909190648'
-  alias: 'Livingroom: Motion Detected – Turn On Lights [Run Light Control Script]'
+  alias: 'Livingroom: Motion Detected - Turn On Lights [Run Light Control Script]'
   description: Turns on livingroom lights when motion is detected and automation is
     allowed
   triggers:
@@ -1498,7 +1498,7 @@
       entity_id: script.livingroom_light_control_script
   mode: single
 - id: '1749922951079'
-  alias: 'Livingroom: Motion Not Detected – Turn Off Lights'
+  alias: 'Livingroom: Motion Not Detected - Turn Off Lights'
   description: 'Turns off kitchen lights 2 minutes after no motion if automation is
     allowed. If override is active, delays shutoff for 1 hour before checking again.
 
@@ -1524,7 +1524,7 @@
     action: light.turn_off
   mode: restart
 - id: '1749924397237'
-  alias: 'Stairs: Motion Detected – Turn On Lights'
+  alias: 'Stairs: Motion Detected - Turn On Lights'
   description: Turns on Stairs lights when motion is detected and automation is allowed
   triggers:
   - entity_id:
@@ -1541,7 +1541,7 @@
     data: {}
   mode: single
 - id: '1749924454709'
-  alias: 'Stairs: Not Motion Detected – Turn Off Lights'
+  alias: 'Stairs: Not Motion Detected - Turn Off Lights'
   description: Turns off Stairs lights when motion is not detected and automation
     is allowed
   triggers:
@@ -1566,7 +1566,7 @@
       entity_id: light.stairs_downstairs_switch
   mode: single
 - id: '1753320650160'
-  alias: 'Livingroom: Button 4 Short Press – Area Off & Reset Motion'
+  alias: 'Livingroom: Button 4 Short Press - Area Off & Reset Motion'
   description: 'Turns off Livingroom lights, then calls reset script to clear Kitchen
     and Livingroom overrides and re-enable motion automation after 30 seconds.
 
@@ -1592,7 +1592,7 @@
     data: {}
   mode: single
 - id: '1753475079383'
-  alias: 'Bedroom Guest: Motion Detected – Turn On Lights'
+  alias: 'Bedroom Guest: Motion Detected - Turn On Lights'
   description: Turn on Guest Bedroom lights when motion is detected and automation
     is allowed
   triggers:
@@ -1602,7 +1602,7 @@
     to: 'on'
   conditions:
   - condition: state
-    entity_id: binary_sensor.motion_bedroom_guest_allowed
+    entity_id: binary_sensor.bedroom_guest_motion
     state: 'on'
   actions:
   - action: light.turn_on
@@ -1617,18 +1617,18 @@
     data: {}
   mode: single
 - id: '1753475189498'
-  alias: 'Bedroom Guest: Motion Not Detected – Turn Off Lights'
+  alias: 'Bedroom Guest: Motion Not Detected - Turn Off Lights'
   description: Turn off Guest Bedroom lights after no motion and clear manual override
   triggers:
   - trigger: state
     entity_id:
-    - binary_sensor.office_motion
+    - binary_sensor.bedroom_guest_motion
     to: 'off'
     for:
       minutes: 1
   conditions:
   - condition: state
-    entity_id: binary_sensor.motion_bedroom_guest_allowed
+    entity_id: binary_sensor.bedroom_guest_motion
     state: 'on'
   actions:
   - action: light.turn_off
@@ -1776,7 +1776,7 @@
   actions:
   - action: script.audio_batch_volume_engine
     data:
-      target_mode: ''
+      percent: '{{ states(''input_number.all_speakers_volume'') | float(0) }}'
       respect_caps: true
   mode: restart
 - id: '1755193775949'
@@ -1879,7 +1879,7 @@
     data: {}
   mode: single
 - id: '1755628552249'
-  alias: 'Bedroom Primary: Dial Button 1 Short Press – Toggle Override + Red Flicker'
+  alias: 'Bedroom Primary: Dial Button 1 Short Press - Toggle Override + Red Flicker'
   description: Toggles manual override on short press of Button 1 and triggers red
     flicker feedback.
   triggers:
@@ -1923,7 +1923,7 @@
       entity_id: script.bedroom_primary_nightstand_red_flicker_restore
   mode: single
 - id: '1755628592084'
-  alias: 'Bedroom Primary: Dial Button 2 Short Press – Private Time + Scene + Red
+  alias: 'Bedroom Primary: Dial Button 2 Short Press - Private Time + Scene + Red
     Flicker'
   description: Toggles private time and manual override, activates Nebula scene at
     15%, and gives red flicker feedback.
@@ -1988,7 +1988,7 @@
       entity_id: script.bedroom_primary_nightstand_red_flicker_restore
   mode: single
 - id: '1755628771313'
-  alias: 'Bedroom Primary: Dial Rotate – 5% Step + Override Logic'
+  alias: 'Bedroom Primary: Dial Rotate - 5% Step + Override Logic'
   description: Rotary clockwise increases brightness by 5%, counter-clockwise decreases
     by 5%. Any turn enables manual override. At zero, lights turn off and override
     clears.
@@ -2140,9 +2140,17 @@
   triggers:
   - at: 03:05:00
     trigger: time
+  conditions:
+  - condition: state
+    entity_id: input_boolean.movie
+    state: 'off'
+  - condition: state
+    entity_id: input_boolean.party
+    state: 'off'
   actions:
-  - action: script.audio_reset_audio_baseline
-    data: {}
+  - target:
+      entity_id: script.audio_reset_audio_baseline
+    action: script.turn_on
   mode: single
 - id: '1760851856356'
   alias: 'Party: On - Whole Condo Audio'
@@ -2398,7 +2406,7 @@
   mode: single
 - id: audio_baseline_heal_on_start
   alias: 'Audio: Baseline Heal on HA Start'
-  description: Run baseline heal after HA boots (7–23h).
+  description: Run baseline heal after HA boots (7-23h).
   triggers:
   - event: start
     trigger: homeassistant
@@ -2476,7 +2484,7 @@
   mode: parallel
   max: 10
 - id: '1761421022639'
-  alias: 'Audio: Watchdog – Verify Multiroom (every 10 min)'
+  alias: 'Audio: Watchdog - Verify Multiroom (every 10 min)'
   description: ''
   triggers:
   - minutes: /10
@@ -2490,11 +2498,11 @@
     before: '23:00:00'
   actions:
   - target:
-      entity_id: script.audio_verify_multiroom_2
+      entity_id: script.audio_verify_multiroom
     action: script.turn_on
   mode: single
 - id: '1761421037298'
-  alias: 'Audio: Watchdog – Auto-Heal if Zones Active (30 min)'
+  alias: 'Audio: Watchdog - Auto-Heal if Zones Active (30 min)'
   description: ''
   triggers:
   - minutes: /30
@@ -2513,3 +2521,154 @@
       entity_id: script.audio_reset_audio_baseline
     action: script.turn_on
   mode: single
+- id: '1761422148544'
+  alias: 'Listen: Off - Whole House Music'
+  description: When Listen turns OFF, power down the whole-house audio chain.
+  triggers:
+  - entity_id: input_boolean.listen_whole_house_soft_boolean
+    to: 'off'
+    trigger: state
+  actions:
+  - action: script.audio_all_speakers_off
+  mode: single
+- id: '1761427472401'
+  alias: 'Audio: Listen Mode: Volume to Start - Livingroom'
+  description: Raise Livingroom to START when motion/presence is detected, gated by
+    Listen + Volume-by-Motion.
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.presence_sensor_fp2_whole_downstairs
+    to: 'on'
+  conditions:
+  - condition: state
+    entity_id: input_boolean.listen_whole_house_soft_boolean
+    state: 'on'
+  - condition: state
+    entity_id: input_boolean.audio_volume_via_motion_boolean
+    state: 'on'
+  actions:
+  - action: script.audio_batch_volume_engine
+    data:
+      target_mode: start
+      respect_caps: true
+      players:
+      - media_player.tx_rz50
+  mode: restart
+- id: '1761428070776'
+  alias: 'Audio: Listen Mode Volume to Start - Kitchen'
+  description: Raise Kitchen (RZ50 Z2) to START when motion/presence is detected,
+    gated by Listen + Volume-by-Motion.
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.presence_sensor_fp2_cooking_area
+    to: 'on'
+  conditions:
+  - condition: state
+    entity_id: input_boolean.listen_whole_house_soft_boolean
+    state: 'on'
+  - condition: state
+    entity_id: input_boolean.audio_volume_via_motion_boolean
+    state: 'on'
+  actions:
+  - action: script.audio_batch_volume_engine
+    data:
+      target_mode: start
+      respect_caps: true
+      players:
+      - media_player.tx_rz50_zone_2
+  mode: restart
+- id: '1761428104226'
+  alias: 'Audio: Listen Mode Volume to Start - Office / Guest Bedroom'
+  description: Raise Office/Guest Bedroom (Denon
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.presence_sensor_fp2_whole_office
+    to: 'on'
+  conditions:
+  - condition: state
+    entity_id: input_boolean.listen_whole_house_soft_boolean
+    state: 'on'
+  - condition: state
+    entity_id: input_boolean.audio_volume_via_motion_boolean
+    state: 'on'
+  actions:
+  - action: script.audio_batch_volume_engine
+    data:
+      target_mode: start
+      respect_caps: true
+      players:
+      - media_player.denon_office_hallway_2
+  mode: restart
+- id: '1761428121474'
+  alias: 'Audio: Listen Mode Volume to Start - Hallway / Guest Bath'
+  description: Raise Hallway/Guest Bath (Denon
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.hue_motion_sensor_3_motion
+    - binary_sensor.hue_motion_sensor_5_motion
+    - binary_sensor.hue_motion_sensor_bathroom_guest_motion
+    to: 'on'
+  conditions:
+  - condition: state
+    entity_id: input_boolean.listen_whole_house_soft_boolean
+    state: 'on'
+  - condition: state
+    entity_id: input_boolean.audio_volume_via_motion_boolean
+    state: 'on'
+  actions:
+  - action: script.audio_batch_volume_engine
+    data:
+      target_mode: start
+      respect_caps: true
+      players:
+      - media_player.denon_office_hallway
+  mode: restart
+- id: '1761428141361'
+  alias: 'Audio: Listen Mode Volume to Start - Bedroom'
+  description: Raise Bedroom (NR6100 main) to START on motion/person, gated by Listen
+    + Volume-by-Motion.
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.hue_motion_sensor_4_motion
+    - binary_sensor.camera_bedroom_primary_person
+    to: 'on'
+  conditions:
+  - condition: state
+    entity_id: input_boolean.listen_whole_house_soft_boolean
+    state: 'on'
+  - condition: state
+    entity_id: input_boolean.audio_volume_via_motion_boolean
+    state: 'on'
+  actions:
+  - action: script.audio_batch_volume_engine
+    data:
+      target_mode: start
+      respect_caps: true
+      players:
+      - media_player.tx_nr6100
+  mode: restart
+- id: '1761428173350'
+  alias: 'Audio: Listen Mode Volume to Start - Primary Bathroom'
+  description: Raise Primary Bathroom (NR6100 Z2) to START on motion, gated by Listen
+    + Volume-by-Motion.
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.bathroom_primary_motion
+    to: 'on'
+  conditions:
+  - condition: state
+    entity_id: input_boolean.listen_whole_house_soft_boolean
+    state: 'on'
+  - condition: state
+    entity_id: input_boolean.audio_volume_via_motion_boolean
+    state: 'on'
+  actions:
+  - action: script.audio_batch_volume_engine
+    data:
+      target_mode: start
+      respect_caps: true
+      players:
+      - media_player.tx_nr6100_zone_2
+  mode: restart

@@ -2347,95 +2347,6 @@ audio_all_speakers_off:
       - media_player.livingroom_tv
       - media_player.bedroom_primary_tv
     data: {}
-audio_verify_multiroom:
-  alias: 'Audio: Verify Multiroom'
-  description: Checks power and expected source on all zones; reports mismatches.
-  mode: single
-  sequence:
-  - variables:
-      report: '{% set ns = namespace(text='''') %}
-
-        {% set e=''media_player.tx_rz50'' %} {% set st=states(e) %}{% set cur=state_attr(e,''source'')
-        %}{% set list=state_attr(e,''source_list'')|default([]) %} {% if st != ''on''
-        %}{% set ns.text = ns.text + ''RZ50 Main is '' ~ st ~ ''\n'' %} {% elif ''Multiroom
-        - Firestick'' not in list %}{% set ns.text = ns.text + ''RZ50 Main missing
-        expected source "Multiroom - Firestick" in source_list\n'' %} {% elif cur
-        != ''Multiroom - Firestick'' %}{% set ns.text = ns.text + ''RZ50 Main source
-        is "'' ~ (cur|default(''unknown'')) ~ ''" not "Multiroom - Firestick"\n''
-        %}{% endif %}
-
-        {% set e=''media_player.tx_rz50_zone_2'' %} {% set st=states(e) %}{% set cur=state_attr(e,''source'')
-        %}{% set list=state_attr(e,''source_list'')|default([]) %} {% if st != ''on''
-        %}{% set ns.text = ns.text + ''RZ50 Zone 2 is '' ~ st ~ ''\n'' %} {% elif
-        ''Main Zone Audio'' not in list %}{% set ns.text = ns.text + ''RZ50 Zone 2
-        missing expected source "Main Zone Audio" in source_list\n'' %} {% elif cur
-        != ''Main Zone Audio'' %}{% set ns.text = ns.text + ''RZ50 Zone 2 source is
-        "'' ~ (cur|default(''unknown'')) ~ ''" not "Main Zone Audio"\n'' %}{% endif
-        %}
-
-        {% set e=''media_player.tx_rz50_zone_3'' %} {% set st=states(e) %}{% set cur=state_attr(e,''source'')
-        %}{% set list=state_attr(e,''source_list'')|default([]) %} {% if st != ''on''
-        %}{% set ns.text = ns.text + ''RZ50 Zone 3 is '' ~ st ~ ''\n'' %} {% elif
-        ''Main Zone Audio'' not in list %}{% set ns.text = ns.text + ''RZ50 Zone 3
-        missing expected source "Main Zone Audio" in source_list\n'' %} {% elif cur
-        != ''Main Zone Audio'' %}{% set ns.text = ns.text + ''RZ50 Zone 3 source is
-        "'' ~ (cur|default(''unknown'')) ~ ''" not "Main Zone Audio"\n'' %}{% endif
-        %}
-
-        {% set e=''media_player.denon_office_hallway'' %} {% set st=states(e) %}{%
-        set cur=state_attr(e,''source'') %}{% set list=state_attr(e,''source_list'')|default([])
-        %} {% if st != ''on'' %}{% set ns.text = ns.text + ''Denon Office/Hallway
-        is '' ~ st ~ ''\n'' %} {% elif ''Livingroom'' not in list %}{% set ns.text
-        = ns.text + ''Denon Office/Hallway missing expected source "Livingroom" in
-        source_list\n'' %} {% elif cur != ''Livingroom'' %}{% set ns.text = ns.text
-        + ''Denon Office/Hallway source is "'' ~ (cur|default(''unknown'')) ~ ''"
-        not "Livingroom"\n'' %}{% endif %}
-
-        {% set e=''media_player.denon_office_hallway_2'' %} {% set st=states(e) %}{%
-        set cur=state_attr(e,''source'') %}{% set list=state_attr(e,''source_list'')|default([])
-        %} {% if st != ''on'' %}{% set ns.text = ns.text + ''Denon Office/Hallway
-        2 is '' ~ st ~ ''\n'' %} {% elif ''Livingroom'' not in list %}{% set ns.text
-        = ns.text + ''Denon Office/Hallway 2 missing expected source "Livingroom"
-        in source_list\n'' %} {% elif cur != ''Livingroom'' %}{% set ns.text = ns.text
-        + ''Denon Office/Hallway 2 source is "'' ~ (cur|default(''unknown'')) ~ ''"
-        not "Livingroom"\n'' %}{% endif %}
-
-        {% set e=''media_player.tx_nr6100'' %} {% set st=states(e) %}{% set cur=state_attr(e,''source'')
-        %}{% set list=state_attr(e,''source_list'')|default([]) %} {% if st != ''on''
-        %}{% set ns.text = ns.text + ''NR6100 Main is '' ~ st ~ ''\n'' %} {% elif
-        ''Multiroom - Firestick'' not in list %}{% set ns.text = ns.text + ''NR6100
-        Main missing expected source "Multiroom - Firestick" in source_list\n'' %}
-        {% elif cur != ''Multiroom - Firestick'' %}{% set ns.text = ns.text + ''NR6100
-        Main source is "'' ~ (cur|default(''unknown'')) ~ ''" not "Multiroom - Firestick"\n''
-        %}{% endif %}
-
-        {% set e=''media_player.tx_nr6100_zone_2'' %} {% set st=states(e) %}{% set
-        cur=state_attr(e,''source'') %}{% set list=state_attr(e,''source_list'')|default([])
-        %} {% if st != ''on'' %}{% set ns.text = ns.text + ''NR6100 Zone 2 is '' ~
-        st ~ ''\n'' %} {% elif ''Main Zone Audio'' not in list %}{% set ns.text =
-        ns.text + ''NR6100 Zone 2 missing expected source "Main Zone Audio" in source_list\n''
-        %} {% elif cur != ''Main Zone Audio'' %}{% set ns.text = ns.text + ''NR6100
-        Zone 2 source is "'' ~ (cur|default(''unknown'')) ~ ''" not "Main Zone Audio"\n''
-        %}{% endif %}
-
-        {{ ns.text.strip() }}'
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ report | length > 0 }}'
-      sequence:
-      - data:
-          title: Audio Verify – Problems Found
-          message: '{{ report }}'
-        action: persistent_notification.create
-    - conditions:
-      - condition: template
-        value_template: '{{ report | length == 0 }}'
-      sequence:
-      - data:
-          title: Audio Verify
-          message: All zones are on and sources match.
-        action: persistent_notification.create
 bedroom_primary_nightstand_red_flicker_restore:
   alias: 'Bedroom Primary: Nightstand Red Flicker Restore'
   description: Flashes the nightstand lamp red briefly, then restores its exact previous
@@ -3075,8 +2986,10 @@ audio_denon_office_and_bedroom_guest_power_on:
   description: ''
 audio_verify_multiroom_2:
   alias: 'Audio: Verify Multiroom'
-  description: Checks each zone's current source vs the expected multiroom source
+  description: 'Checks each zone''s current source vs the expected multiroom source
     and reports mismatches; does not change anything.
+
+    '
   icon: mdi:playlist-check
   mode: single
   sequence:
@@ -3090,22 +3003,29 @@ audio_verify_multiroom_2:
         media_player.denon_office_hallway_2: Livingroom
         media_player.denon_office_hallway: Livingroom
       title: 'Audio: Verify Multiroom'
-      body: "{% set ns = namespace(mismatches=[], skipped=[]) %} {% for ent, exp in
-        expected_map.items() %}\n  {% set st = states(ent) %}\n  {% if st in ['off','unavailable','unknown']
-        %}\n    {% set ns.skipped = ns.skipped + [ ent ~ ' (' ~ st ~ ')' ] %}\n  {%
-        else %}\n    {% set cur = (state_attr(ent, 'source') | string | trim) %}\n
-        \   {% if cur | lower != (exp | string | trim | lower) %}\n      {% set ns.mismatches
-        = ns.mismatches + [ ent ~ ': expected \"' ~ exp ~ '\", got \"' ~ cur ~ '\"'
-        ] %}\n    {% endif %}\n  {% endif %}\n{% endfor %} {% if ns.mismatches | length
-        == 0 %}\n  ✅ All zones OK. {% if ns.skipped|length>0 %}Skipped {{ ns.skipped|length
-        }} (off/unavailable): {{ ns.skipped | join(', ') }}.{% endif %}\n{% else %}\n
-        \ ❗ Mismatches ({{ ns.mismatches | length }}):\n  - {{ ns.mismatches | join('\\n-
-        ') }}\n  {% if ns.skipped|length>0 %}Skipped {{ ns.skipped|length }} (off/unavailable):
-        {{ ns.skipped | join(', ') }}.{% endif %}\n{% endif %}"
+      body: "{% set ns = namespace(ok=[], mismatches=[], skipped=[]) %} {% for ent,
+        exp in expected_map.items() %}\n  {% set st = states(ent) %}\n  {% set name
+        = state_attr(ent,'friendly_name') or ent.split('.')[-1]|replace('_',' ')|title
+        %}\n  {% if st in ['off','unavailable','unknown'] %}\n    {% set ns.skipped
+        = ns.skipped + [ name ~ ' (' ~ st ~ ')' ] %}\n  {% else %}\n    {% set cur
+        = (state_attr(ent, 'source') | string | trim) %}\n    {% if cur|lower != (exp
+        | string | trim | lower) %}\n      {% set ns.mismatches = ns.mismatches +
+        [ name ~ ' → expected \"' ~ exp ~ '\", got \"' ~ (cur or '—') ~ '\"' ] %}\n
+        \   {% else %}\n      {% set ns.ok = ns.ok + [ name ] %}\n    {% endif %}\n
+        \ {% endif %}\n{% endfor %} {% set lines = [] %} {% if ns.mismatches|length
+        == 0 %}\n  {% set _ = lines.append('✅ All zones OK — ' ~ (ns.ok|length)|string
+        ~ '/' ~ (expected_map|length)|string ~ ' active') %}\n{% else %}\n  {% set
+        _ = lines.append('❗ Mismatches (' ~ ns.mismatches|length|string ~ '):') %}\n
+        \ {% for m in ns.mismatches|sort %}\n    {% set _ = lines.append('• ' ~ m)
+        %}\n  {% endfor %}\n{% endif %} {% if ns.skipped|length > 0 %}\n  {% set _
+        = lines.append('\U0001F7E1 Skipped (off/unavailable — ' ~ ns.skipped|length|string
+        ~ '):') %}\n  {% for s in ns.skipped|sort %}\n    {% set _ = lines.append('•
+        ' ~ s) %}\n  {% endfor %}\n{% endif %} {{ lines|join('\\n') }}"
   - action: persistent_notification.create
     data:
       title: '{{ title }}'
       message: '{{ body }}'
+      notification_id: audio-verify-multiroom
 audio_party_whole_condo:
   alias: 'Audio: Party (Whole Condo)'
   description: Powers on Livingroom Fire TV + TV, runs All-ON for receivers, then
